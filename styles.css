@@ -216,3 +216,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: va
 .user-pill:hover { background: var(--bg-hover); }
 .user-avatar { width: 28px; height: 28px; border-radius: 50%; }
 .user-name { font-size: 13px; color: var(--text-dim); font-weight: 500; }
+
+/* ── Selection ── */
+.row-selected { background: rgba(59,130,246,0.08) !important; }
+.row-selected:hover { background: rgba(59,130,246,0.12) !important; }
+.row-checkbox { width: 16px; height: 16px; accent-color: var(--color-blue); }
+
+/* ── Compare period dots ── */
+.compare-period-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}

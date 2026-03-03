@@ -68,6 +68,7 @@
       <div class="upload-dropzone-hint">Supports Strava, Wahoo, Garmin, Apple Health and more</div>
     </div>
 
+    <div id="importProgress" style="display:none;margin-bottom:24px"><div class="card" style="padding:16px 24px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:14px;font-weight:600">Importing activities…</span><span id="importProgressText" style="font-family:JetBrains Mono;font-size:13px;color:var(--color-blue)">0%</span></div><div style="width:100%;height:6px;background:var(--bg-surface);border-radius:3px;overflow:hidden"><div id="importProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--color-blue),\#6366f1);border-radius:3px;transition:width 0.2s"></div></div><div id="importProgressDetail" style="font-size:12px;color:var(--text-muted);margin-top:6px">0 / 0 files</div></div></div>
     <div id="dashboardSection" style="display:none">
       <div class="nav-tabs">
         <button class="nav-tab is-active" onclick="switchTab('overview',this)">📊 Overview</button>
@@ -78,11 +79,12 @@
 
       <!-- OVERVIEW TAB -->
       <div class="tab-content is-active" id="tab-overview">
-        <div class="stat-cards">
+        <div class="stat-cards" style="grid-template-columns:repeat(5,1fr)">
           <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub">42-day exponential avg</div></div>
           <div class="stat-card stat-card--atl"><div class="stat-card-label">ATL — Fatigue</div><div class="stat-card-value" id="valAtl">0</div><div class="stat-card-sub">7-day exponential avg</div></div>
           <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
-          <div class="stat-card stat-card--tss"><div class="stat-card-label">Total TSS</div><div class="stat-card-value" id="valTotalTss">0</div><div class="stat-card-sub" id="subTotalTss">Across all activities</div></div>
+          <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
+          <div class="stat-card" style="position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--color-purple),\#7c3aed)"></div><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss" style="color:var(--color-purple)">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
         </div>
         <div class="card">
           <div class="card-top-bar">
@@ -117,14 +119,34 @@
         <div class="card">
           <div class="card-top-bar"><div class="card-title">Period Comparison</div></div>
           <div class="compare-controls">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">Grouping</label>
+            <label class="settings-label" style="margin-bottom:0;line-height:2">Mode</label>
+            <select class="compare-select" id="compareMode" onchange="onCompareModeChange()">
+              <option value="range">Date Range</option>
+              <option value="year">Year vs Year</option>
+              <option value="month">Month vs Month</option>
+            </select>
+            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Grouping</label>
             <select class="compare-select" id="compareGrouping" onchange="renderComparison()"><option value="week">Weekly</option><option value="month" selected>Monthly</option><option value="year">Yearly</option></select>
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">From</label>
+            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Sport</label>
+            <select class="compare-select" id="compareSport" onchange="renderComparison()"><option value="all">All Sports</option></select>
+          </div>
+          <div class="compare-controls" id="compareRangeControls">
+            <label class="settings-label" style="margin-bottom:0;line-height:2">From</label>
             <input type="date" class="compare-date-input" id="compareFrom" onchange="renderComparison()">
             <label class="settings-label" style="margin-bottom:0;line-height:2">To</label>
             <input type="date" class="compare-date-input" id="compareTo" onchange="renderComparison()">
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Sport</label>
-            <select class="compare-select" id="compareSport" onchange="renderComparison()"><option value="all">All Sports</option></select>
+          </div>
+          <div class="compare-controls" id="compareYearControls" style="display:none">
+            <label class="settings-label" style="margin-bottom:0;line-height:2">Year A</label>
+            <select class="compare-select" id="compareYearA" onchange="renderComparison()"></select>
+            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Year B</label>
+            <select class="compare-select" id="compareYearB" onchange="renderComparison()"></select>
+          </div>
+          <div class="compare-controls" id="compareMonthControls" style="display:none">
+            <label class="settings-label" style="margin-bottom:0;line-height:2">Month A</label>
+            <input type="month" class="compare-date-input" id="compareMonthA" onchange="renderComparison()">
+            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Month B</label>
+            <input type="month" class="compare-date-input" id="compareMonthB" onchange="renderComparison()">
           </div>
           <div class="compare-grid" id="compareMetrics"></div>
           <div class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
@@ -156,9 +178,10 @@
       <!-- LOG TAB -->
       <div class="tab-content" id="tab-log">
         <div class="training-card">
-          <div class="training-card-header"><div class="training-card-title">Training Log</div><div class="training-card-count" id="activityCount">0 activities</div></div>
+          <div class="training-card-header"><div style="display:flex;align-items:center;gap:16px"><div class="training-card-title">Training Log</div><div class="training-card-count" id="activityCount">0 activities</div></div><div style="display:flex;align-items:center;gap:10px"><span id="selectedCount" style="font-size:13px;color:var(--text-muted);display:none">0 selected</span><button class="btn-base btn-clear" id="btnDeleteSelected" style="display:none;padding:6px 14px;font-size:13px" onclick="deleteSelectedActivities()">🗑 Delete</button></div></div>
           <div class="training-table-wrap">
             <table class="training-table"><thead><tr>
+              <th style="width:40px;cursor:default"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"></th>
               <th onclick="sortColumn('date')" data-col="date" class="is-sorted">Date <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('sport')" data-col="sport">Sport <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('duration')" data-col="duration">Duration <span class="sort-indicator">▼</span></th>
