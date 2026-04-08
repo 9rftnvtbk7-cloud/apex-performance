@@ -9,6 +9,7 @@ let plannerChart = null;
 let sortConfig = { key: 'date', dir: 'desc' };
 let plannerData = [];
 let plannerInited = false;
+let collapsedMonths = {}; // tracks which months are collapsed in planner
 
 function log(msg, type) {
   console.log(msg);
@@ -18,6 +19,14 @@ function log(msg, type) {
     el.innerHTML += `<div class="${cls}">${msg}</div>`;
     el.scrollTop = el.scrollHeight;
   }
+}
+
+// ══════════════════════════════════════════════
+// Header Menu (mobile)
+// ══════════════════════════════════════════════
+function toggleHeaderMenu() {
+  document.querySelector('.header-menu-toggle').classList.toggle('is-open');
+  document.getElementById('headerButtons').classList.toggle('is-open');
 }
 
 // ══════════════════════════════════════════════
@@ -217,11 +226,36 @@ function renderPlannerGrid() {
   let h = '<div class="planner-header-cell">Week</div><div class="planner-header-cell">Dates</div><div class="planner-header-cell">Weekly TSS</div><div class="planner-header-cell">Daily Avg</div><div class="planner-header-cell">Zone</div>';
   let cm = '';
   for (let i = 0; i < plannerData.length; i++) {
-    const p = plannerData[i]; if (p.monthLabel !== cm) { cm = p.monthLabel; h += `<div class="planner-month-divider">${cm}</div>`; }
+    const p = plannerData[i];
+    if (p.monthLabel !== cm) {
+      cm = p.monthLabel;
+      const isCollapsed = collapsedMonths[cm] === true;
+      const chevron = isCollapsed ? '▸' : '▾';
+      // Calculate month summary
+      const monthWeeks = plannerData.filter(w => w.monthLabel === cm);
+      const monthTotalTss = monthWeeks.reduce((sum, w) => sum + w.tss, 0);
+      const monthAvgTss = monthWeeks.length > 0 ? Math.round(monthTotalTss / monthWeeks.length) : 0;
+      const summaryText = monthTotalTss > 0 ? `<span class="planner-month-summary">${monthWeeks.length} weeks · Avg ${monthAvgTss} TSS/wk · Total ${monthTotalTss} TSS</span>` : `<span class="planner-month-summary">${monthWeeks.length} weeks</span>`;
+      h += `<div class="planner-month-divider planner-month-toggle ${isCollapsed ? 'is-collapsed' : ''}" onclick="togglePlannerMonth('${cm.replace(/'/g, "\\'")}')"><span class="planner-month-chevron">${chevron}</span> ${cm}${summaryText}</div>`;
+    }
+    const isHidden = collapsedMonths[cm] === true;
     const da = p.tss > 0 ? Math.round(p.tss / 7) : 0, z = getTrainingZone(p.tss);
-    h += `<div class="planner-week-label">W${i + 1}</div><div class="planner-cell" style="font-size:12px;color:var(--text-dim)">${p.weekLabel}</div><div class="planner-cell"><input type="number" class="planner-input ${p.tss > 0 ? 'has-value' : ''}" value="${p.tss || ''}" min="0" max="2000" placeholder="0" data-week="${i}" onchange="updatePlannerWeek(${i},this.value)" oninput="this.classList.toggle('has-value',this.value>0)"></div><div class="planner-cell"><span class="cell-mono" style="color:var(--text-dim)">${da}</span></div><div class="planner-cell"><span style="font-size:12px;font-weight:600;color:${z.color}">${z.label}</span></div>`;
+    const cellStyle = isHidden ? 'display:none' : '';
+    const dateStyle = isHidden ? 'font-size:12px;color:var(--text-dim);display:none' : 'font-size:12px;color:var(--text-dim)';
+    h += `<div class="planner-week-label planner-week-row" data-month="${cm}" style="${cellStyle}">W${i + 1}</div><div class="planner-cell planner-week-row" data-month="${cm}" style="${dateStyle}">${p.weekLabel}</div><div class="planner-cell planner-week-row" data-month="${cm}" style="${cellStyle}"><input type="number" class="planner-input ${p.tss > 0 ? 'has-value' : ''}" value="${p.tss || ''}" min="0" max="2000" placeholder="0" data-week="${i}" onchange="updatePlannerWeek(${i},this.value)" oninput="this.classList.toggle('has-value',this.value>0)"></div><div class="planner-cell planner-week-row" data-month="${cm}" style="${cellStyle}"><span class="cell-mono" style="color:var(--text-dim)">${da}</span></div><div class="planner-cell planner-week-row" data-month="${cm}" style="${cellStyle}"><span style="font-size:12px;font-weight:600;color:${z.color}">${z.label}</span></div>`;
   }
   g.innerHTML = h;
+}
+
+function togglePlannerMonth(month) {
+  collapsedMonths[month] = !collapsedMonths[month];
+  renderPlannerGrid();
+}
+
+function toggleAllPlannerMonths(collapse) {
+  const months = [...new Set(plannerData.map(p => p.monthLabel))];
+  months.forEach(m => collapsedMonths[m] = collapse);
+  renderPlannerGrid();
 }
 
 function getTrainingZone(tss) { if (tss <= 0) return { label: '—', color: 'var(--text-muted)' }; if (tss < 200) return { label: 'Recovery', color: 'var(--color-green)' }; if (tss < 400) return { label: 'Endurance', color: 'var(--color-blue)' }; if (tss < 600) return { label: 'Tempo', color: 'var(--color-amber)' }; if (tss < 800) return { label: 'Threshold', color: '#f97316' }; return { label: 'Overreach', color: 'var(--color-red)' }; }

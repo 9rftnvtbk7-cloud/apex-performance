@@ -38,7 +38,12 @@
       <div class="app-logo-icon">▲</div>
       <div class="app-logo-text">Apex<small>Performance Management</small></div>
     </div>
-    <div class="header-buttons">
+    <button class="header-menu-toggle" onclick="toggleHeaderMenu()" aria-label="Toggle menu">
+      <span class="header-menu-bar"></span>
+      <span class="header-menu-bar"></span>
+      <span class="header-menu-bar"></span>
+    </button>
+    <div class="header-buttons" id="headerButtons">
       <button class="btn-base btn-ghost" onclick="toggleDebug()">🔍 Debug</button>
       <button class="btn-base btn-ghost" onclick="toggleSettings()">⚙ Settings</button>
       <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear" style="display:none">✕ Clear</button>
@@ -164,6 +169,10 @@
             <button class="planner-preset-btn" onclick="plannerPreset('taper')">📉 Taper</button>
             <button class="planner-preset-btn" onclick="plannerPreset('polarized')">⚡ Polarized block</button>
             <button class="planner-preset-btn" onclick="plannerPreset('clear')">✕ Clear all</button>
+          </div>
+          <div class="planner-collapse-controls">
+            <button class="planner-collapse-btn" onclick="toggleAllPlannerMonths(true)">▸ Collapse all weeks</button>
+            <button class="planner-collapse-btn" onclick="toggleAllPlannerMonths(false)">▾ Expand all weeks</button>
           </div>
           <div style="overflow-x:auto"><div class="planner-grid" id="plannerGrid"></div></div>
           <div class="planner-summary">
