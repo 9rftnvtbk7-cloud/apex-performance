@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W08 Fri – Brick Run (20min @ race pace)</name>
+  <description>Immediately after brick bike. 20min @ race target pace (5:55-6:10/km). Your 2025 race: 195W bike / 6:19 run. Today you practice hitting that pace. Notice how quickly legs find rhythm vs Week 5.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="180" Pace="2.560"/>
+    <SteadyState Duration="840" Pace="2.740"/>
+    <Cooldown Duration="180" PaceLow="2.740" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

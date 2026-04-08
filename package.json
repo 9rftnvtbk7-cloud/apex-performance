@@ -1,0 +1,16 @@
+{
+  "name": "apex-performance-management",
+  "version": "1.0.0",
+  "description": "Fitness tracking and performance management app — FIT file analysis with CTL/ATL/TSB metrics",
+  "private": true,
+  "scripts": {
+    "deploy": "firebase deploy",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage",
+    "serve": "firebase serve --only hosting",
+    "emulators": "firebase emulators:start"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.0.0"
+  }
+}

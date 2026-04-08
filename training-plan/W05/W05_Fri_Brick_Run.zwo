@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W05 Fri – Brick Run (20min @ Z3-Z4)</name>
+  <description>Immediately after brick bike. 20min @ Z3-Z4 (5:55-6:20/km). Heavy legs in first 3-5min are normal — this is the race-transition feeling you are training. Counts as second run this week.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="300" Pace="2.560"/>
+    <SteadyState Duration="720" Pace="2.740"/>
+    <Cooldown Duration="180" PaceLow="2.740" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

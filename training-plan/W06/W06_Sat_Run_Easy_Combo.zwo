@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W06 Sat – Easy Run (before Strength A)</name>
+  <description>20min easy Z1 ONLY (&gt;6:45/km). Thursday carried the quality run this week. No pace targets on Saturday. Then Strength Routine A (25min). Resist adding pace — it undermines Thursday adaptation.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="180" PaceLow="2.350" PaceHigh="2.470"/>
+    <SteadyState Duration="840" Pace="2.350"/>
+    <Cooldown Duration="180" PaceLow="2.470" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

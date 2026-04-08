@@ -235,3 +235,44 @@ Note: Firebase Auth requires the app to be served from an authorized domain. Add
 ## License
 
 MIT
+=======
+# Apex Performance Management
+
+Personal fitness tracking app for triathlon training.
+
+**Live**: https://apex-performance-1fe0a.web.app  
+**Firebase Project**: apex-performance-1fe0a  
+**Full documentation**: See `Apex_Handover_Memo.docx`
+
+## Quick Deploy
+
+```bash
+# In GitHub Codespace:
+npm install -g firebase-tools
+firebase login:ci --no-localhost
+firebase deploy --only hosting
+
+# For Cloud Functions:
+cd functions && npm install && cd ..
+firebase deploy --only functions
+
+# For Firestore rules:
+firebase deploy --only firestore:rules
+```
+
+## File Structure
+
+```
+index.html              # App shell (all 5 tabs)
+css/styles.css          # Dark theme styles
+js/app.js               # Core app logic (~1160 lines)
+js/database.js          # Firestore CRUD
+js/auth.js              # Firebase Auth (Google Sign-In)
+js/firebase-config.js   # Firebase credentials
+js/fit-parser.js        # Binary FIT file parser
+functions/index.js      # Cloud Function for email ingestion
+functions/package.json  # Function dependencies
+AppsScript.gs           # Gmail polling script
+firebase.json           # Firebase config
+firestore.rules         # Firestore security rules
+```

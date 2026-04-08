@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W08 Fri – Brick Bike (20min @ Z4)</name>
+  <description>OPTIONAL but strongly recommended. 20min @ Z4 (180-194W) — race effort. Transition immediately to brick run within 90sec. Closest race rehearsal in the plan.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="300" PowerLow="0.500" PowerHigh="0.820"/>
+    <SteadyState Duration="1200" Power="0.920"/>
+  </workout>
+</workout_file>

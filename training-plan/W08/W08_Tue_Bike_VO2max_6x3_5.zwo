@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W08 Tue – VO2max 6×3.5min</name>
+  <description>60min. 15min warmup (incl. 2×2min Z4 primers) → 6×3.5min @ Z5 (196-217W) with 3.5min Z1 recovery → 12min cooldown. Highest intensity bike session. Stop at 5 reps if power drops below 194W.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="420" PowerLow="0.500" PowerHigh="0.750"/>
+    <IntervalsT Repeat="2" OnDuration="120" OffDuration="120" OnPower="0.880" OffPower="0.500"/>
+    <SteadyState Duration="120" Power="0.500"/>
+    <IntervalsT Repeat="6" OnDuration="210" OffDuration="210" OnPower="1.010" OffPower="0.500"/>
+    <Cooldown Duration="720" PowerLow="0.820" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

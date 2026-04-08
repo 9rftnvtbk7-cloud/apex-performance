@@ -22,5 +22,15 @@ service cloud.firestore {
     match /users/{userId}/planner/{docId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-  }
+
+
+    // Training plan data
+    match /users/{userId}/plan/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Pending FIT files from email (written by Cloud Function, read by client)
+    match /users/{userId}/pending_fits/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
 }

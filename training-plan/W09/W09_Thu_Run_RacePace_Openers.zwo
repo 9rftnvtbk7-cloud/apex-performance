@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W09 Thu – Race Pace Openers</name>
+  <description>42min. 12min easy → 3×3min @ race target pace (5:55-6:10/km) with 2min easy jog recovery → 18min easy cooldown. Short, purposeful, sharp.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="720" PaceLow="2.350" PaceHigh="2.560"/>
+    <IntervalsT Repeat="3" OnDuration="180" OffDuration="120" OnPace="2.740" OffPace="2.200"/>
+    <Cooldown Duration="1080" PaceLow="2.560" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

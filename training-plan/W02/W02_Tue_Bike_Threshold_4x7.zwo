@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W02 Tue – Threshold 4×7min</name>
+  <description>60min. 12min warmup → 4×7min @ Z4 (180-194W) with 4min Z1 recovery → 12min cooldown. First real threshold intervals at corrected FTP. Will feel harder than recent rides — that is correct.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="720" PowerLow="0.500" PowerHigh="0.820"/>
+    <IntervalsT Repeat="4" OnDuration="420" OffDuration="240" OnPower="0.920" OffPower="0.500"/>
+    <Cooldown Duration="720" PowerLow="0.820" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

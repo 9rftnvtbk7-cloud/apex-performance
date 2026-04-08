@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W07 Tue – Easy + Openers</name>
+  <description>50min. Easy spin with 2×8min @ Z3 (155-178W) to maintain sharpness. No hard efforts. Recovery week.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.500" PowerHigh="0.750"/>
+    <IntervalsT Repeat="2" OnDuration="480" OffDuration="360" OnPower="0.820" OffPower="0.500"/>
+    <Cooldown Duration="600" PowerLow="0.750" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

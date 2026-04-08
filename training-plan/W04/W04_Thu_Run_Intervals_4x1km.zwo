@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W04 Thu – Intervals 4×1km</name>
+  <description>55min. 12min easy warmup → 4×1km @ Z4 (5:40-6:00/km) with 2min easy jog recovery → 19min easy cooldown. First race-pace running. Focus on smooth form. 1km = ~350-360sec at target pace.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="720" PaceLow="2.350" PaceHigh="2.560"/>
+    <IntervalsT Repeat="4" OnDuration="355" OffDuration="120" OnPace="2.860" OffPace="2.200"/>
+    <Cooldown Duration="1140" PaceLow="2.560" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

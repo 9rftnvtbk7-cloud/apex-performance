@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W07 Fri – Optional Recovery Spin</name>
+  <description>OPTIONAL. 35min very easy Z1/Z2 (under 153W). No structure. Skip if in doubt.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="300" PowerLow="0.500" PowerHigh="0.560"/>
+    <SteadyState Duration="1500" Power="0.560"/>
+    <Cooldown Duration="300" PowerLow="0.560" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

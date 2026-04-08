@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W01 Tue – Z2 Endurance</name>
+  <description>60min aerobic base. 10min warmup, 40min Z2 (114-153W), 10min cooldown. First session at corrected FTP=205W zones.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.500" PowerHigh="0.650"/>
+    <SteadyState Duration="2400" Power="0.650"/>
+    <Cooldown Duration="600" PowerLow="0.650" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

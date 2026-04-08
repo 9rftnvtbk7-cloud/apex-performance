@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W07 Sun – Group Ride (~3h, easy)</name>
+  <description>Sunday group ride ~3h. Ride easy, chat, enjoy. No chasing. Z2 only.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.500" PowerHigh="0.650"/>
+    <SteadyState Duration="9000" Power="0.650"/>
+    <Cooldown Duration="900" PowerLow="0.650" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

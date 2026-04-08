@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W09 Tue – Taper Intervals 3×6min</name>
+  <description>50min. 12min warmup → 3×6min @ Z4-Z5 (180-196W) with 5min Z1 between → 11min cooldown. Volume down, quality stays high. Legs should feel springy.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="720" PowerLow="0.500" PowerHigh="0.820"/>
+    <IntervalsT Repeat="3" OnDuration="360" OffDuration="300" OnPower="0.950" OffPower="0.500"/>
+    <Cooldown Duration="660" PowerLow="0.820" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

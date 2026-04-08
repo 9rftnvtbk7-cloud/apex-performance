@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W09 Sat – Very Easy Run (no strength)</name>
+  <description>20min very easy Z1 (&gt;7:00/km). Taper week — one strength session only. No Saturday strength.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <SteadyState Duration="1200" Pace="2.350"/>
+  </workout>
+</workout_file>

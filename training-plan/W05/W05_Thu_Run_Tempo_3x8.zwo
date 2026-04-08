@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W05 Thu – Tempo 3×8min</name>
+  <description>55min. 12min easy warmup → 3×8min @ Z3 tempo (6:05-6:25/km) with 4min easy jog recovery → 11min easy cooldown.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="720" PaceLow="2.350" PaceHigh="2.560"/>
+    <IntervalsT Repeat="3" OnDuration="480" OffDuration="240" OnPace="2.670" OffPace="2.200"/>
+    <Cooldown Duration="660" PaceLow="2.560" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

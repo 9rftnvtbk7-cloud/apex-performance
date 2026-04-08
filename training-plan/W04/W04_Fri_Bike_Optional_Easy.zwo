@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W04 Fri – Optional Easy Spin</name>
+  <description>OPTIONAL — lean towards skipping this week. VO2max Tuesday + intervals Thursday is significant load. If riding: 35min easy Z1/Z2 only (under 153W).</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="300" PowerLow="0.500" PowerHigh="0.560"/>
+    <SteadyState Duration="1500" Power="0.560"/>
+    <Cooldown Duration="300" PowerLow="0.560" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

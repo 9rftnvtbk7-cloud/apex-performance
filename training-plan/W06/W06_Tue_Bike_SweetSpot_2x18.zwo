@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W06 Tue – Sweet Spot 2×18min</name>
+  <description>60min. 10min warmup → 2×18min @ sweet-spot (180-193W, 88-94% FTP) with 5min Z1 between → 9min cooldown. Your 2025 race averaged 195W — exactly this zone. Most race-specific bike session in the plan.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="600" PowerLow="0.500" PowerHigh="0.820"/>
+    <IntervalsT Repeat="2" OnDuration="1080" OffDuration="300" OnPower="0.910" OffPower="0.500"/>
+    <Cooldown Duration="540" PowerLow="0.820" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W02 Sat – Easy Run</name>
+  <description>25min easy. HR under 137bpm, pace above 6:45/km. Focus on running form.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="180" PaceLow="2.350" PaceHigh="2.470"/>
+    <SteadyState Duration="1140" Pace="2.350"/>
+    <Cooldown Duration="180" PaceLow="2.470" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

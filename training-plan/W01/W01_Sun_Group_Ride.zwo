@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W01 Sun – Group Ride (~3h)</name>
+  <description>Sunday group ride ~3h @ Z2-Z3 (114-178W). Stay with the bunch. Do not chase attacks. Eat every 45min.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="900" PowerLow="0.500" PowerHigh="0.750"/>
+    <SteadyState Duration="9000" Power="0.750"/>
+    <Cooldown Duration="900" PowerLow="0.750" PowerHigh="0.500"/>
+  </workout>
+</workout_file>

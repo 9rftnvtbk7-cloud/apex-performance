@@ -1,0 +1,1974 @@
+{
+  "plan_version": "v5",
+  "generated": "2026-03-05",
+  "athlete": "Tristan G.",
+  "race": "Olympic Triathlon — 1.5km / 40km / 10km",
+  "race_date": "First weekend of May 2026",
+  "calibration": {
+    "ftp_watts": 205,
+    "wkg": 3.15,
+    "ftp_source": "Calibrated from race data: 195W avg for 80min in May 2025 race + 205W NP in training (Mar 2022)",
+    "run_race_target_pace": "5:55-6:10/km",
+    "run_current_race_pace": "6:19/km (Sep 2024 & May 2025)",
+    "bike_race_target_np": "180-195W",
+    "swim_target": "33-35min"
+  },
+  "structure_corrections": [
+    "Wed/Thu swapped: Strength+Swim on Wed as recovery buffer. Quality run on Thu with fresh legs.",
+    "Gradual strength: 1 session/week (Wed only) for Wks 1-3, then 2 sessions (Wed+Sat) from Wk 4.",
+    "Saturday run capped at easy Z1 in peak weeks (6 & 8) when Thu already carries threshold run."
+  ],
+  "zones": {
+    "bike": {
+      "ftp": 205,
+      "Z1": {
+        "name": "Recovery",
+        "power": "<113W",
+        "ratio": "<0.55"
+      },
+      "Z2": {
+        "name": "Endurance",
+        "power": "115-154W",
+        "ratio": "0.56-0.75"
+      },
+      "Z3": {
+        "name": "Tempo",
+        "power": "156-178W",
+        "ratio": "0.76-0.87"
+      },
+      "Z4": {
+        "name": "Threshold",
+        "power": "180-195W",
+        "ratio": "0.88-0.95"
+      },
+      "Z5": {
+        "name": "VO2max",
+        "power": "197-217W",
+        "ratio": "0.96-1.06"
+      }
+    },
+    "run": {
+      "Z1_Z2": {
+        "name": "Easy",
+        "pace": ">6:45/km",
+        "hr": "<137bpm",
+        "note": "Mandatory pace for all easy runs"
+      },
+      "Z3": {
+        "name": "Tempo",
+        "pace": "6:05-6:30/km",
+        "hr": "137-152bpm"
+      },
+      "Z4": {
+        "name": "Threshold",
+        "pace": "5:40-6:00/km",
+        "hr": "152-163bpm",
+        "note": "Race target: 5:55-6:10/km"
+      },
+      "Z5": {
+        "name": "VO2max",
+        "pace": "<5:30/km",
+        "hr": "163-182bpm"
+      }
+    }
+  },
+  "weeks": [
+    {
+      "week": 1,
+      "phase": "Base 1",
+      "dates": "Feb 23 – Mar 1",
+      "tss": 300,
+      "color": "#2E7D32",
+      "note": "Establish structure. 1 strength session (Wed only). Correct easy run pace.",
+      "sessions": [
+        {
+          "id": "W01_Tue_Bike_Z2_Endurance",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W01 Tue – Z2 Endurance",
+          "description": "60min aerobic base. 10min warmup, 40min Z2 (114-153W), 10min cooldown. First session at corrected FTP=205W zones.",
+          "tss": 52,
+          "zwo_file": "W01_Tue_Bike_Z2_Endurance.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 0.5,
+              "pHi": 0.65,
+              "power_low_w": 103,
+              "power_high_w": 133
+            },
+            {
+              "type": "steady",
+              "dur": 2400,
+              "p": 0.65,
+              "power_w": 133
+            },
+            {
+              "type": "cooldown",
+              "dur": 600,
+              "pLo": 0.65,
+              "pHi": 0.5,
+              "power_low_w": 133,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W01_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W01 Wed – Strength A + Swim",
+          "description": "Strength Routine A (30min) + 25min easy swim. Recovery buffer between Tuesday bike and Thursday run.",
+          "tss": 38,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W01_Thu_Run_Easy",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W01 Thu – Easy Aerobic Run",
+          "description": "45min easy aerobic run. HR under 137bpm, pace above 6:45/km. Walk if HR drifts. Foundation building.",
+          "tss": 35,
+          "zwo_file": "W01_Thu_Run_Easy.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 2100,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W01_Fri_Bike_Optional_Z2",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W01 Fri – Optional Z2 Endurance",
+          "description": "OPTIONAL. 45min easy Z2. Skip without guilt if fatigued. Saturday has combined session.",
+          "tss": 38,
+          "zwo_file": "W01_Fri_Bike_Optional_Z2.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.65,
+              "power_low_w": 103,
+              "power_high_w": 133
+            },
+            {
+              "type": "steady",
+              "dur": 2100,
+              "p": 0.65,
+              "power_w": 133
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 0.65,
+              "pHi": 0.5,
+              "power_low_w": 133,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W01_Sat_Run_Easy",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W01 Sat – Easy Run",
+          "description": "25min easy run. HR under 137bpm, pace above 6:45/km. No strength this week (Week 1-3 = one strength session only).",
+          "tss": 22,
+          "zwo_file": "W01_Sat_Run_Easy.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 180,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 1140,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W01_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W01 Sun – Group Ride (~3h)",
+          "description": "Sunday group ride ~3h @ Z2-Z3 (114-178W). Stay with the bunch. Do not chase attacks. Eat every 45min.",
+          "tss": 153,
+          "zwo_file": "W01_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "phase": "Base 2",
+      "dates": "Mar 2 – Mar 8",
+      "tss": 345,
+      "color": "#2E7D32",
+      "note": "First threshold bike intervals. 1 strength session.",
+      "sessions": [
+        {
+          "id": "W02_Tue_Bike_Threshold_4x7",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W02 Tue – Threshold 4×7min",
+          "description": "60min. 12min warmup → 4×7min @ Z4 (180-194W) with 4min Z1 recovery → 12min cooldown. First real threshold intervals at corrected FTP. Will feel harder than recent rides — that is correct.",
+          "tss": 65,
+          "zwo_file": "W02_Tue_Bike_Threshold_4x7.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "intervals",
+              "repeat": 4,
+              "onDur": 420,
+              "offDur": 240,
+              "onP": 0.92,
+              "offP": 0.5,
+              "on_power_w": 189,
+              "off_power_w": 103,
+              "on_duration_min": 7,
+              "off_duration_min": 4
+            },
+            {
+              "type": "cooldown",
+              "dur": 720,
+              "pLo": 0.82,
+              "pHi": 0.5,
+              "power_low_w": 168,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W02_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W02 Wed – Strength B + Swim",
+          "description": "Strength Routine B (30min) + 30min swim (200m easy, 5×100m moderate with 20sec rest, 100m easy). Recovery buffer.",
+          "tss": 42,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W02_Thu_Run_Aerobic_Strides",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W02 Thu – Aerobic Run + Strides",
+          "description": "50min. 42min easy @ Z1/Z2 (>6:45/km, <137bpm). Then 4×15sec strides with full walk recovery. Strides = brief accelerations to ~80% top speed, not sprints. Walk fully between each.",
+          "tss": 40,
+          "zwo_file": "W02_Thu_Run_Aerobic_Strides.zwo",
+          "structure": [
+            {
+              "type": "steady",
+              "dur": 2520,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 4,
+              "onDur": 15,
+              "offDur": 45,
+              "onPace": 3.33,
+              "offPace": 1.5,
+              "on_pace": "5:00/km",
+              "off_pace": "11:07/km",
+              "on_duration_sec": 15,
+              "off_duration_sec": 45
+            },
+            {
+              "type": "steady",
+              "dur": 180,
+              "pace": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W02_Fri_Bike_Optional_Z2",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W02 Fri – Optional Z2",
+          "description": "OPTIONAL. 45min easy Z2. Good option if Tuesday felt manageable.",
+          "tss": 38,
+          "zwo_file": "W02_Fri_Bike_Optional_Z2.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.65,
+              "power_low_w": 103,
+              "power_high_w": 133
+            },
+            {
+              "type": "steady",
+              "dur": 2100,
+              "p": 0.65,
+              "power_w": 133
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 0.65,
+              "pHi": 0.5,
+              "power_low_w": 133,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W02_Sat_Run_Easy",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W02 Sat – Easy Run",
+          "description": "25min easy. HR under 137bpm, pace above 6:45/km. Focus on running form.",
+          "tss": 22,
+          "zwo_file": "W02_Sat_Run_Easy.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 180,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 1140,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W02_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W02 Sun – Group Ride (~3h)",
+          "description": "Sunday group ride ~3h @ Z2-Z3.",
+          "tss": 138,
+          "zwo_file": "W02_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "phase": "Base 3",
+      "dates": "Mar 9 – Mar 15",
+      "tss": 365,
+      "color": "#1565C0",
+      "note": "Longer threshold + first tempo run. 1 strength session.",
+      "sessions": [
+        {
+          "id": "W03_Tue_Bike_Threshold_3x10",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W03 Tue – Threshold 3×10min",
+          "description": "60min. 12min warmup → 3×10min @ Z4 (180-194W) with 5min Z1 recovery → 13min cooldown. Core FTP-building session.",
+          "tss": 70,
+          "zwo_file": "W03_Tue_Bike_Threshold_3x10.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 600,
+              "offDur": 300,
+              "onP": 0.92,
+              "offP": 0.5,
+              "on_power_w": 189,
+              "off_power_w": 103,
+              "on_duration_min": 10,
+              "off_duration_min": 5
+            },
+            {
+              "type": "cooldown",
+              "dur": 780,
+              "pLo": 0.82,
+              "pHi": 0.5,
+              "power_low_w": 168,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W03_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W03 Wed – Strength A + Swim",
+          "description": "Strength Routine A (30min) + 32min swim (200m easy, 8×50m moderate with 15sec rest, 200m easy).",
+          "tss": 42,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W03_Thu_Run_Tempo_2x10",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W03 Thu – Tempo 2×10min",
+          "description": "55min. 12min easy warmup → 2×10min @ Z3 tempo (6:05-6:30/km) with 5min easy jog recovery → 18min easy cooldown. First pace above current race speed.",
+          "tss": 50,
+          "zwo_file": "W03_Thu_Run_Tempo_2x10.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 600,
+              "offDur": 300,
+              "onPace": 2.67,
+              "offPace": 2.2,
+              "on_pace": "6:15/km",
+              "off_pace": "7:35/km",
+              "on_duration_sec": 600,
+              "off_duration_sec": 300
+            },
+            {
+              "type": "cooldown",
+              "dur": 1080,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W03_Fri_Bike_Optional_Z2Z3",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W03 Fri – Optional Z2/Z3",
+          "description": "OPTIONAL. 50min: 10min warmup → 2×10min @ Z3 (155-178W) with 5min Z1 between → 15min easy cooldown.",
+          "tss": 45,
+          "zwo_file": "W03_Fri_Bike_Optional_Z2Z3.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 600,
+              "offDur": 300,
+              "onP": 0.82,
+              "offP": 0.5,
+              "on_power_w": 168,
+              "off_power_w": 103,
+              "on_duration_min": 10,
+              "off_duration_min": 5
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W03_Sat_Run_Short_Tempo",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W03 Sat – Short Tempo Run",
+          "description": "28min. 8min easy warmup → 12min @ Z3 tempo (6:05-6:25/km) → 8min easy cooldown. Two quality run sessions this week. No strength (Week 1-3 = one strength session only).",
+          "tss": 30,
+          "zwo_file": "W03_Sat_Run_Short_Tempo.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 480,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "steady",
+              "dur": 720,
+              "pace": "6:15/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 480,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W03_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W03 Sun – Group Ride (~3h)",
+          "description": "Sunday group ride ~3h @ Z2-Z3.",
+          "tss": 128,
+          "zwo_file": "W03_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "phase": "Build 1",
+      "dates": "Mar 16 – Mar 22",
+      "tss": 420,
+      "color": "#E8720C",
+      "note": "VO2max bike + run intervals. 2nd strength begins (Wed+Sat).",
+      "sessions": [
+        {
+          "id": "W04_Tue_Bike_VO2max_5x4",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W04 Tue – VO2max 5×4min",
+          "description": "60min. 15min warmup (incl. 3×1min Z4 primers at 3min, 7min, 11min) → 5×4min @ Z5 (196-217W) with 4min Z1 recovery → 13min cooldown. Very hard — shorten to 3min if power drops below 194W in reps 4-5.",
+          "tss": 72,
+          "zwo_file": "W04_Tue_Bike_VO2max_5x4.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 180,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 60,
+              "offDur": 120,
+              "onP": 0.88,
+              "offP": 0.5,
+              "on_power_w": 180,
+              "off_power_w": 103,
+              "on_duration_min": 1,
+              "off_duration_min": 2
+            },
+            {
+              "type": "steady",
+              "dur": 180,
+              "p": 0.5,
+              "power_w": 103
+            },
+            {
+              "type": "intervals",
+              "repeat": 5,
+              "onDur": 240,
+              "offDur": 240,
+              "onP": 1.01,
+              "offP": 0.5,
+              "on_power_w": 207,
+              "off_power_w": 103,
+              "on_duration_min": 4,
+              "off_duration_min": 4
+            },
+            {
+              "type": "cooldown",
+              "dur": 780,
+              "pLo": 0.76,
+              "pHi": 0.5,
+              "power_low_w": 156,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W04_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W04 Wed – Strength B + Swim",
+          "description": "Strength Routine B (30min) + 35min swim (300m easy, 6×100m with 20sec rest, 150m easy). Active recovery after Tuesday VO2max.",
+          "tss": 48,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W04_Thu_Run_Intervals_4x1km",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W04 Thu – Intervals 4×1km",
+          "description": "55min. 12min easy warmup → 4×1km @ Z4 (5:40-6:00/km) with 2min easy jog recovery → 19min easy cooldown. First race-pace running. Focus on smooth form. 1km = ~350-360sec at target pace.",
+          "tss": 52,
+          "zwo_file": "W04_Thu_Run_Intervals_4x1km.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 4,
+              "onDur": 355,
+              "offDur": 120,
+              "onPace": 2.86,
+              "offPace": 2.2,
+              "on_pace": "5:50/km",
+              "off_pace": "7:35/km",
+              "on_duration_sec": 355,
+              "off_duration_sec": 120
+            },
+            {
+              "type": "cooldown",
+              "dur": 1140,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W04_Fri_Bike_Optional_Easy",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W04 Fri – Optional Easy Spin",
+          "description": "OPTIONAL — lean towards skipping this week. VO2max Tuesday + intervals Thursday is significant load. If riding: 35min easy Z1/Z2 only (under 153W).",
+          "tss": 30,
+          "zwo_file": "W04_Fri_Bike_Optional_Easy.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.56,
+              "power_low_w": 103,
+              "power_high_w": 115
+            },
+            {
+              "type": "steady",
+              "dur": 1500,
+              "p": 0.56,
+              "power_w": 115
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 0.56,
+              "pHi": 0.5,
+              "power_low_w": 115,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W04_Sat_Run_Easy_Combo",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W04 Sat – Easy Run (before Strength A)",
+          "description": "20min very easy Z1 (>6:45/km). Then Strength Routine A (25min). Run first — arrives at weights with reasonable legs. Total ~45min.",
+          "tss": 35,
+          "zwo_file": "W04_Sat_Run_Easy_Combo.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 180,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 840,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W04_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W04 Sun – Group Ride (~3h)",
+          "description": "Sunday group ride ~3h @ Z2-Z3. May feel the VO2max work from Tuesday. Ride within yourself.",
+          "tss": 183,
+          "zwo_file": "W04_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "phase": "Build 2",
+      "dates": "Mar 23 – Mar 29",
+      "tss": 400,
+      "color": "#E8720C",
+      "note": "First brick (Fri). 2 strength sessions. Brick = 2nd bike + 2nd run.",
+      "sessions": [
+        {
+          "id": "W05_Tue_Bike_Threshold_VO2_Mix",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W05 Tue – Threshold/VO2 Mix",
+          "description": "60min. 12min warmup → 2×8min @ Z4 (180-194W) with 4min Z1 → 3×3min @ Z5 (196-217W) with 4min Z1 → 14min cooldown. Mixed intensity mirrors late-race demands.",
+          "tss": 72,
+          "zwo_file": "W05_Tue_Bike_Threshold_VO2_Mix.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 480,
+              "offDur": 240,
+              "onP": 0.92,
+              "offP": 0.5,
+              "on_power_w": 189,
+              "off_power_w": 103,
+              "on_duration_min": 8,
+              "off_duration_min": 4
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 180,
+              "offDur": 240,
+              "onP": 1.01,
+              "offP": 0.5,
+              "on_power_w": 207,
+              "off_power_w": 103,
+              "on_duration_min": 3,
+              "off_duration_min": 4
+            },
+            {
+              "type": "cooldown",
+              "dur": 840,
+              "pLo": 0.82,
+              "pHi": 0.5,
+              "power_low_w": 168,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W05_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W05 Wed – Strength B + Swim",
+          "description": "Strength Routine B (30min) + 35min swim (200m easy, 4×150m moderate with 25sec rest, 200m easy).",
+          "tss": 48,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W05_Thu_Run_Tempo_3x8",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W05 Thu – Tempo 3×8min",
+          "description": "55min. 12min easy warmup → 3×8min @ Z3 tempo (6:05-6:25/km) with 4min easy jog recovery → 11min easy cooldown.",
+          "tss": 52,
+          "zwo_file": "W05_Thu_Run_Tempo_3x8.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 480,
+              "offDur": 240,
+              "onPace": 2.67,
+              "offPace": 2.2,
+              "on_pace": "6:15/km",
+              "off_pace": "7:35/km",
+              "on_duration_sec": 480,
+              "off_duration_sec": 240
+            },
+            {
+              "type": "cooldown",
+              "dur": 660,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W05_Fri_Brick_Bike",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W05 Fri – Brick Bike (25min @ Z4)",
+          "description": "OPTIONAL but recommended. 25min @ Z4 (180-194W) — race effort. Transition immediately to brick run within 90sec. No cooldown on bike.",
+          "tss": 28,
+          "zwo_file": "W05_Fri_Brick_Bike.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "steady",
+              "dur": 1500,
+              "p": 0.92,
+              "power_w": 189
+            }
+          ]
+        },
+        {
+          "id": "W05_Fri_Brick_Run",
+          "day": "Friday",
+          "sport": "run",
+          "name": "W05 Fri – Brick Run (20min @ Z3-Z4)",
+          "description": "Immediately after brick bike. 20min @ Z3-Z4 (5:55-6:20/km). Heavy legs in first 3-5min are normal — this is the race-transition feeling you are training. Counts as second run this week.",
+          "tss": 17,
+          "zwo_file": "W05_Fri_Brick_Run.zwo",
+          "structure": [
+            {
+              "type": "steady",
+              "dur": 300,
+              "pace": "6:31/km"
+            },
+            {
+              "type": "steady",
+              "dur": 720,
+              "pace": "6:05/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.74,
+              "pHi": 2.35,
+              "pace_low": "6:05/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W05_Sat_Strength_Only",
+          "day": "Saturday",
+          "sport": "strength",
+          "name": "W05 Sat – Strength A only",
+          "description": "Strength Routine A (25min). No run — Friday brick provided the second run. Focused and efficient.",
+          "tss": 18,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W05_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W05 Sun – Group Ride (~3h)",
+          "description": "Sunday group ride ~3h @ Z2-Z3. Fuel well — loaded week.",
+          "tss": 165,
+          "zwo_file": "W05_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "phase": "Build 3",
+      "dates": "Mar 30 – Apr 5",
+      "tss": 450,
+      "color": "#E8720C",
+      "note": "Peak load. Sweet-spot + threshold run. Sat run = easy Z1 only.",
+      "sessions": [
+        {
+          "id": "W06_Tue_Bike_SweetSpot_2x18",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W06 Tue – Sweet Spot 2×18min",
+          "description": "60min. 10min warmup → 2×18min @ sweet-spot (180-193W, 88-94% FTP) with 5min Z1 between → 9min cooldown. Your 2025 race averaged 195W — exactly this zone. Most race-specific bike session in the plan.",
+          "tss": 78,
+          "zwo_file": "W06_Tue_Bike_SweetSpot_2x18.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 1080,
+              "offDur": 300,
+              "onP": 0.91,
+              "offP": 0.5,
+              "on_power_w": 187,
+              "off_power_w": 103,
+              "on_duration_min": 18,
+              "off_duration_min": 5
+            },
+            {
+              "type": "cooldown",
+              "dur": 540,
+              "pLo": 0.82,
+              "pHi": 0.5,
+              "power_low_w": 168,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W06_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W06 Wed – Strength B + Swim",
+          "description": "Strength Routine B (30min) + 40min swim (300m easy, 6×100m Z3 with 20sec rest, 4×50m harder with 30sec rest, 100m easy).",
+          "tss": 62,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W06_Thu_Run_Threshold_5x1km",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W06 Thu – Threshold 5×1km",
+          "description": "58min. 12min easy warmup → 5×1km @ Z4 (5:40-6:00/km) with 90sec easy jog recovery → 16min easy cooldown. Faster than race pace to make race pace feel easier. Peak quality run of the plan.",
+          "tss": 60,
+          "zwo_file": "W06_Thu_Run_Threshold_5x1km.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 5,
+              "onDur": 355,
+              "offDur": 90,
+              "onPace": 2.86,
+              "offPace": 2.2,
+              "on_pace": "5:50/km",
+              "off_pace": "7:35/km",
+              "on_duration_sec": 355,
+              "off_duration_sec": 90
+            },
+            {
+              "type": "cooldown",
+              "dur": 960,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W06_Fri_Bike_Optional_Z2",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W06 Fri – Optional Easy Z2",
+          "description": "OPTIONAL. Peak load week — only if legs genuinely feel good after Thursday threshold run. 40min easy Z2 (114-153W). If in doubt, skip.",
+          "tss": 38,
+          "zwo_file": "W06_Fri_Bike_Optional_Z2.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.65,
+              "power_low_w": 103,
+              "power_high_w": 133
+            },
+            {
+              "type": "steady",
+              "dur": 1800,
+              "p": 0.65,
+              "power_w": 133
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 0.65,
+              "pHi": 0.5,
+              "power_low_w": 133,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W06_Sat_Run_Easy_Combo",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W06 Sat – Easy Run (before Strength A)",
+          "description": "20min easy Z1 ONLY (>6:45/km). Thursday carried the quality run this week. No pace targets on Saturday. Then Strength Routine A (25min). Resist adding pace — it undermines Thursday adaptation.",
+          "tss": 35,
+          "zwo_file": "W06_Sat_Run_Easy_Combo.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 180,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 840,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W06_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W06 Sun – Group Ride (~3h)",
+          "description": "Sunday group ride ~3h. Biggest week — eat well and ride within yourself.",
+          "tss": 177,
+          "zwo_file": "W06_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "phase": "Recovery",
+      "dates": "Apr 6 – Apr 12",
+      "tss": 305,
+      "color": "#F57F17",
+      "note": "Volume -35%. Strength back to 1 session (Wed only).",
+      "sessions": [
+        {
+          "id": "W07_Tue_Bike_Easy_Openers",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W07 Tue – Easy + Openers",
+          "description": "50min. Easy spin with 2×8min @ Z3 (155-178W) to maintain sharpness. No hard efforts. Recovery week.",
+          "tss": 48,
+          "zwo_file": "W07_Tue_Bike_Easy_Openers.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 480,
+              "offDur": 360,
+              "onP": 0.82,
+              "offP": 0.5,
+              "on_power_w": 168,
+              "off_power_w": 103,
+              "on_duration_min": 8,
+              "off_duration_min": 6
+            },
+            {
+              "type": "cooldown",
+              "dur": 600,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W07_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W07 Wed – Strength A (reduced) + Swim",
+          "description": "Strength Routine A, 2 sets only (20-25min). Swim: 25min easy continuous, no intervals. Recovery week.",
+          "tss": 33,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W07_Thu_Run_Easy",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W07 Thu – Easy Run",
+          "description": "40min easy. Below 137bpm throughout. Recovery week — nothing more.",
+          "tss": 33,
+          "zwo_file": "W07_Thu_Run_Easy.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 1800,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W07_Fri_Bike_Recovery_Spin",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W07 Fri – Optional Recovery Spin",
+          "description": "OPTIONAL. 35min very easy Z1/Z2 (under 153W). No structure. Skip if in doubt.",
+          "tss": 28,
+          "zwo_file": "W07_Fri_Bike_Recovery_Spin.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.56,
+              "power_low_w": 103,
+              "power_high_w": 115
+            },
+            {
+              "type": "steady",
+              "dur": 1500,
+              "p": 0.56,
+              "power_w": 115
+            },
+            {
+              "type": "cooldown",
+              "dur": 300,
+              "pLo": 0.56,
+              "pHi": 0.5,
+              "power_low_w": 115,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W07_Sat_Run_Easy",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W07 Sat – Very Easy Run (no strength)",
+          "description": "20min very easy Z1 (>7:00/km). Recovery week — one strength session only (Wednesday). No Saturday strength.",
+          "tss": 18,
+          "zwo_file": "W07_Sat_Run_Easy.zwo",
+          "structure": [
+            {
+              "type": "steady",
+              "dur": 1200,
+              "pace": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W07_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W07 Sun – Group Ride (~3h, easy)",
+          "description": "Sunday group ride ~3h. Ride easy, chat, enjoy. No chasing. Z2 only.",
+          "tss": 145,
+          "zwo_file": "W07_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.65,
+              "power_low_w": 103,
+              "power_high_w": 133
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.65,
+              "power_w": 133
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.65,
+              "pHi": 0.5,
+              "power_low_w": 133,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "phase": "Peak",
+      "dates": "Apr 13 – Apr 19",
+      "tss": 445,
+      "color": "#B71C1C",
+      "note": "Post-recovery sharpening. Peak brick (Fri). 2 strength sessions.",
+      "sessions": [
+        {
+          "id": "W08_Tue_Bike_VO2max_6x3_5",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W08 Tue – VO2max 6×3.5min",
+          "description": "60min. 15min warmup (incl. 2×2min Z4 primers) → 6×3.5min @ Z5 (196-217W) with 3.5min Z1 recovery → 12min cooldown. Highest intensity bike session. Stop at 5 reps if power drops below 194W.",
+          "tss": 80,
+          "zwo_file": "W08_Tue_Bike_VO2max_6x3_5.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 420,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 120,
+              "offDur": 120,
+              "onP": 0.88,
+              "offP": 0.5,
+              "on_power_w": 180,
+              "off_power_w": 103,
+              "on_duration_min": 2,
+              "off_duration_min": 2
+            },
+            {
+              "type": "steady",
+              "dur": 120,
+              "p": 0.5,
+              "power_w": 103
+            },
+            {
+              "type": "intervals",
+              "repeat": 6,
+              "onDur": 210,
+              "offDur": 210,
+              "onP": 1.01,
+              "offP": 0.5,
+              "on_power_w": 207,
+              "off_power_w": 103,
+              "on_duration_min": 3.5,
+              "off_duration_min": 3.5
+            },
+            {
+              "type": "cooldown",
+              "dur": 720,
+              "pLo": 0.82,
+              "pHi": 0.5,
+              "power_low_w": 168,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W08_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W08 Wed – Strength B + Swim",
+          "description": "Strength Routine B (30min) + 40min swim (400m easy, 8×100m steady with 20sec rest, 200m easy).",
+          "tss": 62,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W08_Thu_Run_Threshold_6x800",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W08 Thu – Threshold 6×800m",
+          "description": "55min. 10min easy warmup → 6×800m @ Z4 (5:35-5:55/km) with 90sec easy jog recovery → 15min easy cooldown. Shorter, sharper reps than Week 6 — race-sharpening. 800m at target pace = ~275-285sec.",
+          "tss": 60,
+          "zwo_file": "W08_Thu_Run_Threshold_6x800.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 6,
+              "onDur": 278,
+              "offDur": 90,
+              "onPace": 2.94,
+              "offPace": 2.2,
+              "on_pace": "5:40/km",
+              "off_pace": "7:35/km",
+              "on_duration_sec": 278,
+              "off_duration_sec": 90
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W08_Fri_Brick_Bike",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W08 Fri – Brick Bike (20min @ Z4)",
+          "description": "OPTIONAL but strongly recommended. 20min @ Z4 (180-194W) — race effort. Transition immediately to brick run within 90sec. Closest race rehearsal in the plan.",
+          "tss": 22,
+          "zwo_file": "W08_Fri_Brick_Bike.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "steady",
+              "dur": 1200,
+              "p": 0.92,
+              "power_w": 189
+            }
+          ]
+        },
+        {
+          "id": "W08_Fri_Brick_Run",
+          "day": "Friday",
+          "sport": "run",
+          "name": "W08 Fri – Brick Run (20min @ race pace)",
+          "description": "Immediately after brick bike. 20min @ race target pace (5:55-6:10/km). Your 2025 race: 195W bike / 6:19 run. Today you practice hitting that pace. Notice how quickly legs find rhythm vs Week 5.",
+          "tss": 26,
+          "zwo_file": "W08_Fri_Brick_Run.zwo",
+          "structure": [
+            {
+              "type": "steady",
+              "dur": 180,
+              "pace": "6:31/km"
+            },
+            {
+              "type": "steady",
+              "dur": 840,
+              "pace": "6:05/km"
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.74,
+              "pHi": 2.35,
+              "pace_low": "6:05/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W08_Sat_Strength_Only",
+          "day": "Saturday",
+          "sport": "strength",
+          "name": "W08 Sat – Strength A only",
+          "description": "Strength Routine A (25min). No run — Friday brick covered it.",
+          "tss": 18,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W08_Sun_Group_Ride",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W08 Sun – Group Ride (~3h)",
+          "description": "Final big group ride. Trust the fitness — it is there.",
+          "tss": 177,
+          "zwo_file": "W08_Sun_Group_Ride.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 900,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "steady",
+              "dur": 9000,
+              "p": 0.75,
+              "power_w": 154
+            },
+            {
+              "type": "cooldown",
+              "dur": 900,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "phase": "Taper",
+      "dates": "Apr 20 – Apr 26",
+      "tss": 290,
+      "color": "#6A1B9A",
+      "note": "Volume -35%. 1 strength session. Sat run = easy only.",
+      "sessions": [
+        {
+          "id": "W09_Tue_Bike_Taper_3x6",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W09 Tue – Taper Intervals 3×6min",
+          "description": "50min. 12min warmup → 3×6min @ Z4-Z5 (180-196W) with 5min Z1 between → 11min cooldown. Volume down, quality stays high. Legs should feel springy.",
+          "tss": 55,
+          "zwo_file": "W09_Tue_Bike_Taper_3x6.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 0.5,
+              "pHi": 0.82,
+              "power_low_w": 103,
+              "power_high_w": 168
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 360,
+              "offDur": 300,
+              "onP": 0.95,
+              "offP": 0.5,
+              "on_power_w": 195,
+              "off_power_w": 103,
+              "on_duration_min": 6,
+              "off_duration_min": 5
+            },
+            {
+              "type": "cooldown",
+              "dur": 660,
+              "pLo": 0.82,
+              "pHi": 0.5,
+              "power_low_w": 168,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W09_Wed_Strength_Swim",
+          "day": "Wednesday",
+          "sport": "strength+swim",
+          "name": "W09 Wed – Strength A (light) + Swim",
+          "description": "Strength Routine A, 2 sets only, lighter weight (20min). Swim: 28min (300m warmup, 4×100m steady, 150m easy). One strength session only this week.",
+          "tss": 33,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W09_Thu_Run_RacePace_Openers",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W09 Thu – Race Pace Openers",
+          "description": "42min. 12min easy → 3×3min @ race target pace (5:55-6:10/km) with 2min easy jog recovery → 18min easy cooldown. Short, purposeful, sharp.",
+          "tss": 38,
+          "zwo_file": "W09_Thu_Run_RacePace_Openers.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 720,
+              "pLo": 2.35,
+              "pHi": 2.56,
+              "pace_low": "7:06/km",
+              "pace_high": "6:31/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 180,
+              "offDur": 120,
+              "onPace": 2.74,
+              "offPace": 2.2,
+              "on_pace": "6:05/km",
+              "off_pace": "7:35/km",
+              "on_duration_sec": 180,
+              "off_duration_sec": 120
+            },
+            {
+              "type": "cooldown",
+              "dur": 1080,
+              "pLo": 2.56,
+              "pHi": 2.35,
+              "pace_low": "6:31/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W09_Fri_Bike_Taper_Spin",
+          "day": "Friday",
+          "sport": "bike",
+          "name": "W09 Fri – Taper Spin",
+          "description": "OPTIONAL. 35min easy with 2×5min @ Z3 (155-178W) to keep legs sharp. Skip if in doubt — race in 9 days.",
+          "tss": 28,
+          "zwo_file": "W09_Fri_Bike_Taper_Spin.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 480,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "intervals",
+              "repeat": 2,
+              "onDur": 300,
+              "offDur": 240,
+              "onP": 0.82,
+              "offP": 0.5,
+              "on_power_w": 168,
+              "off_power_w": 103,
+              "on_duration_min": 5,
+              "off_duration_min": 4
+            },
+            {
+              "type": "cooldown",
+              "dur": 480,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W09_Sat_Run_Easy",
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W09 Sat – Very Easy Run (no strength)",
+          "description": "20min very easy Z1 (>7:00/km). Taper week — one strength session only. No Saturday strength.",
+          "tss": 18,
+          "zwo_file": "W09_Sat_Run_Easy.zwo",
+          "structure": [
+            {
+              "type": "steady",
+              "dur": 1200,
+              "pace": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W09_Sun_Group_Ride_Short",
+          "day": "Sunday",
+          "sport": "bike",
+          "name": "W09 Sun – Group Ride (Shorter, ~2-2.5h)",
+          "description": "Shorter group ride ~2-2.5h. Ride Z2 only, NP under 150W. Tell the group you are tapering.",
+          "tss": 118,
+          "zwo_file": "W09_Sun_Group_Ride_Short.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 0.5,
+              "pHi": 0.65,
+              "power_low_w": 103,
+              "power_high_w": 133
+            },
+            {
+              "type": "steady",
+              "dur": 6600,
+              "p": 0.65,
+              "power_w": 133
+            },
+            {
+              "type": "cooldown",
+              "dur": 600,
+              "pLo": 0.65,
+              "pHi": 0.5,
+              "power_low_w": 133,
+              "power_high_w": 103
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "phase": "Race Week",
+      "dates": "Apr 27 – May 3",
+      "tss": 115,
+      "color": "#B71C1C",
+      "note": "No strength. One easy bike, run, swim. Then race.",
+      "sessions": [
+        {
+          "id": "W10_Tue_Bike_Activation",
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W10 Tue – Leg Activation",
+          "description": "35min. 10min easy → 3×4min @ Z3-Z4 (178-194W) with 4min Z1 between → 7min easy. Wake legs up without fatiguing them.",
+          "tss": 35,
+          "zwo_file": "W10_Tue_Bike_Activation.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 600,
+              "pLo": 0.5,
+              "pHi": 0.75,
+              "power_low_w": 103,
+              "power_high_w": 154
+            },
+            {
+              "type": "intervals",
+              "repeat": 3,
+              "onDur": 240,
+              "offDur": 240,
+              "onP": 0.87,
+              "offP": 0.5,
+              "on_power_w": 178,
+              "off_power_w": 103,
+              "on_duration_min": 4,
+              "off_duration_min": 4
+            },
+            {
+              "type": "cooldown",
+              "dur": 420,
+              "pLo": 0.75,
+              "pHi": 0.5,
+              "power_low_w": 154,
+              "power_high_w": 103
+            }
+          ]
+        },
+        {
+          "id": "W10_Wed_Swim_Easy",
+          "day": "Wednesday",
+          "sport": "swim",
+          "name": "W10 Wed – Easy Swim Activation",
+          "description": "20min easy swim only. Relaxed and smooth. No strength this week.",
+          "tss": 15,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W10_Thu_Run_Easy_Strides",
+          "day": "Thursday",
+          "sport": "run",
+          "name": "W10 Thu – Easy Run + Strides",
+          "description": "25min. 20min easy (>6:45/km) → 4×15sec strides with full walk recovery. Legs should feel light and quick. Last run before race.",
+          "tss": 22,
+          "zwo_file": "W10_Thu_Run_Easy_Strides.zwo",
+          "structure": [
+            {
+              "type": "warmup",
+              "dur": 300,
+              "pLo": 2.35,
+              "pHi": 2.47,
+              "pace_low": "7:06/km",
+              "pace_high": "6:45/km"
+            },
+            {
+              "type": "steady",
+              "dur": 900,
+              "pace": "7:06/km"
+            },
+            {
+              "type": "intervals",
+              "repeat": 4,
+              "onDur": 15,
+              "offDur": 45,
+              "onPace": 3.33,
+              "offPace": 1.5,
+              "on_pace": "5:00/km",
+              "off_pace": "11:07/km",
+              "on_duration_sec": 15,
+              "off_duration_sec": 45
+            },
+            {
+              "type": "cooldown",
+              "dur": 180,
+              "pLo": 2.47,
+              "pHi": 2.35,
+              "pace_low": "6:45/km",
+              "pace_high": "7:06/km"
+            }
+          ]
+        },
+        {
+          "id": "W10_Fri_Rest",
+          "day": "Friday",
+          "sport": "rest",
+          "name": "W10 Fri – REST",
+          "description": "Rest. Pack race bag. Eat extra carbs from dinner.",
+          "tss": 0,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W10_Sat_Rest",
+          "day": "Saturday",
+          "sport": "rest",
+          "name": "W10 Sat – REST / Race Prep",
+          "description": "REST. If race today: 10min easy swim + 5min easy jog warmup. If race tomorrow: full rest, sleep early.",
+          "tss": 0,
+          "zwo_file": null,
+          "structure": []
+        },
+        {
+          "id": "W10_Sun_Race",
+          "day": "Sunday",
+          "sport": "race",
+          "name": "W10 Sun – RACE DAY 🏁",
+          "description": "1.5km Swim + 40km Bike + 10km Run. Swim: easy first 300m. Bike: 180-194W NP. Run: first 2km at 6:10-6:20/km then build to 5:55-6:10/km.",
+          "tss": 0,
+          "zwo_file": null,
+          "structure": []
+        }
+      ]
+    }
+  ]
+}

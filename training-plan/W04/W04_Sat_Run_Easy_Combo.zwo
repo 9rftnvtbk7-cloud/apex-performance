@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W04 Sat – Easy Run (before Strength A)</name>
+  <description>20min very easy Z1 (&gt;6:45/km). Then Strength Routine A (25min). Run first — arrives at weights with reasonable legs. Total ~45min.</description>
+  <sportType>run</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="180" PaceLow="2.350" PaceHigh="2.470"/>
+    <SteadyState Duration="840" Pace="2.350"/>
+    <Cooldown Duration="180" PaceLow="2.470" PaceHigh="2.350"/>
+  </workout>
+</workout_file>

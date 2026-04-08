@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workout_file>
+  <author>Tristan Training Plan v5</author>
+  <name>W09 Fri – Taper Spin</name>
+  <description>OPTIONAL. 35min easy with 2×5min @ Z3 (155-178W) to keep legs sharp. Skip if in doubt — race in 9 days.</description>
+  <sportType>bike</sportType>
+  <tags/>
+  <workout>
+    <Warmup Duration="480" PowerLow="0.500" PowerHigh="0.750"/>
+    <IntervalsT Repeat="2" OnDuration="300" OffDuration="240" OnPower="0.820" OffPower="0.500"/>
+    <Cooldown Duration="480" PowerLow="0.750" PowerHigh="0.500"/>
+  </workout>
+</workout_file>
