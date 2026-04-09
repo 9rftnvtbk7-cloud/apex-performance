@@ -6,9 +6,7 @@
   <title>Apex — Performance Management</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▲</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/styles.css?v=1772708022">
+  <link rel="stylesheet" href="css/styles.css?v=2">
 
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -40,26 +38,14 @@
       <div class="app-logo-icon">▲</div>
       <div class="app-logo-text">Apex<small>Performance Management</small></div>
     </div>
-<<<<<<< HEAD
-    <button class="header-menu-toggle" onclick="toggleHeaderMenu()" aria-label="Toggle menu">
-      <span class="header-menu-bar"></span>
-      <span class="header-menu-bar"></span>
-      <span class="header-menu-bar"></span>
-    </button>
-    <div class="header-buttons" id="headerButtons">
-=======
     <div class="header-buttons">
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
       <button class="btn-base btn-ghost" onclick="toggleDebug()">🔍 Debug</button>
       <button class="btn-base btn-ghost" onclick="toggleSettings()">⚙ Settings</button>
       <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear" style="display:none">✕ Clear</button>
       <button class="btn-base btn-upload" onclick="document.getElementById('fileInputEl').click()">↑ Upload .FIT</button>
       <input type="file" id="fileInputEl" class="file-input-hidden" accept=".fit" multiple onchange="handleFiles(this.files)">
-<<<<<<< HEAD
-=======
       <input type="file" id="planJsonInput" accept=".json" class="file-input-hidden" onchange="importPlanJson(this.files)">
       <input type="file" id="planZwoInput" accept=".zwo" multiple class="file-input-hidden" onchange="importZwoFiles(this.files)">
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
       <div class="user-pill" onclick="signOut()" title="Click to sign out">
         <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none">
         <span class="user-name" id="userName"></span>
@@ -78,15 +64,6 @@
     </div>
     <div class="debug-panel" id="debugPanel"></div>
 
-<<<<<<< HEAD
-    <div class="upload-dropzone" id="uploadDropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" onclick="document.getElementById('fileInputEl').click()">
-      <div class="upload-dropzone-icon">📂</div>
-      <div class="upload-dropzone-text">Drop your .FIT files here or click to browse</div>
-      <div class="upload-dropzone-hint">Supports Strava, Wahoo, Garmin, Apple Health and more</div>
-    </div>
-
-    <div id="importProgress" style="display:none;margin-bottom:24px"><div class="card" style="padding:16px 24px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:14px;font-weight:600">Importing activities…</span><span id="importProgressText" style="font-family:JetBrains Mono;font-size:13px;color:var(--color-blue)">0%</span></div><div style="width:100%;height:6px;background:var(--bg-surface);border-radius:3px;overflow:hidden"><div id="importProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--color-blue),\#6366f1);border-radius:3px;transition:width 0.2s"></div></div><div id="importProgressDetail" style="font-size:12px;color:var(--text-muted);margin-top:6px">0 / 0 files</div></div></div>
-=======
     <div class="empty-state" id="uploadDropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
       <div class="empty-state-hero" onclick="document.getElementById('fileInputEl').click()">
         <div class="empty-state-icon">
@@ -134,33 +111,23 @@
         <div id="importProgressDetail" style="font-size:12px;color:var(--text-muted);margin-top:6px">0 / 0 files</div>
       </div>
     </div>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
+
     <div id="dashboardSection" style="display:none">
       <div class="nav-tabs">
         <button class="nav-tab is-active" onclick="switchTab('overview',this)">📊 Overview</button>
         <button class="nav-tab" onclick="switchTab('compare',this)">📈 Compare</button>
-<<<<<<< HEAD
-=======
         <button class="nav-tab" onclick="switchTab('plan',this)">🏋️ Plan</button>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
         <button class="nav-tab" onclick="switchTab('planner',this)">📅 Planner</button>
         <button class="nav-tab" onclick="switchTab('log',this)">📋 Log</button>
       </div>
 
       <!-- OVERVIEW TAB -->
       <div class="tab-content is-active" id="tab-overview">
-<<<<<<< HEAD
-        <div class="stat-cards" style="grid-template-columns:repeat(5,1fr)">
-=======
         <div class="stat-cards">
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
           <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub">42-day exponential avg</div></div>
           <div class="stat-card stat-card--atl"><div class="stat-card-label">ATL — Fatigue</div><div class="stat-card-value" id="valAtl">0</div><div class="stat-card-sub">7-day exponential avg</div></div>
           <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
           <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
-<<<<<<< HEAD
-          <div class="stat-card" style="position:relative;overflow:hidden"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--color-purple),\#7c3aed)"></div><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss" style="color:var(--color-purple)">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
-=======
           <div class="stat-card stat-card--lastweek"><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
         </div>
 
@@ -206,8 +173,8 @@
               <div class="week-summary-bar-fill" id="weekProgressBar"></div>
             </div>
           </div>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
         </div>
+
         <div class="card">
           <div class="card-top-bar">
             <div class="card-title">Performance Management Chart</div>
@@ -216,11 +183,8 @@
               <button class="range-btn" onclick="setChartRange(90,this)">90d</button>
               <button class="range-btn" onclick="setChartRange(60,this)">60d</button>
               <button class="range-btn" onclick="setChartRange(30,this)">30d</button>
-<<<<<<< HEAD
-=======
               <input type="date" class="compare-date-input" id="chartRangeFrom" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px;margin-left:8px" title="Custom from date">
               <input type="date" class="compare-date-input" id="chartRangeTo" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px" title="Custom to date">
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
             </div>
           </div>
           <div class="chart-canvas-wrap"><canvas id="chartCanvas"></canvas></div>
@@ -256,14 +220,11 @@
             <select class="compare-select" id="compareGrouping" onchange="renderComparison()"><option value="week">Weekly</option><option value="month" selected>Monthly</option><option value="year">Yearly</option></select>
             <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Sport</label>
             <select class="compare-select" id="compareSport" onchange="renderComparison()"><option value="all">All Sports</option></select>
-<<<<<<< HEAD
-=======
             <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Calculation</label>
             <select class="compare-select" id="compareCalc" onchange="renderComparison()">
               <option value="total">Period Total</option>
               <option value="cumulative">Running Total</option>
             </select>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
           </div>
           <div class="compare-controls" id="compareRangeControls">
             <label class="settings-label" style="margin-bottom:0;line-height:2">From</label>
@@ -277,16 +238,6 @@
             <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Year B</label>
             <select class="compare-select" id="compareYearB" onchange="renderComparison()"></select>
           </div>
-<<<<<<< HEAD
-          <div class="compare-controls" id="compareMonthControls" style="display:none">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">Month A</label>
-            <input type="month" class="compare-date-input" id="compareMonthA" onchange="renderComparison()">
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Month B</label>
-            <input type="month" class="compare-date-input" id="compareMonthB" onchange="renderComparison()">
-          </div>
-          <div class="compare-grid" id="compareMetrics"></div>
-          <div class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
-=======
           <div class="compare-controls" id="compareMonthControls" style="display:none;align-items:flex-start">
             <label class="settings-label" style="margin-bottom:0;line-height:2">Months A</label>
             <select class="compare-select" id="compareMonthA" multiple size="5" onchange="renderComparison()" style="min-width:140px;height:auto"></select>
@@ -295,18 +246,9 @@
           </div>
           <div class="compare-grid" id="compareMetrics"></div>
           <div id="compareChartArea" class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
         </div>
       </div>
 
-      <!-- PLANNER TAB -->
-<<<<<<< HEAD
-      <div class="tab-content" id="tab-planner">
-        <div class="card">
-          <div class="card-top-bar"><div class="card-title">Training Planner — 26 Week Forecast</div></div>
-          <div class="planner-info">Enter your planned weekly TSS to project how your CTL, ATL, and TSB will evolve over the next 6 months.</div>
-          <div class="planner-actions">
-=======
       <!-- PLAN TAB -->
       <div class="tab-content" id="tab-plan">
         <div class="card" style="margin-bottom:24px">
@@ -335,6 +277,7 @@
         </div>
       </div>
 
+      <!-- PLANNER TAB -->
       <div class="tab-content" id="tab-planner">
         <div class="card">
           <div class="card-top-bar"><div class="card-title">Training Planner — 26 Week Forecast</div></div>
@@ -352,37 +295,15 @@
           <div class="planner-info">Enter your planned weekly TSS to project how your CTL, ATL, and TSB will evolve over the next 6 months.</div>
           <div class="planner-actions">
             <button class="planner-preset-btn" onclick="plannerPreset('fromplan')">📋 From Training Plan</button>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
             <button class="planner-preset-btn" onclick="plannerPreset('maintain')">🔄 Maintain current</button>
             <button class="planner-preset-btn" onclick="plannerPreset('build')">📈 Progressive build</button>
             <button class="planner-preset-btn" onclick="plannerPreset('taper')">📉 Taper</button>
             <button class="planner-preset-btn" onclick="plannerPreset('polarized')">⚡ Polarized block</button>
             <button class="planner-preset-btn" onclick="plannerPreset('clear')">✕ Clear all</button>
           </div>
-<<<<<<< HEAD
-          <div class="planner-collapse-controls">
-            <button class="planner-collapse-btn" onclick="toggleAllPlannerMonths(true)">▸ Collapse all weeks</button>
-            <button class="planner-collapse-btn" onclick="toggleAllPlannerMonths(false)">▾ Expand all weeks</button>
-          </div>
-          <div style="overflow-x:auto"><div class="planner-grid" id="plannerGrid"></div></div>
-          <div class="planner-summary">
-            <div class="planner-summary-card"><div class="planner-summary-label">Projected CTL</div><div class="planner-summary-value" id="planCtl" style="color:var(--color-blue)">—</div></div>
-            <div class="planner-summary-card"><div class="planner-summary-label">Projected ATL</div><div class="planner-summary-value" id="planAtl" style="color:var(--color-red)">—</div></div>
-            <div class="planner-summary-card"><div class="planner-summary-label">Projected TSB</div><div class="planner-summary-value" id="planTsb" style="color:var(--color-green)">—</div></div>
-          </div>
-          <div style="margin-top:24px"><div class="card-title" style="margin-bottom:16px">Projected Performance Curve</div><div class="planner-forecast-chart-wrap"><canvas id="plannerChart"></canvas></div></div>
-        </div>
-      </div>
-
-      <!-- LOG TAB -->
-      <div class="tab-content" id="tab-log">
-        <div class="training-card">
-          <div class="training-card-header"><div style="display:flex;align-items:center;gap:16px"><div class="training-card-title">Training Log</div><div class="training-card-count" id="activityCount">0 activities</div></div><div style="display:flex;align-items:center;gap:10px"><span id="selectedCount" style="font-size:13px;color:var(--text-muted);display:none">0 selected</span><button class="btn-base btn-clear" id="btnDeleteSelected" style="display:none;padding:6px 14px;font-size:13px" onclick="deleteSelectedActivities()">🗑 Delete</button></div></div>
-=======
           <div style="overflow-x:auto"><div class="planner-grid" id="plannerGrid"></div></div>
         </div>
       </div>
-
 
       <!-- LOG TAB -->
       <div class="tab-content" id="tab-log">
@@ -397,7 +318,6 @@
               <button class="btn-base btn-clear" id="btnDeleteSelected" style="display:none;padding:6px 14px;font-size:13px" onclick="deleteSelectedActivities()">🗑 Delete</button>
             </div>
           </div>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
           <div class="training-table-wrap">
             <table class="training-table"><thead><tr>
               <th style="width:40px;cursor:default"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"></th>
@@ -419,18 +339,10 @@
 </div>
 
 <!-- App Scripts (order matters) -->
-<<<<<<< HEAD
-<script src="js/firebase-config.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/database.js"></script>
-<script src="js/fit-parser.js"></script>
-<script src="js/app.js"></script>
-=======
-<script src="js/firebase-config.js?v=1772708022"></script>
-<script src="js/auth.js?v=1772708022"></script>
-<script src="js/database.js?v=1772708022"></script>
-<script src="js/fit-parser.js?v=1772708022"></script>
-<script src="js/app.js?v=1772708022"></script>
->>>>>>> 8cd78a2 (Initial commit: Apex Performance Management app)
+<script src="js/firebase-config.js?v=2"></script>
+<script src="js/auth.js?v=2"></script>
+<script src="js/database.js?v=2"></script>
+<script src="js/fit-parser.js?v=2"></script>
+<script src="js/app.js?v=2"></script>
 </body>
 </html>
