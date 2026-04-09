@@ -1,0 +1,197 @@
+[debug] [2026-04-09T11:34:38.085Z] ----------------------------------------------------------------------
+[debug] [2026-04-09T11:34:38.091Z] Command:       /opt/homebrew/Cellar/node/25.9.0_1/bin/node /opt/homebrew/bin/firebase deploy --only functions
+[debug] [2026-04-09T11:34:38.091Z] CLI Version:   15.13.0
+[debug] [2026-04-09T11:34:38.091Z] Platform:      darwin
+[debug] [2026-04-09T11:34:38.091Z] Node Version:  v25.9.0
+[debug] [2026-04-09T11:34:38.091Z] Time:          Thu Apr 09 2026 13:34:38 GMT+0200 (Central European Summer Time)
+[debug] [2026-04-09T11:34:38.091Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-09T11:34:39.250Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-09T11:34:39.251Z] > authorizing via signed-in user (tristan.guilbot@gmail.com)
+[debug] [2026-04-09T11:34:39.251Z] [iam] checking project apex-performance-1fe0a for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-04-09T11:34:39.251Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:39.251Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:39.252Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions [none]
+[debug] [2026-04-09T11:34:39.252Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions  x-goog-user-project=apex-performance-1fe0a
+[debug] [2026-04-09T11:34:39.252Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-04-09T11:34:39.805Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions 200
+[debug] [2026-04-09T11:34:39.806Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-04-09T11:34:39.806Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:39.806Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:39.806Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-04-09T11:34:39.806Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-09T11:34:40.355Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-04-09T11:34:40.356Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'apex-performance-1fe0a'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-04-09T11:34:40.363Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:40.364Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:40.364Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a [none]
+[debug] [2026-04-09T11:34:40.558Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a 200
+[debug] [2026-04-09T11:34:40.558Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a {"projectNumber":"389137780528","projectId":"apex-performance-1fe0a","lifecycleState":"ACTIVE","name":"apex-performance","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-02-27T15:47:52.997870Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2026-04-09T11:34:40.563Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:40.564Z] Checked if tokens are valid: true, expires at: 1775737769834
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-04-09T11:34:40.565Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:40.565Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:40.565Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/cloudbuild.googleapis.com [none]
+[debug] [2026-04-09T11:34:40.565Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/cloudbuild.googleapis.com  x-goog-user-project=apex-performance-1fe0a
+[debug] [2026-04-09T11:34:40.568Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/artifactregistry.googleapis.com [none]
+[debug] [2026-04-09T11:34:40.568Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/artifactregistry.googleapis.com  x-goog-user-project=apex-performance-1fe0a
+[debug] [2026-04-09T11:34:41.313Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/artifactregistry.googleapis.com 200
+[debug] [2026-04-09T11:34:41.314Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/artifactregistry.googleapis.com [omitted]
+[info] ✔  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2026-04-09T11:34:41.363Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/cloudbuild.googleapis.com 200
+[debug] [2026-04-09T11:34:41.364Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/apex-performance-1fe0a/services/cloudbuild.googleapis.com [omitted]
+[info] ✔  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2026-04-09T11:34:41.373Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:41.373Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:41.373Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a/adminSdkConfig [none]
+[debug] [2026-04-09T11:34:42.217Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a/adminSdkConfig 200
+[debug] [2026-04-09T11:34:42.217Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a/adminSdkConfig {"projectId":"apex-performance-1fe0a","storageBucket":"apex-performance-1fe0a.firebasestorage.app"}
+[debug] [2026-04-09T11:34:42.218Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:42.219Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:42.219Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs [none]
+[debug] [2026-04-09T11:34:42.815Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs 200
+[debug] [2026-04-09T11:34:42.815Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs {"configs":[{"name":"projects/apex-performance-1fe0a/configs/strava"}]}
+[debug] [2026-04-09T11:34:42.816Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:42.816Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:42.816Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables [none]
+[debug] [2026-04-09T11:34:43.067Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables 200
+[debug] [2026-04-09T11:34:43.067Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables {"variables":[{"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_id","updateTime":"2026-04-09T11:29:34.852220379Z"},{"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_secret","updateTime":"2026-04-09T11:29:33.922560179Z"}]}
+[debug] [2026-04-09T11:34:43.068Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:43.068Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:43.068Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:43.068Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:34:43.068Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_id [none]
+[debug] [2026-04-09T11:34:43.069Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_secret [none]
+[debug] [2026-04-09T11:34:43.306Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_id 200
+[debug] [2026-04-09T11:34:43.306Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_id {"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_id","updateTime":"2026-04-09T11:29:34.852220379Z","text":"12345"}
+[debug] [2026-04-09T11:34:43.736Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_secret 200
+[debug] [2026-04-09T11:34:43.736Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_secret {"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_secret","updateTime":"2026-04-09T11:29:33.922560179Z","text":"abcdef1234567890"}
+[debug] [2026-04-09T11:34:43.740Z] Validating nodejs source
+[warn] ⚠  functions: Runtime Node.js 20 will be deprecated on 2026-04-30 and will be decommissioned on 2026-10-30, after which you will not be able to deploy without upgrading. Consider upgrading now to avoid disruption. See https://cloud.google.com/functions/docs/runtime-support for full details on the lifecycle policy 
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-04-09T11:34:44.944Z] > [functions] package.json contents: {
+  "name": "apex-functions",
+  "description": "Cloud Functions for Apex Performance Management",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "firebase-admin": "^13.7.0",
+    "firebase-functions": "^4.5.0"
+  }
+}
+[debug] [2026-04-09T11:34:44.944Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2026-04-09T11:34:44.945Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-09T11:34:44.953Z] Found firebase-functions binary at '/Users/tristan.guilbot/Downloads/apex-performance-full/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8061
+
+[debug] [2026-04-09T11:34:45.797Z] Got response from /__/functions.yaml {"endpoints":{"ingestFitFromEmail":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"httpsTrigger":{},"entryPoint":"ingestFitFromEmail"},"stravaTokenExchange":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"httpsTrigger":{},"entryPoint":"stravaTokenExchange"},"stravaTokenRefresh":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"httpsTrigger":{},"entryPoint":"stravaTokenRefresh"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[error] Error: Failed to load environment variables from .env.:
+[error] - FirebaseError Invalid dotenv file, error on lines: 17f8ad0789e88322a584882e6393443c79515225
+[debug] [2026-04-09T11:35:03.452Z] ----------------------------------------------------------------------
+[debug] [2026-04-09T11:35:03.454Z] Command:       /opt/homebrew/Cellar/node/25.9.0_1/bin/node /opt/homebrew/bin/firebase deploy --only hosting,functions
+[debug] [2026-04-09T11:35:03.454Z] CLI Version:   15.13.0
+[debug] [2026-04-09T11:35:03.454Z] Platform:      darwin
+[debug] [2026-04-09T11:35:03.454Z] Node Version:  v25.9.0
+[debug] [2026-04-09T11:35:03.454Z] Time:          Thu Apr 09 2026 13:35:03 GMT+0200 (Central European Summer Time)
+[debug] [2026-04-09T11:35:03.454Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-09T11:35:04.354Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-09T11:35:04.355Z] > authorizing via signed-in user (tristan.guilbot@gmail.com)
+[debug] [2026-04-09T11:35:04.355Z] [iam] checking project apex-performance-1fe0a for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-04-09T11:35:04.355Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:04.355Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:04.356Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions [none]
+[debug] [2026-04-09T11:35:04.356Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions  x-goog-user-project=apex-performance-1fe0a
+[debug] [2026-04-09T11:35:04.356Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-04-09T11:35:04.876Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions 200
+[debug] [2026-04-09T11:35:04.876Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-04-09T11:35:04.877Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:04.877Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:04.877Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-04-09T11:35:04.877Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-09T11:35:05.437Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-04-09T11:35:05.438Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/apex-performance-1fe0a/serviceAccounts/apex-performance-1fe0a@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-09T11:35:05.439Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:05.439Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:05.440Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a [none]
+[debug] [2026-04-09T11:35:06.017Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a 200
+[debug] [2026-04-09T11:35:06.017Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a {"projectId":"apex-performance-1fe0a","projectNumber":"389137780528","displayName":"apex-performance","name":"projects/apex-performance-1fe0a","resources":{"hostingSite":"apex-performance-1fe0a"},"state":"ACTIVE","etag":"1_2a306121-9de1-4485-baa8-f3fc3bae583d"}
+[info] 
+[info] === Deploying to 'apex-performance-1fe0a'...
+[info] 
+[info] i  deploying functions, hosting 
+[debug] [2026-04-09T11:35:06.026Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:06.026Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:06.026Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a [none]
+[debug] [2026-04-09T11:35:06.211Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a 200
+[debug] [2026-04-09T11:35:06.212Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/apex-performance-1fe0a {"projectNumber":"389137780528","projectId":"apex-performance-1fe0a","lifecycleState":"ACTIVE","name":"apex-performance","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-02-27T15:47:52.997870Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-04-09T11:35:06.216Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:06.216Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:06.217Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a/adminSdkConfig [none]
+[debug] [2026-04-09T11:35:06.486Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a/adminSdkConfig 200
+[debug] [2026-04-09T11:35:06.486Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/apex-performance-1fe0a/adminSdkConfig {"projectId":"apex-performance-1fe0a","storageBucket":"apex-performance-1fe0a.firebasestorage.app"}
+[debug] [2026-04-09T11:35:06.487Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:06.487Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:06.487Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs [none]
+[debug] [2026-04-09T11:35:07.027Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs 200
+[debug] [2026-04-09T11:35:07.027Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs {"configs":[{"name":"projects/apex-performance-1fe0a/configs/strava"}]}
+[debug] [2026-04-09T11:35:07.028Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:07.028Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:07.028Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables [none]
+[debug] [2026-04-09T11:35:07.225Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables 200
+[debug] [2026-04-09T11:35:07.225Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables {"variables":[{"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_id","updateTime":"2026-04-09T11:29:34.852220379Z"},{"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_secret","updateTime":"2026-04-09T11:29:33.922560179Z"}]}
+[debug] [2026-04-09T11:35:07.225Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:07.225Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:07.225Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:07.225Z] Checked if tokens are valid: true, expires at: 1775737769834
+[debug] [2026-04-09T11:35:07.226Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_id [none]
+[debug] [2026-04-09T11:35:07.226Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_secret [none]
+[debug] [2026-04-09T11:35:07.451Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_id 200
+[debug] [2026-04-09T11:35:07.452Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_id {"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_id","updateTime":"2026-04-09T11:29:34.852220379Z","text":"12345"}
+[debug] [2026-04-09T11:35:07.751Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_secret 200
+[debug] [2026-04-09T11:35:07.752Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/apex-performance-1fe0a/configs/strava/variables/client_secret {"name":"projects/apex-performance-1fe0a/configs/strava/variables/client_secret","updateTime":"2026-04-09T11:29:33.922560179Z","text":"abcdef1234567890"}
+[debug] [2026-04-09T11:35:07.755Z] Validating nodejs source
+[warn] ⚠  functions: Runtime Node.js 20 will be deprecated on 2026-04-30 and will be decommissioned on 2026-10-30, after which you will not be able to deploy without upgrading. Consider upgrading now to avoid disruption. See https://cloud.google.com/functions/docs/runtime-support for full details on the lifecycle policy 
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-04-09T11:35:08.533Z] > [functions] package.json contents: {
+  "name": "apex-functions",
+  "description": "Cloud Functions for Apex Performance Management",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "busboy": "^1.6.0",
+    "firebase-admin": "^13.7.0",
+    "firebase-functions": "^4.5.0"
+  }
+}
+[debug] [2026-04-09T11:35:08.533Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2026-04-09T11:35:08.533Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-09T11:35:08.541Z] Found firebase-functions binary at '/Users/tristan.guilbot/Downloads/apex-performance-full/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8686
+
+[debug] [2026-04-09T11:35:08.923Z] Got response from /__/functions.yaml {"endpoints":{"ingestFitFromEmail":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"httpsTrigger":{},"entryPoint":"ingestFitFromEmail"},"stravaTokenExchange":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"httpsTrigger":{},"entryPoint":"stravaTokenExchange"},"stravaTokenRefresh":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"httpsTrigger":{},"entryPoint":"stravaTokenRefresh"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[error] Error: Failed to load environment variables from .env.:
+[error] - FirebaseError Invalid dotenv file, error on lines: 17f8ad0789e88322a584882e6393443c79515225

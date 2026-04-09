@@ -915,6 +915,8 @@ function refreshDashboard() {
   if (has) { computePMC(); buildPMCChart(); renderTrainingTable(); initCompareDefaults(); }
   loadSavedPlan();
   processPendingFits();
+  // Load Strava tokens on first dashboard load
+  if (typeof loadStravaTokens === 'function' && currentUser && !stravaTokens) loadStravaTokens();
 }
 
 function recalcAll() {
@@ -1044,6 +1046,37 @@ function toggleSessionComplete(sessionId) {
   if (typeof savePlanCompletions === 'function') savePlanCompletions(planCompletions);
 }
 
+function isWeekCurrent(dateStr, now) {
+  // Parse "Feb 23 – Mar 1" or "Apr 6 – Apr 12"
+  if (!dateStr) return false;
+  const parts = dateStr.split('–').map(s => s.trim());
+  if (parts.length < 2) return false;
+  const year = now.getFullYear();
+  const parseWeekDate = (str) => {
+    const d = new Date(str + ' ' + year);
+    if (!isNaN(d)) return d;
+    return new Date(str + ', ' + year);
+  };
+  const start = parseWeekDate(parts[0]);
+  const end = parseWeekDate(parts[1]);
+  if (isNaN(start) || isNaN(end)) return false;
+  // Handle year wrap (e.g. Dec – Jan): if end < start, end is next year
+  if (end < start) end.setFullYear(end.getFullYear() + 1);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+  const today = new Date(now); today.setHours(12, 0, 0, 0);
+  return today >= start && today <= end;
+}
+
+function scrollToCurrentWeek() {
+  const el = document.querySelector('.plan-week-current');
+  if (el) {
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+}
+
 function renderTrainingPlan() {
   if (!trainingPlan) return;
   const p = trainingPlan;
@@ -1098,10 +1131,16 @@ function renderTrainingPlan() {
   const sportEmojis = { bike: '🚴', run: '🏃', swim: '🏊', strength: '💪', 'strength+swim': '💪🏊' };
 
   let wh = '';
-  for (const week of (p.weeks || [])) {
+  let currentWeekIdx = -1;
+  const now = new Date();
+  for (let wi = 0; wi < (p.weeks || []).length; wi++) {
+    const week = p.weeks[wi];
     const phaseBg = week.color || '#1e2030';
-    wh += `<div class="plan-week-card">`;
-    wh += `<div class="plan-week-header" style="border-left:4px solid ${phaseBg}">`;
+    // Detect current week from dates like "Apr 6 – Apr 12"
+    const isCurrentWeek = isWeekCurrent(week.dates, now);
+    if (isCurrentWeek) currentWeekIdx = wi;
+    wh += `<div class="plan-week-card${isCurrentWeek ? ' plan-week-current' : ''}" data-plan-week="${wi}" id="plan-week-${wi}">`;
+    wh += `<div class="plan-week-header" style="border-left:4px solid ${isCurrentWeek ? 'var(--color-blue)' : phaseBg}">`;
     wh += `<div><span class="plan-week-num">W${week.week}</span> <span class="plan-week-phase" style="color:${phaseBg}">${week.phase}</span></div>`;
     wh += `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--text-dim)">${week.dates}</span><span class="plan-week-tss">TSS ${week.tss}</span></div>`;
     wh += `</div>`;
@@ -1131,6 +1170,9 @@ function renderTrainingPlan() {
     wh += `</div></div>`;
   }
   document.getElementById('planWeeks').innerHTML = wh;
+
+  // Auto-scroll to current week
+  scrollToCurrentWeek();
 }
 
 function togglePlanZones() {
@@ -1227,6 +1269,8 @@ async function loadSavedPlan() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof initAuth === 'function') initAuth();
+  // Handle Strava OAuth callback if present in URL
+  if (typeof handleStravaCallback === 'function') handleStravaCallback();
   // Ensure plan file inputs work
   const pji = document.getElementById('planJsonInput');
   if (pji) pji.addEventListener('change', function() { importPlanJson(this.files); });

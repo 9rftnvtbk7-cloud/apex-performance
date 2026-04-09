@@ -85,6 +85,114 @@ exports.ingestFitFromEmail = functions.https.onRequest(async (req, res) => {
   }
 });
 
+/**
+ * Strava OAuth Token Exchange
+ * Client sends the authorization code, this function exchanges it for tokens
+ * using the client_secret (which stays server-side).
+ */
+exports.stravaTokenExchange = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+  if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
+
+  const { code, uid } = req.body;
+  if (!code) { res.status(400).json({ error: "Missing authorization code" }); return; }
+
+  const clientId = functions.config().strava?.client_id || process.env.STRAVA_CLIENT_ID;
+  const clientSecret = functions.config().strava?.client_secret || process.env.STRAVA_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    res.status(500).json({ error: "Strava API credentials not configured on server" });
+    return;
+  }
+
+  try {
+    const response = await fetch("https://www.strava.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: code,
+        grant_type: "authorization_code"
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      res.status(400).json({ error: err.message || "Token exchange failed" });
+      return;
+    }
+
+    const data = await response.json();
+    res.status(200).json({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: data.expires_at,
+      athlete: data.athlete ? { firstname: data.athlete.firstname, lastname: data.athlete.lastname, id: data.athlete.id } : null
+    });
+
+  } catch (error) {
+    console.error("Strava token exchange error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Strava Token Refresh
+ * Refreshes an expired access token using the refresh token.
+ */
+exports.stravaTokenRefresh = functions.https.onRequest(async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+  if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
+
+  const { refresh_token } = req.body;
+  if (!refresh_token) { res.status(400).json({ error: "Missing refresh_token" }); return; }
+
+  const clientId = functions.config().strava?.client_id || process.env.STRAVA_CLIENT_ID;
+  const clientSecret = functions.config().strava?.client_secret || process.env.STRAVA_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    res.status(500).json({ error: "Strava API credentials not configured on server" });
+    return;
+  }
+
+  try {
+    const response = await fetch("https://www.strava.com/oauth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refresh_token,
+        grant_type: "refresh_token"
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      res.status(400).json({ error: err.message || "Token refresh failed" });
+      return;
+    }
+
+    const data = await response.json();
+    res.status(200).json({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: data.expires_at
+    });
+
+  } catch (error) {
+    console.error("Strava token refresh error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 function parseMultipart(req) {
   return new Promise((resolve, reject) => {
     const fields = {};

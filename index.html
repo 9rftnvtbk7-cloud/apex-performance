@@ -42,6 +42,10 @@
       <button class="btn-base btn-ghost" onclick="toggleDebug()">🔍 Debug</button>
       <button class="btn-base btn-ghost" onclick="toggleSettings()">⚙ Settings</button>
       <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear" style="display:none">✕ Clear</button>
+      <button class="btn-base btn-strava" id="btnStravaConnect" onclick="stravaConnect()">🔶 Connect Strava</button>
+      <button class="btn-base btn-strava btn-strava-sync" id="btnStravaSync" onclick="syncStravaActivities()" style="display:none">🔶 Sync Strava</button>
+      <button class="btn-base btn-ghost btn-strava-disconnect" id="btnStravaDisconnect" onclick="stravaDisconnect()" style="display:none;font-size:12px;padding:6px 10px" title="Disconnect Strava">✕</button>
+      <span id="stravaStatus" style="display:none;font-size:12px;color:#fc4c02;font-weight:600"></span>
       <button class="btn-base btn-upload" onclick="document.getElementById('fileInputEl').click()">↑ Upload .FIT</button>
       <input type="file" id="fileInputEl" class="file-input-hidden" accept=".fit" multiple onchange="handleFiles(this.files)">
       <input type="file" id="planJsonInput" accept=".json" class="file-input-hidden" onchange="importPlanJson(this.files)">
@@ -343,6 +347,7 @@
 <script src="js/auth.js?v=2"></script>
 <script src="js/database.js?v=2"></script>
 <script src="js/fit-parser.js?v=2"></script>
+<script src="js/strava.js?v=2"></script>
 <script src="js/app.js?v=2"></script>
 </body>
 </html>
