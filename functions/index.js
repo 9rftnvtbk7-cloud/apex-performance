@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const { onRequest } = require("firebase-functions/v2/https"); // Updated to v2
 const admin = require("firebase-admin");
 const Busboy = require("busboy");
 
@@ -7,30 +7,20 @@ const db = admin.firestore();
 
 /**
  * HTTP Cloud Function: Receives FIT file data from email forwarding
- * 
- * Accepts POST with:
- * - JSON body: { userEmail, fileName, fitBase64, sender }
- * - OR multipart form: userEmail, fileName, fitFile (binary)
- * 
- * The function looks up the user by email, then saves the raw FIT data
- * to Firestore for client-side parsing on next login.
+ * Migrated to Cloud Functions v2
  */
-exports.ingestFitFromEmail = functions.https.onRequest(async (req, res) => {
-  // CORS
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
-  if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
+exports.ingestFitFromEmail = onRequest({ cors: true }, async (req, res) => { // v2 handles CORS via options
+  if (req.method !== "POST") { 
+    res.status(405).json({ error: "POST only" }); 
+    return; 
+  }
 
   try {
     let userEmail, fileName, fitBase64, sender, apiKey;
 
-    // Parse body (JSON or multipart)
     if (req.is("application/json")) {
       ({ userEmail, fileName, fitBase64, sender, apiKey } = req.body);
     } else {
-      // multipart
       const fields = await parseMultipart(req);
       userEmail = fields.userEmail;
       fileName = fields.fileName;
@@ -39,8 +29,8 @@ exports.ingestFitFromEmail = functions.https.onRequest(async (req, res) => {
       apiKey = fields.apiKey;
     }
 
-    // Validate API key (simple shared secret)
-    const expectedKey = functions.config().apex?.api_key || process.env.APEX_API_KEY;
+    // Accessing API key via process.env for 2nd Gen / .env support
+    const expectedKey = process.env.APEX_API_KEY; 
     if (expectedKey && apiKey !== expectedKey) {
       res.status(401).json({ error: "Invalid API key" });
       return;
@@ -51,18 +41,9 @@ exports.ingestFitFromEmail = functions.https.onRequest(async (req, res) => {
       return;
     }
 
-    // Find user by email
-    let userRecord;
-    try {
-      userRecord = await admin.auth().getUserByEmail(userEmail);
-    } catch (e) {
-      res.status(404).json({ error: `User not found for email: ${userEmail}` });
-      return;
-    }
-
+    const userRecord = await admin.auth().getUserByEmail(userEmail);
     const uid = userRecord.uid;
 
-    // Save to Firestore pending queue (client will parse on next load)
     const docRef = await db.collection("users").doc(uid)
       .collection("pending_fits").add({
         fileName: fileName || "email_upload.fit",
@@ -72,7 +53,6 @@ exports.ingestFitFromEmail = functions.https.onRequest(async (req, res) => {
         processed: false,
       });
 
-    console.log(`FIT file queued for ${userEmail} (${uid}): ${docRef.id}`);
     res.status(200).json({ 
       success: true, 
       message: `FIT file queued for processing`,
@@ -86,22 +66,17 @@ exports.ingestFitFromEmail = functions.https.onRequest(async (req, res) => {
 });
 
 /**
- * Strava OAuth Token Exchange
- * Client sends the authorization code, this function exchanges it for tokens
- * using the client_secret (which stays server-side).
+ * Strava OAuth Token Exchange (v2)
  */
-exports.stravaTokenExchange = functions.https.onRequest(async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+exports.stravaTokenExchange = onRequest({ cors: true }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
 
-  const { code, uid } = req.body;
+  const { code } = req.body;
   if (!code) { res.status(400).json({ error: "Missing authorization code" }); return; }
 
-  const clientId = functions.config().strava?.client_id || process.env.STRAVA_CLIENT_ID;
-  const clientSecret = functions.config().strava?.client_secret || process.env.STRAVA_CLIENT_SECRET;
+  // Using process.env to read from your .env file
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     res.status(500).json({ error: "Strava API credentials not configured on server" });
@@ -120,13 +95,12 @@ exports.stravaTokenExchange = functions.https.onRequest(async (req, res) => {
       })
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const err = await response.json();
-      res.status(400).json({ error: err.message || "Token exchange failed" });
+      res.status(400).json({ error: data.message || "Token exchange failed" });
       return;
     }
 
-    const data = await response.json();
     res.status(200).json({
       access_token: data.access_token,
       refresh_token: data.refresh_token,
@@ -141,26 +115,16 @@ exports.stravaTokenExchange = functions.https.onRequest(async (req, res) => {
 });
 
 /**
- * Strava Token Refresh
- * Refreshes an expired access token using the refresh token.
+ * Strava Token Refresh (v2)
  */
-exports.stravaTokenRefresh = functions.https.onRequest(async (req, res) => {
-  res.set("Access-Control-Allow-Origin", "*");
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+exports.stravaTokenRefresh = onRequest({ cors: true }, async (req, res) => {
   if (req.method !== "POST") { res.status(405).json({ error: "POST only" }); return; }
 
   const { refresh_token } = req.body;
   if (!refresh_token) { res.status(400).json({ error: "Missing refresh_token" }); return; }
 
-  const clientId = functions.config().strava?.client_id || process.env.STRAVA_CLIENT_ID;
-  const clientSecret = functions.config().strava?.client_secret || process.env.STRAVA_CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) {
-    res.status(500).json({ error: "Strava API credentials not configured on server" });
-    return;
-  }
+  const clientId = process.env.STRAVA_CLIENT_ID;
+  const clientSecret = process.env.STRAVA_CLIENT_SECRET;
 
   try {
     const response = await fetch("https://www.strava.com/oauth/token", {
@@ -174,13 +138,12 @@ exports.stravaTokenRefresh = functions.https.onRequest(async (req, res) => {
       })
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const err = await response.json();
-      res.status(400).json({ error: err.message || "Token refresh failed" });
+      res.status(400).json({ error: data.message || "Token refresh failed" });
       return;
     }
 
-    const data = await response.json();
     res.status(200).json({
       access_token: data.access_token,
       refresh_token: data.refresh_token,
@@ -201,9 +164,7 @@ function parseMultipart(req) {
     busboy.on("file", (name, file, info) => {
       const chunks = [];
       file.on("data", (d) => chunks.push(d));
-      file.on("end", () => {
-        fields[name] = Buffer.concat(chunks).toString("base64");
-      });
+      file.on("end", () => { fields[name] = Buffer.concat(chunks).toString("base64"); });
     });
     busboy.on("finish", () => resolve(fields));
     busboy.on("error", reject);
