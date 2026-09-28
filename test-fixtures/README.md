@@ -6,6 +6,7 @@
 | `plan_long.json` | Same plan, descriptions of 1,000–1,500 chars with accents, `\n`, `<`, `>`, `&`, `×`, `→`, `≤` and an emoji |
 | `plan_broken_json.json` | Invalid JSON: import must show a clear error |
 | `plan_broken_week.json` | Week 3 has no `sessions`: import must name the week and the problem |
+| `plan_detailed.json` | Short plan + `name`/`version` and the detailed session fields (`details`, `durationMin`, `hrTarget`, `powerTarget`, `steps`) |
 
 ## Diagnosis: why the detailed plan "loaded" but showed nothing (2026-09-28)
 

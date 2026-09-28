@@ -319,3 +319,33 @@ test('Ticking: sessions without ids in the file can be ticked and unticked indep
   run(`toggleSessionComplete('w1-3-wed')`);
   assert.equal(run(`isSessionTicked(trainingPlan.weeks[0].sessions[2])`), false);
 });
+
+// ── Detailed session fields (block B) ──
+test('Detail fields: kept when valid, dropped with a warning when not, absent → defaults', () => {
+  const { run, ctx } = makeEnv();
+  const r = importText(run, ctx, fixture('plan_detailed.json'));
+  assert.deepEqual([...r.errors], []);
+  assert.deepEqual([...r.warnings], []);
+  const bike = r.plan.weeks[0].sessions.find(s => s.sport === 'bike');
+  assert.equal(bike.durationMin, 50);
+  assert.equal(bike.hrTarget, '≤160 bpm');
+  assert.equal(bike.powerTarget, '170W (85% FTP)');
+  assert.equal(bike.steps.length, 3);
+  assert.deepEqual({ ...bike.steps[1] }, { label: '3×8min', duration: '8min', target: '170W', rest: '2min Z1' });
+  assert.match(bike.details, /^## Échauffement/);
+  // A plan without the new fields gets neutral defaults
+  const plain = importText(run, ctx, fixture('plan_short.json')).plan.weeks[0].sessions[1];
+  assert.deepEqual({ details: plain.details, durationMin: plain.durationMin, hrTarget: plain.hrTarget, powerTarget: plain.powerTarget, steps: [...plain.steps] },
+    { details: null, durationMin: null, hrTarget: null, powerTarget: null, steps: [] });
+  // Bad values → warnings, never errors
+  const bad = importText(run, ctx, JSON.stringify({ weeks: [{ week: 1, sessions: [{ day: 'Monday', sport: 'run', name: 'X',
+    details: { a: 1 }, durationMin: 'long', hrTarget: 150, steps: [{ label: 'A', duration: 10 }, 'oops'] }] }] }));
+  assert.deepEqual([...bad.errors], []);
+  assert.equal(bad.warnings.filter(w => /session 1/.test(w)).length, 3); // + one "no readable dates" warning
+  const s = bad.plan.weeks[0].sessions[0];
+  assert.equal(s.details, null);
+  assert.equal(s.durationMin, null);
+  assert.equal(s.hrTarget, '150');
+  assert.deepEqual({ ...s.steps[0] }, { label: 'A', duration: '10', target: null, rest: null });
+  assert.equal(s.steps.length, 1);
+});

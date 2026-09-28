@@ -60,6 +60,39 @@ function parseWeekDatesStart(text, race) {
   return d.getDate() === day ? d : null;
 }
 
+// Optional detail fields of a session. Anything unusable is dropped with a warning — never an error,
+// so a plan without these fields behaves exactly as before.
+function normalizeSessionDetails(s, where, warnings) {
+  const text = (v, field) => {
+    if (v == null || v === '') return null;
+    if (typeof v === 'string' || typeof v === 'number') return String(v);
+    if (Array.isArray(v) && v.every(x => typeof x === 'string')) return v.join('\n'); // lines of Markdown
+    warnings.push(`${where}: "${field}" should be text, ignored.`);
+    return null;
+  };
+  const out = {
+    details: text(s.details, 'details'),
+    hrTarget: text(s.hrTarget, 'hrTarget'),
+    powerTarget: text(s.powerTarget, 'powerTarget'),
+    durationMin: null,
+    steps: [],
+  };
+  if (s.durationMin != null && s.durationMin !== '') {
+    const d = Number(s.durationMin);
+    if (Number.isFinite(d) && d > 0) out.durationMin = Math.round(d);
+    else warnings.push(`${where}: "durationMin" should be a number of minutes, ignored.`);
+  }
+  if (s.steps != null) {
+    if (!Array.isArray(s.steps)) warnings.push(`${where}: "steps" should be a list, ignored.`);
+    else s.steps.forEach((st, i) => {
+      if (!st || typeof st !== 'object' || Array.isArray(st)) { warnings.push(`${where}: step ${i + 1} should be an object, ignored.`); return; }
+      const field = k => (st[k] == null || st[k] === '' ? null : typeof st[k] === 'object' ? null : String(st[k]));
+      out.steps.push({ label: field('label') || `Step ${i + 1}`, duration: field('duration'), target: field('target'), rest: field('rest') });
+    });
+  }
+  return out;
+}
+
 function normalizePlan(input) {
   const errors = [], warnings = [];
   const fail = msg => ({ plan: null, errors: [msg], warnings, summary: '' });
@@ -131,6 +164,7 @@ function normalizePlan(input) {
         tss: Math.round(tss),
         completed: s.completed === true,
         zwo_file: s.zwo_file ?? s.zwoFile ?? null,
+        ...normalizeSessionDetails(s, where, warnings),
       };
     }).filter(Boolean);
 
