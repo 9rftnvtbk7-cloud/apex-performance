@@ -209,15 +209,17 @@ let savedPlannerWeeks = null;
 
 
 // ── Training Plan persistence ──
+// Returns true when the plan was saved
 async function saveTrainingPlan(planData) {
-  if (!currentUser) return;
+  if (!currentUser) return false;
   try {
     await db.collection('users').doc(currentUser.uid)
       .collection('plan').doc('current').set({
         plan: JSON.stringify(planData),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-  } catch(e) { console.error('Error saving plan:', e); }
+    return true;
+  } catch(e) { console.error('Error saving plan:', e); return false; }
 }
 
 async function loadTrainingPlan() {

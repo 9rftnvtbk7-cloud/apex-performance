@@ -433,6 +433,16 @@ select[multiple].compare-select option:checked {
 .plan-week-current .plan-week-header { background: rgba(59, 130, 246, 0.06); }
 .plan-week-current .plan-week-num::after { content: ' — THIS WEEK'; font-size: 11px; font-weight: 700; color: var(--color-blue); letter-spacing: 0.5px; }
 
+/* ── Plan import status ── */
+.plan-import-status { position: relative; border-radius: 12px; padding: 14px 44px 14px 16px; margin-bottom: 20px; font-size: 14px; border: 1px solid var(--border-color); }
+.plan-import-status[hidden] { display: none; }
+.plan-import-status--success { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.35); }
+.plan-import-status--error { background: rgba(244,63,94,0.08); border-color: rgba(244,63,94,0.4); }
+.plan-import-status-title { font-weight: 600; }
+.plan-import-status ul { margin: 8px 0 0 18px; color: var(--text-dim); font-size: 13px; }
+.plan-import-status li { margin-top: 2px; overflow-wrap: anywhere; }
+.plan-import-status-close { position: absolute; top: 10px; right: 12px; color: var(--text-muted); font-size: 14px; padding: 4px; }
+
 /* ── Plan vs actual ── */
 .plan-week-actual { font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-dim); }
 .plan-week-actual strong { color: var(--color-green); }

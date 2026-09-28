@@ -1083,45 +1083,90 @@ function triggerZwoImport() {
 }
 
 function importPlanJson(fileList) {
-  console.log('importPlanJson called', fileList, fileList.length);
   const file = fileList[0];
-  if (!file) { console.log('No file selected'); return; }
-  console.log('Reading file:', file.name, file.size);
+  if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
-    console.log('FileReader loaded, length:', e.target.result.length);
-    try {
-      trainingPlan = JSON.parse(e.target.result);
-      console.log('Plan parsed OK, weeks:', trainingPlan.weeks?.length);
-      renderTrainingPlan();
-      showToast('Training plan loaded', '✅');
-      // Auto-add race date from plan if not already set
-      if (trainingPlan.race_date && raceDates.length === 0) {
-        // Try to parse race_date like "First weekend of May 2026"
-        const rd = trainingPlan.race_date;
-        const yearMatch = rd.match(/(20\d{2})/);
-        const monthMatch = rd.match(/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i);
-        if (yearMatch && monthMatch) {
-          const months = {jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
-          const mo = months[monthMatch[0].toLowerCase()];
-          // Default to first Saturday of that month
-          const firstDay = new Date(+yearMatch[1], parseInt(mo)-1, 1);
-          let sat = new Date(firstDay);
-          while (sat.getDay() !== 6) sat.setDate(sat.getDate() + 1);
-          raceDates.push({ date: localDateKey(sat), name: trainingPlan.race || 'Race' });
-          renderRaceDateInputs();
-          saveRaceDates();
-        }
-      }
-      document.getElementById('btnImportZwo').style.display = 'inline-flex';
-      if (typeof saveTrainingPlan === 'function') saveTrainingPlan(trainingPlan);
-    } catch(err) {
-      console.error('JSON parse error:', err);
-      showToast('Invalid JSON file', '❌');
-    }
-  };
-  reader.onerror = function(err) { console.error('FileReader error:', err); };
+  reader.onload = e => applyImportedPlan(e.target.result, file.name);
+  reader.onerror = () => showPlanImportStatus('error', `Could not read ${file.name}`, [String(reader.error || 'Unknown read error')]);
   reader.readAsText(file);
+}
+
+// Validate, normalise, show and save an imported plan. Never fails silently: every outcome
+// is reported in the Plan tab status panel. Returns true when the plan was applied.
+async function applyImportedPlan(text, fileName) {
+  let result;
+  try { result = normalizePlan(text); }
+  catch (err) { result = { plan: null, errors: [`Unexpected error while reading the plan: ${err.message}`], warnings: [] }; }
+
+  if (result.errors.length) {
+    // Keep the current plan; explain exactly what is wrong
+    showPlanImportStatus('error', `Import failed: ${fileName || 'plan'} was not imported`, result.errors);
+    showToast('Plan import failed — see the Plan tab', '❌');
+    return false;
+  }
+
+  trainingPlan = result.plan;
+  try { renderTrainingPlan(); }
+  catch (err) {
+    console.error('Plan render error:', err);
+    showPlanImportStatus('error', 'The plan was read but could not be displayed', [err.message]);
+    return false;
+  }
+
+  // Auto-add the race date from the plan if none is set yet
+  if (raceDates.length === 0) {
+    const iso = parseIsoDate(trainingPlan.raceDate);
+    let date = iso ? localDateKey(iso) : null;
+    if (!date) {
+      // Text like "First weekend of May 2026": default to the first Saturday of that month
+      const info = planRaceInfo(trainingPlan);
+      if (info.month !== null && /20\d{2}/.test(String(trainingPlan.raceDate || ''))) {
+        const sat = new Date(info.year, info.month, 1);
+        while (sat.getDay() !== 6) sat.setDate(sat.getDate() + 1);
+        date = localDateKey(sat);
+      }
+    }
+    if (date) {
+      raceDates.push({ date, name: trainingPlan.race || 'Race' });
+      renderRaceDateInputs();
+      saveRaceDates();
+    }
+  }
+
+  document.getElementById('btnImportZwo').style.display = 'inline-flex';
+  if (allActivities.length) computePMC(); // weekly goal may now come from the plan
+  let saved = true;
+  if (typeof saveTrainingPlan === 'function') saved = await saveTrainingPlan(trainingPlan);
+  const lines = [...result.warnings];
+  if (!saved) lines.unshift('⚠️ The plan is shown but could not be saved to your account — it will be gone after a reload.');
+  showPlanImportStatus(saved ? 'success' : 'error', `✅ ${result.summary}`, lines);
+  showToast(result.summary, '✅');
+  return true;
+}
+
+// Persistent import feedback in the Plan tab (text only — no HTML from the file)
+function showPlanImportStatus(kind, title, lines = []) {
+  const el = document.getElementById('planImportStatus');
+  if (!el) return;
+  el.className = `plan-import-status plan-import-status--${kind}`;
+  el.replaceChildren();
+  const head = document.createElement('div');
+  head.className = 'plan-import-status-title';
+  head.textContent = title;
+  el.append(head);
+  if (lines.length) {
+    const ul = document.createElement('ul');
+    for (const line of lines.slice(0, 12)) { const li = document.createElement('li'); li.textContent = line; ul.append(li); }
+    if (lines.length > 12) { const li = document.createElement('li'); li.textContent = `…and ${lines.length - 12} more`; ul.append(li); }
+    el.append(ul);
+  }
+  const close = document.createElement('button');
+  close.className = 'btn-reset plan-import-status-close';
+  close.setAttribute('aria-label', 'Dismiss');
+  close.textContent = '✕';
+  close.onclick = () => { el.hidden = true; };
+  el.append(close);
+  el.hidden = false;
 }
 
 function importZwoFiles(fileList) {
@@ -1147,36 +1192,26 @@ function importZwoFiles(fileList) {
   }, 500);
 }
 
+// A session is done if ticked in the app, else if the plan file says "completed": true.
+// Stored as explicit true/false so a session completed in the file can be un-ticked.
+function isSessionTicked(s) { return s.id in planCompletions ? !!planCompletions[s.id] : !!s.completed; }
+
 function toggleSessionComplete(sessionId) {
-  if (planCompletions[sessionId]) delete planCompletions[sessionId];
-  else planCompletions[sessionId] = true;
+  const session = (trainingPlan?.weeks || []).flatMap(w => w.sessions || []).find(s => s.id === sessionId);
+  if (!session) return;
+  planCompletions[sessionId] = !isSessionTicked(session);
   renderTrainingPlan();
   if (typeof savePlanCompletions === 'function') savePlanCompletions(planCompletions);
 }
 
 // ── Plan dates ──
-// Plan weeks carry dates like "Feb 23 – Mar 1" without a year. The year comes from the
-// plan's race_date ("First weekend of May 2026"). Plans end at (or just after) the race, so
-// weeks more than 2 months after the race month belong to the previous year (autumn starts).
-const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+// Imported plans are normalised by normalizePlan() (plan-import.js), which stores each week's
+// start as "startDate" (YYYY-MM-DD). The text fallback covers plans that were never normalised.
 const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-function planYearInfo(plan) {
-  const rd = String(plan?.race_date || '');
-  const y = rd.match(/(20\d{2})/);
-  const m = rd.toLowerCase().match(/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/);
-  return { year: y ? +y[1] : new Date().getFullYear(), raceMonth: m ? MONTHS.indexOf(m[0]) : null };
-}
-
-// Local-midnight start date of a plan week, or null if its dates can't be parsed
+// Local-midnight start date of a plan week, or null if unknown
 function planWeekStart(week, plan) {
-  const m = String(week?.dates || '').trim().match(/^([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})/);
-  if (!m) return null;
-  const month = MONTHS.indexOf(m[1].toLowerCase());
-  if (month < 0) return null;
-  const { year, raceMonth } = planYearInfo(plan);
-  const y = raceMonth !== null && month - raceMonth > 2 ? year - 1 : year;
-  return new Date(y, month, +m[2]);
+  return parseIsoDate(week?.startDate) || parseWeekDatesStart(week?.dates, planRaceInfo(plan || {}));
 }
 
 // Date of a session within its week ("Tuesday" → the Tuesday on/after the week start)
@@ -1331,7 +1366,7 @@ function renderTrainingPlan() {
       const se = sportEmojis[s.sport] || '🏋️';
       const hasFile = s.zwo_file && (hasZwo ? zwoFiles[s.zwo_file] : true);
       const matched = matches.get(s.id);
-      const isDone = !!(planCompletions[s.id] || matched);
+      const isDone = !!(isSessionTicked(s) || matched);
       const sessionDate = planSessionDate(weekStart, s.day);
       const isMissed = !isDone && s.sport !== 'rest' && sessionDate && sessionDate < today;
       wh += `<div class="plan-session${isDone ? ' plan-session-done' : ''}">`;
@@ -1393,8 +1428,13 @@ function downloadAllZwos() {
 async function loadSavedPlan() {
   if (typeof loadTrainingPlan === 'function') {
     const saved = await loadTrainingPlan();
-    if (saved) {
-      trainingPlan = saved; renderTrainingPlan(); document.getElementById('btnImportZwo').style.display = 'inline-flex';
+    // Normalise saved plans too, so older ones get ids, dates and recomputed TSS
+    const normalized = saved ? normalizePlan(saved) : null;
+    if (normalized && normalized.errors.length) {
+      console.error('Saved plan is invalid:', normalized.errors);
+      showPlanImportStatus('error', 'Your saved plan could not be loaded — please re-import it', normalized.errors);
+    } else if (normalized) {
+      trainingPlan = normalized.plan; renderTrainingPlan(); document.getElementById('btnImportZwo').style.display = 'inline-flex';
       if (allActivities.length) computePMC(); // weekly goal can now come from the plan
     }
   }

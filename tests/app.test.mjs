@@ -10,7 +10,8 @@ const ROOT = new URL('../public/js/', import.meta.url).pathname;
 function makeEnv() {
   const els = {};
   const el = id => (els[id] ??= { id, value: '', style: {}, textContent: '', innerHTML: '', classList: { add() {}, remove() {}, toggle() {} },
-    getContext: () => ({}), appendChild() {}, querySelector: () => null, scrollIntoView() {} });
+    getContext: () => ({}), appendChild() {}, querySelector: () => null, scrollIntoView() {},
+    append(...c) { (this.children ??= []).push(...c); }, replaceChildren() { this.children = []; }, setAttribute() {}, hidden: true });
   const toasts = [];
   const ctx = {
     console: { log() {}, info() {}, warn() {}, error() {} },
@@ -25,7 +26,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -211,4 +212,110 @@ test('TSB zones and ramp rate labels', () => {
   assert.equal(run(`rampInfo(6).label`), 'aggressive build');
   assert.equal(run(`rampInfo(3).label`), 'steady build');
   assert.equal(run(`rampInfo(-2).label`), 'easing off');
+});
+
+
+// ── Plan import (block A) ──
+const FIX = new URL('../test-fixtures/', import.meta.url).pathname;
+const fixture = name => fs.readFileSync(FIX + name, 'utf8');
+
+function importText(run, ctx, text) {
+  ctx.__text = text;
+  return run('normalizePlan(__text)');
+}
+
+test('Import: short, long and the old v5 plan all normalise without errors', () => {
+  const { run, ctx } = makeEnv();
+  for (const [file, weeks, sessions] of [['plan_short.json', 10, 70], ['plan_long.json', 10, 70]]) {
+    const r = importText(run, ctx, fixture(file));
+    assert.deepEqual([...r.errors], [], file);
+    assert.equal(r.summary, `${weeks} weeks, ${sessions} sessions imported`);
+  }
+  const v5 = importText(run, ctx, fs.readFileSync(new URL('../training-plan/training_plan_v5.json', import.meta.url), 'utf8'));
+  assert.deepEqual([...v5.errors], []);
+  assert.equal(v5.plan.weeks[0].startDate, '2026-02-23');
+  // Existing ids are kept, so ticks saved under the old ids still apply
+  assert.equal(v5.plan.weeks[0].sessions[0].id, 'W01_Tue_Bike_Z2_Endurance');
+});
+
+test('Import: accepts the {"trainingPlan": …} envelope (the original bug)', () => {
+  const { run, ctx } = makeEnv();
+  const r = importText(run, ctx, JSON.stringify({ trainingPlan: JSON.parse(fixture('plan_long.json')) }));
+  assert.deepEqual([...r.errors], []);
+  assert.equal(r.plan.weeks.length, 10);
+});
+
+test('Import: French dates, Monday sessions, recomputed TSS, unique ids, optional fields', () => {
+  const { run, ctx } = makeEnv();
+  const raw = JSON.parse(fixture('plan_short.json'));
+  delete raw.ftpWatts; delete raw.generated;
+  raw.weeks.forEach(w => w.sessions.forEach(s => { delete s.zwoFile; delete s.completed; }));
+  const { plan, errors } = importText(run, ctx, JSON.stringify(raw));
+  assert.deepEqual([...errors], []);
+  assert.equal(plan.weeks[0].startDate, '2026-09-07');      // "7 – 13 sept."
+  assert.equal(plan.weeks[3].startDate, '2026-09-28');      // "28 sept. – 4 oct."
+  assert.equal(plan.weeks[9].startDate, '2026-11-09');
+  assert.equal(plan.weeks[0].sessions[0].day, 'Monday');
+  const w1 = plan.weeks[0];
+  assert.equal(w1.tss, w1.sessions.reduce((a, s) => a + s.tss, 0)); // file said +7
+  assert.equal(w1.sessionCount, 7);                                   // file said 6
+  const ids = plan.weeks.flatMap(w => w.sessions.map(s => s.id));
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(ids[0], 'w1-1-mon');
+  assert.equal(w1.sessions[1].zwo_file, null);
+  assert.equal(w1.sessions[1].completed, false);
+  assert.equal(plan.ftpWatts, null);
+});
+
+test('Import: clear errors for invalid JSON and a week without sessions', () => {
+  const { run, ctx } = makeEnv();
+  const bad = importText(run, ctx, fixture('plan_broken_json.json'));
+  assert.equal(bad.plan, null);
+  assert.match(bad.errors[0], /^Invalid JSON \(line 1, column \d+ — doubled comma\)/);
+  const week = importText(run, ctx, fixture('plan_broken_week.json'));
+  assert.deepEqual([...week.errors], ['Week 3: missing "sessions" array.']);
+  const day = importText(run, ctx, JSON.stringify({ weeks: [{ week: 1, sessions: [{ day: 'Mardii', sport: 'run', name: 'Easy' }] }] }));
+  assert.match(day.errors[0], /^Week 1, session 1 \("Easy"\): unknown day "Mardii"/);
+  assert.match(importText(run, ctx, '{"plan": []}').errors[0], /No "weeks" array/);
+});
+
+test('Import: failed import keeps the current plan and reports in the Plan tab', async () => {
+  const { run, ctx, el, toasts } = makeEnv();
+  run(`trainingPlan = { weeks: [] }; var __before = trainingPlan; renderTrainingPlan = () => {};`);
+  ctx.__text = fixture('plan_broken_week.json');
+  assert.equal(await run(`applyImportedPlan(__text, 'broken.json')`), false);
+  assert.equal(run('trainingPlan === __before'), true);
+  const status = el('planImportStatus');
+  assert.equal(status.hidden, false);
+  assert.match(status.className, /--error/);
+  assert.equal(status.children[0].textContent, 'Import failed: broken.json was not imported');
+  assert.ok(toasts.some(t => /Plan import failed/.test(t)));
+});
+
+test('Import: success applies the plan, saves it and shows the summary', async () => {
+  const { run, ctx, el } = makeEnv();
+  run(`renderTrainingPlan = () => {}; raceDates = []; renderRaceDateInputs = () => {}; saveRaceDates = () => {};
+       var __savedPlan = null; saveTrainingPlan = async p => { __savedPlan = p; return true; };`);
+  ctx.__text = fixture('plan_long.json');
+  assert.equal(await run(`applyImportedPlan(__text, 'plan_long.json')`), true);
+  assert.equal(run('trainingPlan.weeks.length'), 10);
+  assert.equal(run('__savedPlan === trainingPlan'), true);
+  assert.equal(el('planImportStatus').children[0].textContent, '✅ 10 weeks, 70 sessions imported');
+  assert.equal(run('raceDates[0].date'), '2026-11-15');   // from ISO raceDate
+});
+
+test('Ticking: sessions without ids in the file can be ticked and unticked independently', () => {
+  const { run, ctx } = makeEnv();
+  ctx.__text = fixture('plan_short.json');
+  run(`trainingPlan = normalizePlan(__text).plan; planCompletions = {}; renderTrainingPlan = () => {}; savePlanCompletions = () => {};`);
+  run(`toggleSessionComplete('w1-2-tue')`);
+  assert.equal(run(`isSessionTicked(trainingPlan.weeks[0].sessions[1])`), true);
+  assert.equal(run(`isSessionTicked(trainingPlan.weeks[0].sessions[2])`), false);
+  run(`toggleSessionComplete('w1-2-tue')`);
+  assert.equal(run(`isSessionTicked(trainingPlan.weeks[0].sessions[1])`), false);
+  // "completed": true in the file counts as done, and can be unticked
+  run(`trainingPlan.weeks[0].sessions[2].completed = true`);
+  assert.equal(run(`isSessionTicked(trainingPlan.weeks[0].sessions[2])`), true);
+  run(`toggleSessionComplete('w1-3-wed')`);
+  assert.equal(run(`isSessionTicked(trainingPlan.weeks[0].sessions[2])`), false);
 });
