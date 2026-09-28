@@ -158,6 +158,7 @@ async function loadStravaTokens() {
     if (doc.exists && !stravaTokens) {
       stravaTokens = doc.data();
       updateStravaUI();
+      maybeAutoSync();
     }
   } catch (e) { console.error('Error loading Strava tokens:', e); }
 }
@@ -196,19 +197,25 @@ async function ensureValidToken() {
 // Activity Sync
 // ══════════════════════════════════════════════
 
-async function syncStravaActivities() {
-  if (!stravaTokens) { showToast('Connect Strava first', '⚠️'); return; }
+// Strava activity id of an imported activity (stored as stravaId, or in the "strava_<id>" fileName)
+function stravaIdOf(a) { return a.stravaId || (/^strava_(\d+)$/.exec(a.fileName || '') || [])[1]; }
+
+// quiet: automatic background sync — no "fetching" / "up to date" toasts, errors only logged
+async function syncStravaActivities({ quiet = false } = {}) {
+  if (!stravaTokens) { if (!quiet) showToast('Connect Strava first', '⚠️'); return; }
+  if (stravaSyncRunning) return;
   if (!(await ensureValidToken())) return;
+  stravaSyncRunning = true;
+  lastAutoSync = Date.now();
 
   const syncBtn = document.getElementById('btnStravaSync');
   if (syncBtn) { syncBtn.disabled = true; syncBtn.textContent = '⏳ Syncing…'; }
 
-  showToast('Fetching activities from Strava…', '🔶');
+  if (!quiet) showToast('Fetching activities from Strava…', '🔶');
 
   let imported = 0;
   try {
     // Strava IDs already imported (stored as fileName "strava_<id>"): the reliable duplicate check
-    const stravaIdOf = a => (/^strava_(\d+)$/.exec(a.fileName || '') || [])[1];
     const knownIds = new Set(allActivities.map(stravaIdOf).filter(Boolean));
 
     // Resume from the newest Strava activity we have, minus a week: activities uploaded late
@@ -271,7 +278,7 @@ async function syncStravaActivities() {
 
     if (imported > 0) {
       showToast(`Imported ${imported} new activit${imported > 1 ? 'ies' : 'y'} from Strava`, '🔶');
-    } else {
+    } else if (!quiet) {
       showToast(`Already up to date (checked ${totalFetched} activities)`, '✅');
     }
     if (hitPageLimit) showToast('More activities remain — click Sync Strava again to continue', 'ℹ️');
@@ -284,12 +291,65 @@ async function syncStravaActivities() {
 
   } catch (err) {
     console.error('Strava sync error:', err);
-    showToast('Strava sync failed: ' + err.message, '❌');
+    if (!quiet) showToast('Strava sync failed: ' + err.message, '❌');
   } finally {
+    stravaSyncRunning = false;
     // Show whatever was imported, even if a later page failed
     if (imported > 0 && typeof refreshDashboard === 'function') refreshDashboard();
     if (syncBtn) { syncBtn.disabled = false; syncBtn.textContent = '🔶 Sync Strava'; }
   }
+  backfillStreams();
+}
+
+// ── Automatic sync: when the app opens, when it comes back to the foreground, and every 15 min ──
+const AUTO_SYNC_MS = 15 * 60 * 1000;
+let lastAutoSync = 0;
+let stravaSyncRunning = false;
+function maybeAutoSync() {
+  // Never before the user's activities are loaded: the duplicate check needs them
+  if (!activitiesLoaded || !stravaTokens || !stravaTokens.access_token || !currentUser || document.hidden) return;
+  if (Date.now() - lastAutoSync < AUTO_SYNC_MS) return;
+  syncStravaActivities({ quiet: true });
+}
+document.addEventListener('visibilitychange', maybeAutoSync);
+setInterval(maybeAutoSync, 60 * 1000);
+
+// ── Detailed data (streams) → streamStats, fetched in the background, newest first ──
+// Strava allows 100 requests / 15 min, so each run fetches at most `max` activities and stops on 429.
+let streamBackfillRunning = false;
+let streamBackfillPausedUntil = 0;
+async function backfillStreams({ max = 40, delayMs = 800 } = {}) {
+  if (streamBackfillRunning || !stravaTokens || !currentUser || Date.now() < streamBackfillPausedUntil) return 0;
+  const todo = allActivities
+    .filter(a => a.id && stravaIdOf(a) && !(a.streamStats && a.streamStats.v === STREAM_STATS_VERSION))
+    .sort((a, b) => b.startDate - a.startDate)
+    .slice(0, max);
+  if (!todo.length) return 0;
+  streamBackfillRunning = true;
+  let done = 0;
+  try {
+    if (!(await ensureValidToken())) return 0;
+    for (const a of todo) {
+      const res = await fetch(`https://www.strava.com/api/v3/activities/${stravaIdOf(a)}/streams?keys=time,heartrate,watts,velocity_smooth&key_by_type=true`, {
+        headers: { 'Authorization': `Bearer ${stravaTokens.access_token}` }
+      });
+      if (res.status === 429) { streamBackfillPausedUntil = Date.now() + 15 * 60 * 1000; break; }
+      let stats;
+      if (res.status === 404) stats = { v: STREAM_STATS_VERSION, none: true }; // deleted on Strava / no streams
+      else if (!res.ok) break;
+      else stats = computeStreamStats(await res.json(), a.sport);
+      a.streamStats = stats;
+      if (typeof updateActivityFields === 'function') await updateActivityFields(a.id, { streamStats: stats });
+      done++;
+      if (delayMs) await new Promise(r => setTimeout(r, delayMs));
+    }
+  } catch (err) {
+    console.error('Stream backfill error:', err);
+  } finally {
+    streamBackfillRunning = false;
+  }
+  if (done && typeof renderInsights === 'function') renderInsights();
+  return done;
 }
 
 function stravaToActivity(sa) {
@@ -325,6 +385,10 @@ function stravaToActivity(sa) {
     tss: 0,
     intensityFactor: null,
     fileName: `strava_${sa.id}`,
+    stravaId: String(sa.id),
+    name: sa.name ? String(sa.name).slice(0, 200) : '',
+    polyline: sa.map && sa.map.summary_polyline ? sa.map.summary_polyline : null,
+    elevationGain: sa.total_elevation_gain ? Math.round(sa.total_elevation_gain) : null,
     powerSamples: [],
     hrSamples: [],
   };

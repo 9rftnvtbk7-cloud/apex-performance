@@ -17,7 +17,7 @@ function makeEnv() {
     console: { log() {}, info() {}, warn() {}, error() {} },
     document: { getElementById: el, querySelector: () => null, querySelectorAll: () => [], addEventListener() {}, createElement: () => el('tmp' + Math.random()), body: { appendChild() {} } },
     window: { location: { origin: 'https://x', search: '' } },
-    setTimeout: (fn) => 0, requestAnimationFrame() {}, confirm: () => true,
+    setTimeout: (fn) => 0, setInterval: () => 0, requestAnimationFrame() {}, confirm: () => true,
     Chart: function () { this.destroy = () => {}; this.update = () => {}; },
     sessionStorage: { getItem() {}, setItem() {}, removeItem() {} },
     crypto: globalThis.crypto, TextEncoder, URLSearchParams, Date, Math, JSON, Set, Map, Array, Object, String, Number, isNaN, parseInt, Promise,
@@ -26,7 +26,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -72,7 +72,8 @@ async function runSync(env, existing, pages) {
        var __saved = []; saveActivitiesBatch = async (acts) => { acts.forEach((a, i) => { a.id = 'new' + __saved.length; __saved.push(a); }); };
        refreshDashboard = () => {};`);
   await run('syncStravaActivities()');
-  return { calls, saved: run('__saved') };
+  // Only the activity-list requests (the background stream fetch starts after a sync)
+  return { calls: calls.filter(u => u.includes('/athlete/activities')), saved: run('__saved') };
 }
 
 const sa = (id, iso, extra = {}) => ({ id, start_date: iso, type: 'Ride', sport_type: 'Ride', moving_time: 3600, ...extra });
@@ -512,4 +513,79 @@ test('Thresholds: saving from a date rescores only activities from that date', a
   run('__saved = null');
   assert.equal(await run('saveThresholdsFromInputs()'), false);
   assert.equal(run('__saved'), null);
+});
+
+
+// ── Detailed data (streams) ──
+test('Stream stats: histograms, mean-max, decoupling from Strava streams', () => {
+  const { run, ctx } = makeEnv();
+  // 40 min ride: 20 min at 200 W / 140 bpm, then 20 min at 200 W / 150 bpm (HR drift → decoupling)
+  const n = 2400, time = Array.from({ length: n }, (_, i) => i);
+  ctx.__streams = { time: { data: time }, watts: { data: time.map(() => 200) },
+    heartrate: { data: time.map(i => (i < n / 2 ? 140 : 150)) }, velocity_smooth: { data: time.map(() => 9) } };
+  const st = run(`computeStreamStats(__streams, 'cycling')`);
+  assert.equal(st.v, 1);
+  assert.equal(st.hist.pw['200'], 2400);
+  assert.equal(st.hist.hr['140'], 1200);
+  assert.equal(st.mmPower['1200'], 200);
+  assert.equal(st.mmPower['3600'], undefined);   // longer than the ride
+  assert.equal(st.mmSpeed, undefined);           // rides: power curve only
+  assert.equal(st.decoupling, 6.7);              // (200/140 − 200/150) / (200/140)
+  // Pauses longer than 10 s are not counted as effort
+  assert.equal(run(`resample1Hz([0, 1, 100], [5, 5, 5]).length`), 3);
+  assert.deepEqual({ ...run(`computeStreamStats({}, 'running')`) }, { v: 1, none: true });
+});
+
+test('Zones use the thresholds valid on each activity date; eFTP from best 20 min', () => {
+  const { run } = makeEnv();
+  run(`thresholdHistory = normalizeThresholdHistory([{ from: '2000-01-01', ftp: 200, lthr: 160, pace: '5:00', swimPace: '2:00' }]);
+       allActivities = [
+         { sport: 'cycling', startDate: new Date(Date.now() - 5 * 86400000),
+           streamStats: { v: 1, hist: { pw: { '200': 600, '100': 300 }, hr: { '150': 600 } }, mmPower: { 1200: 260, 3600: 230 } } },
+         { sport: 'cycling', startDate: new Date(Date.now() - 200 * 86400000),
+           streamStats: { v: 1, hist: {}, mmPower: { 1200: 400 } } }];`);
+  // 205 W / 200 FTP = 1.025 → Z4; 105 W = 0.525 → Z1
+  assert.deepEqual([...run(`zoneTotals(allActivities, 'power')`)], [300, 0, 0, 600, 0, 0, 0]);
+  // 151 bpm / 160 = 0.94 → Z4 (bounds 0.81, 0.90, 0.94, 1.0)
+  assert.deepEqual([...run(`zoneTotals(allActivities, 'hr')`)], [0, 0, 0, 600, 0]);
+  // Only the last 90 days count: max(0.95 × 260, 230) = 247
+  assert.equal(run(`estimateFtp(allActivities)`), 247);
+});
+
+test('Background stream fetch: newest first, saves stats, stops on the rate limit', async () => {
+  const { run, ctx } = makeEnv();
+  const calls = [];
+  ctx.fetch = async url => {
+    calls.push(url);
+    if (calls.length === 3) return { ok: false, status: 429, json: async () => ({}) };
+    return { ok: true, status: 200, json: async () => ({ time: { data: [0, 1, 2] }, heartrate: { data: [120, 121, 122] } }) };
+  };
+  run(`currentUser = { uid: 'u' }; stravaTokens = { access_token: 'a', expires_at: 9e12 };
+       allActivities = [
+         { id: 'old', stravaId: '1', sport: 'running', startDate: new Date(2026, 0, 1) },
+         { id: 'new', stravaId: '3', sport: 'running', startDate: new Date(2026, 8, 1) },
+         { id: 'mid', fileName: 'strava_2', sport: 'running', startDate: new Date(2026, 4, 1) },
+         { id: 'done', stravaId: '4', sport: 'running', startDate: new Date(2026, 8, 2), streamStats: { v: 1, hist: {} } },
+         { id: 'fit', fileName: 'ride.fit', sport: 'cycling', startDate: new Date(2026, 8, 3) }];
+       var __upd = []; updateActivityFields = async (id, f) => { __upd.push(id); return true; };`);
+  assert.equal(await run(`backfillStreams({ delayMs: 0 })`), 2);
+  assert.match(calls[0], /activities\/3\/streams/);
+  assert.match(calls[1], /activities\/2\/streams/);
+  assert.deepEqual([...run('__upd')], ['new', 'mid']);
+  assert.equal(run(`allActivities[1].streamStats.hist.hr['120']`), 2);
+  // Paused after the 429: a new run does nothing
+  assert.equal(await run(`backfillStreams({ delayMs: 0 })`), 0);
+});
+
+test('Auto-sync waits for activities to load and runs at most every 15 minutes', () => {
+  const { run, ctx } = makeEnv();
+  ctx.document.hidden = false;
+  run(`var __syncs = 0; syncStravaActivities = () => { __syncs++; lastAutoSync = Date.now(); };
+       currentUser = { uid: 'u' }; stravaTokens = { access_token: 'a' }; lastAutoSync = 0;`);
+  run('maybeAutoSync()');
+  assert.equal(run('__syncs'), 0);           // activities not loaded yet → no sync (would re-import everything)
+  run('activitiesLoaded = true; maybeAutoSync(); maybeAutoSync();');
+  assert.equal(run('__syncs'), 1);           // second call within 15 min is skipped
+  run('lastAutoSync = Date.now() - 16 * 60 * 1000; maybeAutoSync();');
+  assert.equal(run('__syncs'), 2);
 });

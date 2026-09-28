@@ -215,6 +215,11 @@
             <input type="number" class="forecast-tss-input" id="inputForecastTss" aria-label="Forecast average daily TSS" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
           </div>
         </div>
+        <!-- Insights from detailed Strava data -->
+        <div class="card" id="insightsCard" style="display:none">
+          <div class="card-top-bar" style="margin-bottom:12px"><div class="card-title">Training insights</div></div>
+          <div id="insightsBody"></div>
+        </div>
         </div><!-- /overviewContent -->
       </div>
 
@@ -259,6 +264,17 @@
           </div>
           <div class="compare-grid" id="compareMetrics"></div>
           <div id="compareChartArea" class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
+        </div>
+        <div class="card" id="bestEffortsCard">
+          <div class="card-top-bar">
+            <div class="card-title">Best efforts</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <select class="compare-select" id="bestEffortsKind" aria-label="Sport" onchange="renderBestEfforts()"><option value="power">Power (rides)</option><option value="pace">Pace (runs)</option></select>
+              <select class="compare-select" id="bestEffortsRange" aria-label="Period" onchange="renderBestEfforts()"><option value="28">Last 28 days</option><option value="90" selected>Last 90 days</option><option value="365">Last 365 days</option></select>
+            </div>
+          </div>
+          <div class="insight-muted" id="bestEffortsEmpty">No detailed Strava data yet — it is fetched automatically in the background after each sync.</div>
+          <div class="chart-canvas-wrap" style="height:300px"><canvas id="bestEffortsCanvas"></canvas></div>
         </div>
       </div>
 
@@ -359,6 +375,8 @@
 <script src="js/fit-parser.js?v=202609281824"></script>
 <script src="js/strava.js?v=202609281824"></script>
 <script src="js/thresholds.js?v=1"></script>
+<script src="js/metrics.js?v=1"></script>
+<script src="js/insights.js?v=1"></script>
 <script src="js/plan-import.js?v=202609281824"></script>
 <script src="js/app.js?v=202609281824"></script>
 </body>

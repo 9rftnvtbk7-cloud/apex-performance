@@ -69,7 +69,7 @@ function switchTab(tabId, btn) {
     nextTab.classList.add('is-active');
   }
 
-  if (tabId === 'compare') { initCompareDefaults(); renderComparison(); }
+  if (tabId === 'compare') { initCompareDefaults(); renderComparison(); if (typeof renderBestEfforts === 'function') setTimeout(renderBestEfforts, 200); }
   if (tabId === 'planner') initPlanner();
   if (tabId === 'plan') scrollToCurrentWeek();
 }
@@ -991,13 +991,15 @@ function refreshDashboard() {
   setDashboardVisibility(has);
   renderTrainingTable();
   if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); }
+  if (typeof renderInsights === 'function') renderInsights();
   // Plan vs actual depends on activities
   if (trainingPlan) renderTrainingPlan();
   // Plan, ZWO files, race dates and Strava tokens only need loading once per session
   if (!sessionDataLoaded && currentUser) {
     sessionDataLoaded = true;
     loadSavedPlan();
-    if (typeof loadStravaTokens === 'function' && !stravaTokens) loadStravaTokens();
+    if (typeof loadStravaTokens === 'function' && !stravaTokens) loadStravaTokens(); // then auto-syncs
+    else if (typeof maybeAutoSync === 'function') maybeAutoSync();                  // tokens from the OAuth callback
   }
 }
 

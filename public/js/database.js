@@ -52,6 +52,14 @@ async function loadUserData() {
         tss: d.tss || 0,
         intensityFactor: d.intensityFactor || null,
         fileName: d.fileName || '',
+        stravaId: d.stravaId || null,
+        name: d.name || '',
+        polyline: d.polyline || null,
+        elevationGain: d.elevationGain || null,
+        streamStats: d.streamStats || null,
+        notes: d.notes || '',
+        rpe: d.rpe || null,
+        feel: d.feel || null,
         powerSamples: [], // Not stored in Firestore (too large)
         hrSamples: [],
       });
@@ -73,6 +81,7 @@ async function loadUserData() {
       updateActivitiesTss(changed);
     }
 
+    activitiesLoaded = true;
     log(`[DB] Loaded ${allActivities.length} activities`, 'ok');
     showToast(`Loaded ${allActivities.length} activities`, '✅');
     refreshDashboard();
@@ -101,8 +110,27 @@ function activityToDoc(activity) {
     tss: activity.tss || 0,
     intensityFactor: activity.intensityFactor || null,
     fileName: activity.fileName || '',
+    stravaId: activity.stravaId || null,
+    name: activity.name || '',
+    polyline: activity.polyline || null,
+    elevationGain: activity.elevationGain || null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
+}
+
+// Set when loadUserData has the user's activities (auto-sync waits for it)
+let activitiesLoaded = false;
+
+// ── Merge fields into one activity (stream stats, notes, RPE, feel) ──
+async function updateActivityFields(activityId, fields) {
+  if (!currentUser || !activityId || String(activityId).startsWith('local-')) return false;
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('activities').doc(activityId).update(fields);
+    return true;
+  } catch (err) {
+    console.error('Activity update error:', err);
+    return false;
+  }
 }
 
 // ── Save activity to Firestore ──
