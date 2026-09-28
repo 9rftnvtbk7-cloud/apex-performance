@@ -6,7 +6,7 @@
   <title>Apex — Performance Management</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▲</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=202609281749">
+  <link rel="stylesheet" href="css/styles.css?v=202609281758">
 
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -38,20 +38,23 @@
       <div class="app-logo-text">Apex<small>Performance Management</small></div>
     </div>
     <div class="header-buttons">
-      <button class="btn-base btn-ghost" onclick="toggleDebug()">🔍 Debug</button>
-      <button class="btn-base btn-ghost" onclick="toggleSettings()">⚙ Settings</button>
-      <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear" style="display:none">✕ Clear</button>
+      <span id="stravaStatus" style="display:none;font-size:12px;color:#fc4c02;font-weight:600"></span>
       <button class="btn-base btn-strava" id="btnStravaConnect" onclick="stravaConnect()">🔶 Connect Strava</button>
       <button class="btn-base btn-strava btn-strava-sync" id="btnStravaSync" onclick="syncStravaActivities()" style="display:none">🔶 Sync Strava</button>
-      <button class="btn-base btn-ghost btn-strava-disconnect" id="btnStravaDisconnect" onclick="stravaDisconnect()" style="display:none;font-size:12px;padding:6px 10px" title="Disconnect Strava">✕</button>
-      <span id="stravaStatus" style="display:none;font-size:12px;color:#fc4c02;font-weight:600"></span>
-      <button class="btn-base btn-upload" onclick="document.getElementById('fileInputEl').click()">↑ Upload .FIT</button>
-      <input type="file" id="fileInputEl" class="file-input-hidden" accept=".fit" multiple onchange="handleFiles(this.files)">
-      <input type="file" id="planJsonInput" accept=".json" class="file-input-hidden" onchange="importPlanJson(this.files)">
-      <input type="file" id="planZwoInput" accept=".zwo" multiple class="file-input-hidden" onchange="importZwoFiles(this.files)">
-      <div class="user-pill" onclick="signOut()" title="Click to sign out">
-        <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none">
-        <span class="user-name" id="userName"></span>
+      <button class="btn-base btn-ghost" onclick="toggleSettings()" aria-controls="settingsPanel" aria-expanded="false" id="btnSettings">⚙ Settings</button>
+      <div class="account-menu-wrap">
+        <button class="user-pill" id="btnAccount" onclick="toggleAccountMenu()" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu" title="Account">
+          <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none">
+          <span class="user-name" id="userName"></span>
+          <span aria-hidden="true" style="color:var(--text-muted);font-size:11px">▾</span>
+        </button>
+        <div class="account-menu" id="accountMenu" role="menu">
+          <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();triggerFitUpload()">↑ Upload .FIT files…</button>
+          <button class="btn-reset account-menu-item" role="menuitem" id="btnStravaDisconnect" onclick="closeAccountMenu();stravaDisconnect()" style="display:none">🔶 Disconnect Strava</button>
+          <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();toggleDebug()">🔍 Show debug log</button>
+          <div class="account-menu-sep" role="separator"></div>
+          <button class="btn-reset account-menu-item account-menu-item--danger" role="menuitem" onclick="closeAccountMenu();signOut()">⎋ Sign out</button>
+        </div>
       </div>
     </div>
   </header>
@@ -60,75 +63,63 @@
     <div class="settings-panel" id="settingsPanel">
       <div class="settings-panel-title">Athlete Settings</div>
       <div class="settings-grid">
-        <div><label class="settings-label">FTP (watts)</label><input type="number" class="settings-input" id="inputFtp" value="200" onchange="recalcAll()"></div>
-        <div><label class="settings-label">LTHR (bpm)</label><input type="number" class="settings-input" id="inputLthr" value="165" onchange="recalcAll()"></div>
-        <div><label class="settings-label">Threshold Pace (min/km)</label><input type="text" class="settings-input" id="inputPace" value="5:00" onchange="recalcAll()"></div>
-        <div><label class="settings-label">Swim CSS Pace (min/100m)</label><input type="text" class="settings-input" id="inputSwimPace" value="2:00" onchange="recalcAll()"></div>
+        <div><label class="settings-label" for="inputFtp">FTP (watts)</label><input type="number" class="settings-input" id="inputFtp" value="200" onchange="recalcAll()"></div>
+        <div><label class="settings-label" for="inputLthr">LTHR (bpm)</label><input type="number" class="settings-input" id="inputLthr" value="165" onchange="recalcAll()"></div>
+        <div><label class="settings-label" for="inputPace">Threshold Pace (min/km)</label><input type="text" class="settings-input" id="inputPace" value="5:00" onchange="recalcAll()"></div>
+        <div><label class="settings-label" for="inputSwimPace">Swim CSS Pace (min/100m)</label><input type="text" class="settings-input" id="inputSwimPace" value="2:00" onchange="recalcAll()"></div>
+      </div>
+      <div class="danger-zone" id="dangerZone" style="display:none">
+        <div class="danger-zone-text"><strong style="color:var(--color-red)">Danger zone</strong> — permanently delete every activity from your account. Strava activities can be re-imported with Sync.</div>
+        <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear">🗑 Delete all activities</button>
       </div>
     </div>
     <div class="debug-panel" id="debugPanel"></div>
 
-    <div class="empty-state" id="uploadDropzone" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
-      <div class="empty-state-hero" onclick="document.getElementById('fileInputEl').click()">
-        <div class="empty-state-icon">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="8" y="6" width="32" height="36" rx="4" stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
-            <path d="M24 18v12M18 24h12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="empty-state-title">Upload your first activity</div>
-        <div class="empty-state-desc">Drop .FIT files here or click to browse</div>
-      </div>
-      <div class="empty-state-steps">
-        <div class="empty-state-step">
-          <div class="empty-state-step-num">1</div>
-          <div class="empty-state-step-text"><strong>Export</strong> your .FIT files from Garmin Connect, Wahoo, Strava, or your device</div>
-        </div>
-        <div class="empty-state-step">
-          <div class="empty-state-step-num">2</div>
-          <div class="empty-state-step-text"><strong>Drop or upload</strong> the files here — bulk upload supported</div>
-        </div>
-        <div class="empty-state-step">
-          <div class="empty-state-step-num">3</div>
-          <div class="empty-state-step-text"><strong>Track</strong> your CTL, ATL and TSB on the Performance Management Chart</div>
-        </div>
-      </div>
-      <div class="empty-state-sources">
-        <span class="empty-state-source-tag">Garmin</span>
-        <span class="empty-state-source-tag">Wahoo</span>
-        <span class="empty-state-source-tag">Strava</span>
-        <span class="empty-state-source-tag">Apple Health</span>
-        <span class="empty-state-source-tag">Zwift</span>
-        <span class="empty-state-source-tag">Hammerhead</span>
-      </div>
-    </div>
-
-    <div id="importProgress" style="display:none;margin-bottom:24px">
-      <div class="card" style="padding:16px 24px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:14px;font-weight:600">Importing activities…</span>
-          <span id="importProgressText" style="font-family:JetBrains Mono;font-size:13px;color:var(--color-blue)">0%</span>
-        </div>
-        <div style="width:100%;height:6px;background:var(--bg-surface);border-radius:3px;overflow:hidden">
-          <div id="importProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--color-blue),#6366f1);border-radius:3px;transition:width 0.2s"></div>
-        </div>
-        <div id="importProgressDetail" style="font-size:12px;color:var(--text-muted);margin-top:6px">0 / 0 files</div>
-      </div>
-    </div>
-
     <div id="dashboardSection" style="display:none">
-      <div class="nav-tabs">
-        <button class="nav-tab is-active" onclick="switchTab('overview',this)">📊 Overview</button>
-        <button class="nav-tab" onclick="switchTab('compare',this)">📈 Compare</button>
-        <button class="nav-tab" onclick="switchTab('plan',this)">🏋️ Plan</button>
-        <button class="nav-tab" onclick="switchTab('planner',this)">📅 Planner</button>
-        <button class="nav-tab" onclick="switchTab('log',this)">📋 Log</button>
+      <div class="nav-tabs" role="tablist">
+        <button class="nav-tab is-active" role="tab" aria-selected="true" onclick="switchTab('overview',this)">📊 Overview</button>
+        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('compare',this)">📈 Compare</button>
+        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('plan',this)">🏋️ Plan</button>
+        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('planner',this)">📅 Planner</button>
+        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('log',this)">📋 Log</button>
       </div>
 
       <!-- OVERVIEW TAB -->
-      <div class="tab-content is-active" id="tab-overview">
+      <div class="tab-content is-active" id="tab-overview" role="tabpanel">
+        <!-- Shown until the first activity is imported -->
+        <div class="empty-state" id="uploadDropzone" style="display:none" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
+          <div class="empty-state-hero" style="cursor:default">
+            <div class="empty-state-icon" aria-hidden="true">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 36l10-14 8 9 8-15 10 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="empty-state-title">Bring in your training from Strava</div>
+            <div class="empty-state-desc">Apex imports your activities and builds your fitness, fatigue and form curves.</div>
+            <div class="empty-state-actions">
+              <button class="btn-base btn-strava-sync" id="btnEmptyStrava" onclick="emptyStateStrava()">🔶 Connect Strava</button>
+              <button class="btn-reset empty-state-link" onclick="triggerFitUpload()">or upload .FIT files</button>
+            </div>
+          </div>
+          <div class="empty-state-steps">
+            <div class="empty-state-step">
+              <div class="empty-state-step-num">1</div>
+              <div class="empty-state-step-text"><strong>Connect Strava</strong> — authorize Apex to read your activities</div>
+            </div>
+            <div class="empty-state-step">
+              <div class="empty-state-step-num">2</div>
+              <div class="empty-state-step-text"><strong>Sync</strong> — imports your full history, then only new activities each time</div>
+            </div>
+            <div class="empty-state-step">
+              <div class="empty-state-step-num">3</div>
+              <div class="empty-state-step-text"><strong>Track</strong> fitness (CTL), fatigue (ATL) and form (TSB), and plan your season</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="overviewContent">
         <div class="stat-cards">
-          <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub">42-day exponential avg</div></div>
+          <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub" id="subCtl">42-day exponential avg</div></div>
           <div class="stat-card stat-card--atl"><div class="stat-card-label">ATL — Fatigue</div><div class="stat-card-value" id="valAtl">0</div><div class="stat-card-sub">7-day exponential avg</div></div>
           <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
           <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
@@ -170,7 +161,7 @@
           </div>
           <div class="week-summary-bar-wrap">
             <div class="week-summary-bar-label">
-              <span>Weekly TSS Progress</span>
+              <span id="weekProgressLabel">Weekly TSS Progress</span>
               <span id="weekProgressText">0 / 0 TSS</span>
             </div>
             <div class="week-summary-bar">
@@ -182,31 +173,32 @@
         <div class="card">
           <div class="card-top-bar">
             <div class="card-title">Performance Management Chart</div>
-            <div style="display:flex;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" role="group" aria-label="Chart date range">
               <button class="range-btn is-active" onclick="setChartRange('all',this)">All</button>
               <button class="range-btn" onclick="setChartRange(90,this)">90d</button>
               <button class="range-btn" onclick="setChartRange(60,this)">60d</button>
               <button class="range-btn" onclick="setChartRange(30,this)">30d</button>
-              <input type="date" class="compare-date-input" id="chartRangeFrom" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px;margin-left:8px" title="Custom from date">
-              <input type="date" class="compare-date-input" id="chartRangeTo" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px" title="Custom to date">
+              <input type="date" class="compare-date-input" id="chartRangeFrom" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px;margin-left:8px" title="Custom from date" aria-label="Custom range start">
+              <input type="date" class="compare-date-input" id="chartRangeTo" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px" title="Custom to date" aria-label="Custom range end">
             </div>
           </div>
           <div class="chart-canvas-wrap"><canvas id="chartCanvas"></canvas></div>
           <div class="chart-legend">
-            <div class="chart-legend-item" onclick="toggleChartDataset(0)"><div class="chart-legend-line" style="background:var(--color-blue)"></div>CTL (Fitness)</div>
-            <div class="chart-legend-item" onclick="toggleChartDataset(1)"><div class="chart-legend-line" style="background:var(--color-red)"></div>ATL (Fatigue)</div>
-            <div class="chart-legend-item" onclick="toggleChartDataset(2)"><div class="chart-legend-line" style="background:var(--color-green)"></div>TSB (Form)</div>
-            <div class="chart-legend-item" onclick="toggleChartDataset(3)"><div class="chart-legend-dot" style="background:var(--color-amber)"></div>TSS Points</div>
-            <div class="chart-legend-item" onclick="toggleChartDataset(4)"><div class="chart-legend-line" style="background:var(--color-blue);opacity:.4"></div>Forecast</div>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(0, this)"><span class="chart-legend-line" style="background:var(--color-blue)" aria-hidden="true"></span>CTL (Fitness)</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(1, this)"><span class="chart-legend-line" style="background:var(--color-red)" aria-hidden="true"></span>ATL (Fatigue)</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(2, this)"><span class="chart-legend-line" style="background:var(--color-green)" aria-hidden="true"></span>TSB (Form)</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(3, this)"><span class="chart-legend-dot" style="background:var(--color-amber)" aria-hidden="true"></span>TSS Points</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(4, this)"><span class="chart-legend-line" style="background:var(--color-blue);opacity:.4" aria-hidden="true"></span>Forecast</button>
           </div>
           <div class="forecast-bar">
             <span class="forecast-bar-label">Forecast</span>
-            <input type="range" class="forecast-slider" id="sliderForecastDays" min="0" max="60" value="14" oninput="updateForecast()">
+            <input type="range" class="forecast-slider" id="sliderForecastDays" aria-label="Forecast days" min="0" max="60" value="14" oninput="updateForecast()">
             <span class="forecast-days-display" id="displayForecastDays">14 days</span>
             <span class="forecast-bar-label" style="margin-left:12px">Avg daily TSS</span>
-            <input type="number" class="forecast-tss-input" id="inputForecastTss" value="50" min="0" max="500" oninput="updateForecast()">
+            <input type="number" class="forecast-tss-input" id="inputForecastTss" aria-label="Forecast average daily TSS" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
           </div>
         </div>
+        </div><!-- /overviewContent -->
       </div>
 
       <!-- COMPARE TAB -->
@@ -343,11 +335,11 @@
 </div>
 
 <!-- App Scripts (order matters) -->
-<script src="js/firebase-config.js?v=202609281749"></script>
-<script src="js/auth.js?v=202609281749"></script>
-<script src="js/database.js?v=202609281749"></script>
-<script src="js/fit-parser.js?v=202609281749"></script>
-<script src="js/strava.js?v=202609281749"></script>
-<script src="js/app.js?v=202609281749"></script>
+<script src="js/firebase-config.js?v=202609281758"></script>
+<script src="js/auth.js?v=202609281758"></script>
+<script src="js/database.js?v=202609281758"></script>
+<script src="js/fit-parser.js?v=202609281758"></script>
+<script src="js/strava.js?v=202609281758"></script>
+<script src="js/app.js?v=202609281758"></script>
 </body>
 </html>

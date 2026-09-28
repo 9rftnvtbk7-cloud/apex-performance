@@ -152,3 +152,63 @@ test('deleteActivities splits into batches under the 500-write limit', async () 
   assert.equal(await run(`deleteActivities(${ids})`), true);
   assert.deepEqual(ctx.__commits, [450, 450, 334]);
 });
+
+// ── Plan vs actual, coaching ──
+const PLAN = {
+  race_date: 'First weekend of May 2026',
+  weeks: [
+    { week: 1, dates: 'Feb 23 – Mar 1', tss: 300, sessions: [
+      { id: 'w1-tue-bike', day: 'Tuesday', sport: 'bike', tss: 52 },
+      { id: 'w1-wed-ss', day: 'Wednesday', sport: 'strength+swim', tss: 38 },
+      { id: 'w1-thu-run', day: 'Thursday', sport: 'run', tss: 35 },
+      { id: 'w1-sun-rest', day: 'Sunday', sport: 'rest', tss: 0 },
+    ] },
+  ],
+};
+
+test('Plan dates: year from race_date, Monday start, session days', () => {
+  const { run } = makeEnv();
+  run(`var __plan = ${JSON.stringify(PLAN)};`);
+  assert.equal(run(`localDateKey(planWeekStart(__plan.weeks[0], __plan))`), '2026-02-23');
+  assert.equal(run(`localDateKey(planSessionDate(planWeekStart(__plan.weeks[0], __plan), 'Thursday'))`), '2026-02-26');
+  // An autumn week of a spring race belongs to the previous year
+  assert.equal(run(`localDateKey(planWeekStart({ dates: 'Nov 3 – Nov 9' }, __plan))`), '2025-11-03');
+  assert.equal(run(`planWeekStart({ dates: 'garbage' }, __plan)`), null);
+  assert.equal(run(`isWeekCurrent(__plan.weeks[0], __plan, new Date(2026, 1, 26, 15))`), true);
+  assert.equal(run(`isWeekCurrent(__plan.weeks[0], __plan, new Date(2026, 2, 2, 8))`), false);
+});
+
+test('Plan vs actual: matches by day and sport, one activity per session, walks are not runs', () => {
+  const { run } = makeEnv();
+  run(`var __plan = ${JSON.stringify(PLAN)};
+       allActivities = [
+         { id: 'ride', sport: 'cycling', startDate: new Date(2026, 1, 24, 7), tss: 60 },
+         { id: 'swim', sport: 'swimming', startDate: new Date(2026, 1, 25, 12), tss: 30 },
+         { id: 'walk', sport: 'walking', startDate: new Date(2026, 1, 26, 18), tss: 10 },
+         { id: 'ride2', sport: 'cycling', startDate: new Date(2026, 1, 27, 7), tss: 40 },
+       ];`);
+  const m = run(`var __m = matchPlanToActivities(__plan); ({ bike: __m.get('w1-tue-bike')?.id, ss: __m.get('w1-wed-ss')?.id, run: __m.get('w1-thu-run')?.id ?? null, size: __m.size })`);
+  assert.deepEqual({ ...m }, { bike: 'ride', ss: 'swim', run: null, size: 2 });
+});
+
+test('Weekly goal comes from the plan week, then the planner', () => {
+  const { run } = makeEnv();
+  run(`trainingPlan = ${JSON.stringify(PLAN)}; plannerData = [];
+       savedPlannerWeeks = [{ weekStart: new Date(2026, 2, 2).toISOString(), tss: 420 }];`);
+  assert.deepEqual({ ...run(`plannedTssForWeek(new Date(2026, 1, 23))`) }, { tss: 300, source: 'plan W1' });
+  assert.deepEqual({ ...run(`plannedTssForWeek(new Date(2026, 2, 2))`) }, { tss: 420, source: 'planner' });
+  assert.equal(run(`plannedTssForWeek(new Date(2026, 2, 9))`), null);
+});
+
+test('TSB zones and ramp rate labels', () => {
+  const { run } = makeEnv();
+  assert.match(run(`tsbZone(30).label`), /Transition/);
+  assert.match(run(`tsbZone(10).label`), /Fresh/);
+  assert.match(run(`tsbZone(0).label`), /Neutral/);
+  assert.match(run(`tsbZone(-20).label`), /Optimal/);
+  assert.match(run(`tsbZone(-35).label`), /High risk/);
+  assert.equal(run(`rampInfo(10).label`), 'too fast');
+  assert.equal(run(`rampInfo(6).label`), 'aggressive build');
+  assert.equal(run(`rampInfo(3).label`), 'steady build');
+  assert.equal(run(`rampInfo(-2).label`), 'easing off');
+});

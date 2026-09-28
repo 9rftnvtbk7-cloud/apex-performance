@@ -12,6 +12,7 @@ let raceDates = [];
 let plannerInited = false;
 let currentRange = 'all';
 let sessionDataLoaded = false;
+let forecastTssEdited = false;
 
 // ══════════════════════════════════════════════
 // Safety & Date Helpers
@@ -43,8 +44,9 @@ function log(msg, type) {
 // Tab Navigation
 // ══════════════════════════════════════════════
 function switchTab(tabId, btn) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('is-active'));
+  document.querySelectorAll('.nav-tab').forEach(t => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
   btn.classList.add('is-active');
+  btn.setAttribute('aria-selected', 'true');
 
   // Fade out current tab
   const currentTab = document.querySelector('.tab-content.is-active');
@@ -131,9 +133,17 @@ function computePMC() {
   document.getElementById('valCtl').textContent = ctl.toFixed(1);
   document.getElementById('valAtl').textContent = atl.toFixed(1);
   const tsb = ctl - atl;
+  const zone = tsbZone(tsb);
   document.getElementById('valTsb').textContent = tsb.toFixed(1);
-  document.getElementById('valTsb').style.color = tsb >= 0 ? 'var(--color-green)' : 'var(--color-red)';
-  document.getElementById('subTsb').textContent = tsb >= 0 ? 'Fresh — ready to perform' : 'Fatigued — recovery needed';
+  document.getElementById('valTsb').style.color = zone.color;
+  document.getElementById('subTsb').textContent = zone.label;
+  // Ramp rate: CTL change over the last 7 days
+  const ramp = nDays > 7 ? ctlV[nDays - 1] - ctlV[nDays - 8] : null;
+  const subCtl = document.getElementById('subCtl');
+  if (ramp === null) { subCtl.textContent = '42-day exponential avg'; subCtl.style.color = ''; }
+  else { const r = rampInfo(ramp); subCtl.textContent = `Ramp ${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)}/wk · ${r.label}`; subCtl.style.color = r.color; }
+  // Forecast defaults to "maintain current fitness" until the user types their own value
+  if (!forecastTssEdited) document.getElementById('inputForecastTss').value = Math.round(ctl);
   // Weekly TSS stats
   const now = new Date(); now.setHours(0,0,0,0);
   const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
@@ -199,11 +209,32 @@ function renderWeekSummary(thisMonday, now, thisWeekTss, lastWeekTss) {
   document.getElementById('weekSwimmingStats').innerHTML = fmtSportSummary(sportBuckets.swimming, true);
   document.getElementById('weekOtherStats').innerHTML = fmtSportSummary(sportBuckets.other, false);
 
-  // Progress bar — use last week as goal, or if no last week, use a reasonable default
-  const goal = lastWeekTss > 0 ? lastWeekTss : (thisWeekTss > 0 ? Math.round(thisWeekTss * 1.5) : 400);
+  // Progress bar — goal is this week's planned TSS (plan or Planner tab), else last week's TSS
+  const planned = plannedTssForWeek(thisMonday);
+  const goal = planned ? planned.tss : lastWeekTss > 0 ? lastWeekTss : (thisWeekTss > 0 ? Math.round(thisWeekTss * 1.5) : 400);
+  const source = planned ? planned.source : lastWeekTss > 0 ? 'last week' : 'default';
   const pct = Math.min(100, Math.round((thisWeekTss / goal) * 100));
+  document.getElementById('weekProgressLabel').textContent = `Weekly TSS vs ${planned ? 'planned' : 'goal'} (${source})`;
   document.getElementById('weekProgressText').textContent = `${thisWeekTss} / ${goal} TSS`;
   document.getElementById('weekProgressBar').style.width = pct + '%';
+}
+
+// Form (TSB) zones, as commonly used with the Performance Management Chart
+function tsbZone(tsb) {
+  if (tsb > 25) return { label: 'Transition — fitness fading', color: 'var(--color-amber)' };
+  if (tsb > 5) return { label: 'Fresh — race ready', color: 'var(--color-green)' };
+  if (tsb >= -10) return { label: 'Neutral — maintaining', color: 'var(--text-dim)' };
+  if (tsb >= -30) return { label: 'Optimal — productive training', color: 'var(--color-blue)' };
+  return { label: 'High risk — overreaching', color: 'var(--color-red)' };
+}
+
+// Weekly CTL ramp rate: ~5–8/week is a solid build; above 8 raises injury/illness risk
+function rampInfo(ramp) {
+  if (ramp > 8) return { label: 'too fast', color: 'var(--color-red)' };
+  if (ramp > 5) return { label: 'aggressive build', color: 'var(--color-amber)' };
+  if (ramp > 0) return { label: 'steady build', color: 'var(--color-green)' };
+  if (ramp > -5) return { label: 'easing off', color: 'var(--text-dim)' };
+  return { label: 'detraining / taper', color: 'var(--color-amber)' };
 }
 
 function computeSmallForecast() {
@@ -287,11 +318,11 @@ function buildPMCChart() {
       { label: 'TSB Forecast', data: fcTsbData, borderColor: 'rgba(16,185,129,0.3)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.3, order: 7, spanGaps: false },
     ]},
     options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#8b8fa4', padding: 12, cornerRadius: 8, filter: i => i.raw !== null,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#a3a8bc', padding: 12, cornerRadius: 8, filter: i => i.raw !== null,
         callbacks: { title: items => { if (!items.length) return ''; try { return new Date(items[0].label + 'T00:00:00').toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return items[0].label; } } } } },
       scales: {
-        x: { type: 'category', grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#5a5e74', font: { family: 'DM Sans', size: 11 }, maxTicksLimit: 12, autoSkip: true, callback: function (v) { const l = this.getLabelForValue(v); try { return new Date(l + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }); } catch (e) { return l; } } } },
-        y: { position: 'left', grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#5a5e74', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'CTL / ATL / TSB', color: '#5a5e74' } },
+        x: { type: 'category', grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3', font: { family: 'DM Sans', size: 11 }, maxTicksLimit: 12, autoSkip: true, callback: function (v) { const l = this.getLabelForValue(v); try { return new Date(l + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }); } catch (e) { return l; } } } },
+        y: { position: 'left', grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'CTL / ATL / TSB', color: '#858aa3' } },
         y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: 'rgba(245,158,11,0.6)', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'TSS', color: 'rgba(245,158,11,0.6)' }, min: 0 }
       }
     }
@@ -299,7 +330,14 @@ function buildPMCChart() {
 }
 
 function updateForecast() { document.getElementById('displayForecastDays').textContent = `${document.getElementById('sliderForecastDays').value} days`; if (pmcChart) buildPMCChart(); }
-function toggleChartDataset(i) { if (!pmcChart) return; if (i === 4) { const h = !pmcChart.data.datasets[4].hidden; [4, 5, 6].forEach(j => pmcChart.data.datasets[j].hidden = h); } else pmcChart.data.datasets[i].hidden = !pmcChart.data.datasets[i].hidden; pmcChart.update(); }
+function toggleChartDataset(i, btn) {
+  if (!pmcChart) return;
+  let hidden;
+  if (i === 4) { hidden = !pmcChart.data.datasets[4].hidden; [4, 5, 6].forEach(j => pmcChart.data.datasets[j].hidden = hidden); }
+  else { hidden = !pmcChart.data.datasets[i].hidden; pmcChart.data.datasets[i].hidden = hidden; }
+  if (btn) btn.setAttribute('aria-pressed', String(!hidden));
+  pmcChart.update();
+}
 
 function setCustomChartRange() {
   const from = document.getElementById('chartRangeFrom').value;
@@ -464,7 +502,7 @@ function renderCompareChartRange(sp, grouping) {
     type: 'bar', data: { labels, datasets: [
       { label: 'TSS', data: sp.map(p=>p.tss), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 4, yAxisID: 'y' },
       { label: 'Hours', data: sp.map(p=>+(p.duration/3600).toFixed(1)), backgroundColor: 'rgba(59,130,246,0.6)', borderRadius: 4, yAxisID: 'y1' },
-    ]}, options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:true,labels:{color:'#8b8fa4'}}, tooltip:{backgroundColor:'#1e2030',borderColor:'#2a2d3e',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#8b8fa4',padding:12,cornerRadius:8} }, scales: { x:{grid:{color:'rgba(42,45,62,0.4)'},ticks:{color:'#5a5e74',maxRotation:45}}, y:{position:'left',grid:{color:'rgba(42,45,62,0.3)'},ticks:{color:'rgba(245,158,11,0.7)'},title:{display:true,text:'TSS',color:'rgba(245,158,11,0.7)'}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(59,130,246,0.7)'},title:{display:true,text:'Hours',color:'rgba(59,130,246,0.7)'},min:0} } }
+    ]}, options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:true,labels:{color:'#a3a8bc'}}, tooltip:{backgroundColor:'#1e2030',borderColor:'#2a2d3e',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#a3a8bc',padding:12,cornerRadius:8} }, scales: { x:{grid:{color:'rgba(42,45,62,0.4)'},ticks:{color:'#858aa3',maxRotation:45}}, y:{position:'left',grid:{color:'rgba(42,45,62,0.3)'},ticks:{color:'rgba(245,158,11,0.7)'},title:{display:true,text:'TSS',color:'rgba(245,158,11,0.7)'}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(59,130,246,0.7)'},title:{display:true,text:'Hours',color:'rgba(59,130,246,0.7)'},min:0} } }
   });
 }
 
@@ -500,11 +538,11 @@ function renderCompareChartsSideBySide(datasets) {
     { title:'Activities', data: datasets.map(ds=>ds.count), color:['rgba(59,130,246,0.7)','rgba(245,158,11,0.7)'] },
   ];
   const area = document.getElementById('compareChartArea');
-  area.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-bottom:32px">' + chartDefs.map((_,i) => `<div style="height:280px;position:relative"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
+  area.innerHTML = '<div class="compare-charts-grid">' + chartDefs.map((_,i) => `<div class="compare-chart-cell"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
   chartDefs.forEach((cd, i) => {
     const c = new Chart(document.getElementById('cmpChart'+i).getContext('2d'), {
       type: 'bar', data: { labels: datasets.map(ds=>ds.label), datasets: [{ data: cd.data, backgroundColor: cd.color, borderRadius: 6, barPercentage: 0.6 }] },
-      options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:false}, title:{display:true,text:cd.title,color:'#e8eaf0',font:{size:14,family:'DM Sans',weight:600},padding:{bottom:12}}, tooltip:{backgroundColor:'#1e2030',borderColor:'#2a2d3e',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#8b8fa4',padding:12,cornerRadius:8} }, scales: { x:{grid:{color:'rgba(42,45,62,0.4)'},ticks:{color:'#8b8fa4',font:{size:12}}}, y:{grid:{color:'rgba(42,45,62,0.3)'},ticks:{color:'#5a5e74'},beginAtZero:true} } }
+      options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:false}, title:{display:true,text:cd.title,color:'#e8eaf0',font:{size:14,family:'DM Sans',weight:600},padding:{bottom:12}}, tooltip:{backgroundColor:'#1e2030',borderColor:'#2a2d3e',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#a3a8bc',padding:12,cornerRadius:8} }, scales: { x:{grid:{color:'rgba(42,45,62,0.4)'},ticks:{color:'#a3a8bc',font:{size:12}}}, y:{grid:{color:'rgba(42,45,62,0.3)'},ticks:{color:'#858aa3'},beginAtZero:true} } }
     });
     compareCharts.push(c);
   });
@@ -521,7 +559,7 @@ function renderCumulativeCharts(datasets) {
   ];
   const sportFilter = document.getElementById('compareSport').value;
   const area = document.getElementById('compareChartArea');
-  area.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-bottom:32px">' + metricDefs.map((_,i) => `<div style="height:280px;position:relative"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
+  area.innerHTML = '<div class="compare-charts-grid">' + metricDefs.map((_,i) => `<div class="compare-chart-cell"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
 
   metricDefs.forEach((md, mi) => {
     const chartDatasets = datasets.map((ds, di) => {
@@ -556,13 +594,13 @@ function renderCumulativeCharts(datasets) {
       options: {
         responsive: true, maintainAspectRatio: false, animation: false,
         plugins: {
-          legend: { display: true, labels: { color: '#8b8fa4', usePointStyle: true, pointStyle: 'line' } },
+          legend: { display: true, labels: { color: '#a3a8bc', usePointStyle: true, pointStyle: 'line' } },
           title: { display: true, text: md.title, color: '#e8eaf0', font: { size: 14, family: 'DM Sans', weight: 600 }, padding: { bottom: 12 } },
-          tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#8b8fa4', padding: 12, cornerRadius: 8 }
+          tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#a3a8bc', padding: 12, cornerRadius: 8 }
         },
         scales: {
-          x: { type: 'linear', min: 0, max: maxDays, grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#5a5e74', callback: v => 'Day ' + v }, title: { display: true, text: 'Days into period', color: '#5a5e74' } },
-          y: { grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#5a5e74' }, beginAtZero: true }
+          x: { type: 'linear', min: 0, max: maxDays, grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3', callback: v => 'Day ' + v }, title: { display: true, text: 'Days into period', color: '#858aa3' } },
+          y: { grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3' }, beginAtZero: true }
         }
       }
     });
@@ -644,29 +682,17 @@ function populatePlannerFromPlan() {
     // Find the planner week that best matches this plan week
     // Try parsing the dates string
     let matched = false;
-    if (pw.dates) {
-      const parts = pw.dates.split('–').map(s => s.trim());
-      if (parts.length >= 1) {
-        // Parse "Feb 23" or "Mar 1" — add current year context
-        const year = new Date().getFullYear();
-        const tryParse = str => {
-          const d = new Date(str + ' ' + year);
-          if (isNaN(d)) return new Date(str + ', ' + year);
-          return d;
-        };
-        const startDate = tryParse(parts[0]);
-        if (!isNaN(startDate)) {
-          // Find closest planner week
-          let bestIdx = -1, bestDiff = Infinity;
-          for (let i = 0; i < plannerData.length; i++) {
-            const diff = Math.abs(plannerData[i].weekStart - startDate);
-            if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
-          }
-          if (bestIdx >= 0 && bestDiff < 7 * 86400000) {
-            plannerData[bestIdx].tss = weekTss;
-            matched = true;
-          }
-        }
+    const startDate = planWeekStart(pw, trainingPlan);
+    if (startDate) {
+      // Find closest planner week
+      let bestIdx = -1, bestDiff = Infinity;
+      for (let i = 0; i < plannerData.length; i++) {
+        const diff = Math.abs(plannerData[i].weekStart - startDate);
+        if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+      }
+      if (bestIdx >= 0 && bestDiff < 7 * 86400000) {
+        plannerData[bestIdx].tss = weekTss;
+        matched = true;
       }
     }
     if (!matched) {
@@ -793,7 +819,7 @@ function updatePlannerForecast() {
         ctx.textAlign = 'center';
         ctx.fillText('🏁 ' + rm.name, x, yScale.top - 8);
         // Date below
-        ctx.fillStyle = '#8b8fa4';
+        ctx.fillStyle = '#a3a8bc';
         ctx.font = '11px JetBrains Mono';
         ctx.fillText(rm.date, x, yScale.top - 22);
         ctx.restore();
@@ -815,12 +841,12 @@ function updatePlannerForecast() {
       interaction: { mode: 'index', intersect: false },
       layout: { padding: { top: 35 } },
       plugins: {
-        legend: { display: true, labels: { color: '#8b8fa4', usePointStyle: true, pointStyle: 'line' } },
-        tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#8b8fa4', padding: 12, cornerRadius: 8 }
+        legend: { display: true, labels: { color: '#a3a8bc', usePointStyle: true, pointStyle: 'line' } },
+        tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#a3a8bc', padding: 12, cornerRadius: 8 }
       },
       scales: {
-        x: { grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#5a5e74', maxRotation: 45 } },
-        y: { grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#5a5e74' }, title: { display: true, text: 'CTL / ATL / TSB', color: '#5a5e74' } }
+        x: { grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3', maxRotation: 45 } },
+        y: { grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3' }, title: { display: true, text: 'CTL / ATL / TSB', color: '#858aa3' } }
       }
     }
   });
@@ -932,15 +958,39 @@ async function handleFiles(fileList) {
     } catch (e) { console.error(e); log(`  ✗ ${e.message}`, 'err'); showToast(`Error: ${file.name}`, '❌'); }
   }
   if (n > 0) { showToast(`Imported ${n} activit${n > 1 ? 'ies' : 'y'}`, '✅'); refreshDashboard(); }
-  document.getElementById('fileInputEl').value = '';
+}
+
+// Safari: create the file input on demand (hidden inputs in hidden tabs don't fire onchange)
+function triggerFitUpload() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.fit';
+  input.multiple = true;
+  input.onchange = function() { handleFiles(this.files); };
+  input.click();
+}
+
+// Empty-state call to action: connect Strava, or sync if already connected
+function emptyStateStrava() {
+  if (typeof stravaTokens !== 'undefined' && stravaTokens && stravaTokens.access_token) syncStravaActivities();
+  else stravaConnect();
+}
+
+// Tabs are always available once signed in; the Overview shows the empty state until there is data
+function setDashboardVisibility(has) {
+  document.getElementById('dashboardSection').style.display = 'block';
+  document.getElementById('uploadDropzone').style.display = has ? 'none' : 'block';
+  document.getElementById('overviewContent').style.display = has ? 'block' : 'none';
+  document.getElementById('dangerZone').style.display = has ? 'flex' : 'none';
 }
 
 function refreshDashboard() {
   const has = allActivities.length > 0;
-  document.getElementById('uploadDropzone').style.display = has ? 'none' : 'block';
-  document.getElementById('dashboardSection').style.display = has ? 'block' : 'none';
-  document.getElementById('btnClear').style.display = has ? 'inline-flex' : 'none';
-  if (has) { computePMC(); buildPMCChart(); renderTrainingTable(); initCompareDefaults(); }
+  setDashboardVisibility(has);
+  renderTrainingTable();
+  if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); }
+  // Plan vs actual depends on activities
+  if (trainingPlan) renderTrainingPlan();
   // Plan, ZWO files, race dates and Strava tokens only need loading once per session
   if (!sessionDataLoaded && currentUser) {
     sessionDataLoaded = true;
@@ -968,10 +1018,9 @@ async function clearAll() {
   if (pmcChart) { pmcChart.destroy(); pmcChart = null; }
   if (compareChart) { compareChart.destroy(); compareChart = null; }
   if (plannerChart) { plannerChart.destroy(); plannerChart = null; }
-  document.getElementById('uploadDropzone').style.display = 'block';
-  document.getElementById('dashboardSection').style.display = 'none';
-  document.getElementById('btnClear').style.display = 'none';
   document.getElementById('debugPanel').innerHTML = '';
+  refreshDashboard();
+  showToast(`Deleted ${n} activities`, '🗑');
 }
 
 // Drag & Drop
@@ -980,7 +1029,31 @@ function onDragLeave(e) { e.preventDefault(); const el = document.getElementById
 function onDrop(e) { e.preventDefault(); const el = document.getElementById('uploadDropzone'); el.classList.remove('drag-active'); handleFiles(e.dataTransfer.files); }
 
 // UI
-function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('is-open'); }
+function toggleSettings() {
+  const open = document.getElementById('settingsPanel').classList.toggle('is-open');
+  document.getElementById('btnSettings').setAttribute('aria-expanded', String(open));
+}
+
+// ── Account menu ──
+function toggleAccountMenu() {
+  const menu = document.getElementById('accountMenu');
+  const open = menu.classList.toggle('is-open');
+  document.getElementById('btnAccount').setAttribute('aria-expanded', String(open));
+  if (open) menu.querySelector('.account-menu-item')?.focus();
+}
+function closeAccountMenu() {
+  document.getElementById('accountMenu').classList.remove('is-open');
+  document.getElementById('btnAccount').setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.account-menu-wrap')) closeAccountMenu();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('accountMenu')?.classList.contains('is-open')) {
+    closeAccountMenu();
+    document.getElementById('btnAccount').focus();
+  }
+});
 function toggleDebug() { document.getElementById('debugPanel').classList.toggle('is-open'); }
 function showToast(msg, icon = 'ℹ️') { const el = document.createElement('div'); el.className = 'toast-notification'; const ic = document.createElement('span'); ic.textContent = icon; el.append(ic, ' ' + msg); document.body.appendChild(el); setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2500); setTimeout(() => el.remove(), 3000); }
 
@@ -1066,7 +1139,6 @@ function importZwoFiles(fileList) {
     reader.readAsText(file);
   }
   showToast(`Importing ${fileList.length} ZWO files...`, '📦');
-  document.getElementById('planZwoInput').value = '';
   setTimeout(() => {
     showToast(`${Object.keys(zwoFiles).length} ZWO files loaded`, '✅');
     document.getElementById('btnDownloadAllZwo').style.display = 'inline-flex';
@@ -1082,26 +1154,91 @@ function toggleSessionComplete(sessionId) {
   if (typeof savePlanCompletions === 'function') savePlanCompletions(planCompletions);
 }
 
-function isWeekCurrent(dateStr, now) {
-  // Parse "Feb 23 – Mar 1" or "Apr 6 – Apr 12"
-  if (!dateStr) return false;
-  const parts = dateStr.split('–').map(s => s.trim());
-  if (parts.length < 2) return false;
-  const year = now.getFullYear();
-  const parseWeekDate = (str) => {
-    const d = new Date(str + ' ' + year);
-    if (!isNaN(d)) return d;
-    return new Date(str + ', ' + year);
-  };
-  const start = parseWeekDate(parts[0]);
-  const end = parseWeekDate(parts[1]);
-  if (isNaN(start) || isNaN(end)) return false;
-  // Handle year wrap (e.g. Dec – Jan): if end < start, end is next year
-  if (end < start) end.setFullYear(end.getFullYear() + 1);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
-  const today = new Date(now); today.setHours(12, 0, 0, 0);
-  return today >= start && today <= end;
+// ── Plan dates ──
+// Plan weeks carry dates like "Feb 23 – Mar 1" without a year. The year comes from the
+// plan's race_date ("First weekend of May 2026"). Plans end at (or just after) the race, so
+// weeks more than 2 months after the race month belong to the previous year (autumn starts).
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+function planYearInfo(plan) {
+  const rd = String(plan?.race_date || '');
+  const y = rd.match(/(20\d{2})/);
+  const m = rd.toLowerCase().match(/jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/);
+  return { year: y ? +y[1] : new Date().getFullYear(), raceMonth: m ? MONTHS.indexOf(m[0]) : null };
+}
+
+// Local-midnight start date of a plan week, or null if its dates can't be parsed
+function planWeekStart(week, plan) {
+  const m = String(week?.dates || '').trim().match(/^([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})/);
+  if (!m) return null;
+  const month = MONTHS.indexOf(m[1].toLowerCase());
+  if (month < 0) return null;
+  const { year, raceMonth } = planYearInfo(plan);
+  const y = raceMonth !== null && month - raceMonth > 2 ? year - 1 : year;
+  return new Date(y, month, +m[2]);
+}
+
+// Date of a session within its week ("Tuesday" → the Tuesday on/after the week start)
+function planSessionDate(weekStart, day) {
+  const dow = WEEKDAYS.indexOf(String(day || '').toLowerCase());
+  if (!weekStart || dow < 0) return null;
+  return addDays(weekStart, (dow - weekStart.getDay() + 7) % 7);
+}
+
+function isWeekCurrent(week, plan, now) {
+  const start = planWeekStart(week, plan);
+  if (!start) return false;
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  return today >= start && today <= addDays(start, 6);
+}
+
+// Does an activity's sport satisfy a planned session's sport?
+function planSportMatches(planSport, actSport) {
+  const isRunning = ['running', 'trail_running'].includes(actSport);
+  const isOther = !isCyc(actSport) && !isRun(actSport) && actSport !== 'swimming';
+  switch (planSport) {
+    case 'bike': return isCyc(actSport);
+    case 'run': return isRunning;
+    case 'swim': return actSport === 'swimming';
+    case 'strength': return isOther;
+    case 'strength+swim': return actSport === 'swimming' || isOther;
+    case 'race': return true;
+    default: return false; // rest days
+  }
+}
+
+// Match plan sessions to activities done on the same day with a compatible sport.
+// Returns Map(sessionId → activity); each activity satisfies at most one session.
+function matchPlanToActivities(plan) {
+  const byDay = {};
+  for (const a of allActivities) (byDay[localDateKey(a.startDate)] ||= []).push(a);
+  const used = new Set();
+  const matches = new Map();
+  for (const week of plan.weeks || []) {
+    const start = planWeekStart(week, plan);
+    for (const s of week.sessions || []) {
+      const date = planSessionDate(start, s.day);
+      if (!date || !s.id) continue;
+      const act = (byDay[localDateKey(date)] || []).find(a => !used.has(a) && planSportMatches(s.sport, a.sport));
+      if (act) { used.add(act); matches.set(s.id, act); }
+    }
+  }
+  return matches;
+}
+
+// Planned TSS for the week starting on `monday`: training plan first, then the Planner tab
+function plannedTssForWeek(monday) {
+  const key = localDateKey(monday);
+  if (trainingPlan && trainingPlan.weeks) {
+    const w = trainingPlan.weeks.find(w => { const s = planWeekStart(w, trainingPlan); return s && localDateKey(s) === key; });
+    if (w && w.tss > 0) return { tss: +w.tss, source: `plan W${w.week}` };
+  }
+  const weeks = plannerData.length ? plannerData.map(p => ({ start: p.weekStart, tss: p.tss }))
+    : (savedPlannerWeeks || []).map(w => ({ start: new Date(new Date(w.weekStart).getTime() + 12 * 3600000), tss: w.tss }));
+  const pw = weeks.find(w => localDateKey(w.start) === key);
+  if (pw && pw.tss > 0) return { tss: +pw.tss, source: 'planner' };
+  return null;
 }
 
 function scrollToCurrentWeek() {
@@ -1166,18 +1303,26 @@ function renderTrainingPlan() {
   const sportEmojis = { bike: '🚴', run: '🏃', swim: '🏊', strength: '💪', 'strength+swim': '💪🏊' };
 
   let wh = '';
-  let currentWeekIdx = -1;
   const now = new Date();
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  // Plan vs actual: sessions matched to Strava activities on the same day and sport
+  const matches = matchPlanToActivities(p);
   for (let wi = 0; wi < (p.weeks || []).length; wi++) {
     const week = p.weeks[wi];
     const phaseBg = safeColor(week.color, '#1e2030');
-    // Detect current week from dates like "Apr 6 – Apr 12"
-    const isCurrentWeek = isWeekCurrent(week.dates, now);
-    if (isCurrentWeek) currentWeekIdx = wi;
+    const isCurrentWeek = isWeekCurrent(week, p, now);
+    const weekStart = planWeekStart(week, p);
+    // Actual TSS for weeks that have started (all activities in the week, planned or not)
+    let actualHtml = '';
+    if (weekStart && weekStart <= today) {
+      const end = addDays(weekStart, 7);
+      const actual = allActivities.reduce((sum, a) => sum + (a.startDate >= weekStart && a.startDate < end ? (a.tss || 0) : 0), 0);
+      actualHtml = `<span class="plan-week-actual">actual <strong>${actual}</strong> /</span>`;
+    }
     wh += `<div class="plan-week-card${isCurrentWeek ? ' plan-week-current' : ''}" data-plan-week="${wi}" id="plan-week-${wi}">`;
     wh += `<div class="plan-week-header" style="border-left:4px solid ${isCurrentWeek ? 'var(--color-blue)' : phaseBg}">`;
     wh += `<div><span class="plan-week-num">W${escapeHtml(week.week)}</span> <span class="plan-week-phase" style="color:${phaseBg}">${escapeHtml(week.phase)}</span></div>`;
-    wh += `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--text-dim)">${escapeHtml(week.dates)}</span><span class="plan-week-tss">TSS ${escapeHtml(week.tss)}</span></div>`;
+    wh += `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--text-dim)">${escapeHtml(week.dates)}</span>${actualHtml}<span class="plan-week-tss">TSS ${escapeHtml(week.tss)}</span></div>`;
     wh += `</div>`;
     if (week.note) wh += `<div class="plan-week-note">${escapeHtml(week.note)}</div>`;
     wh += `<div class="plan-sessions">`;
@@ -1185,14 +1330,21 @@ function renderTrainingPlan() {
       const sc = sportColors[s.sport] || '#6b7280';
       const se = sportEmojis[s.sport] || '🏋️';
       const hasFile = s.zwo_file && (hasZwo ? zwoFiles[s.zwo_file] : true);
-      const isDone = planCompletions[s.id];
+      const matched = matches.get(s.id);
+      const isDone = !!(planCompletions[s.id] || matched);
+      const sessionDate = planSessionDate(weekStart, s.day);
+      const isMissed = !isDone && s.sport !== 'rest' && sessionDate && sessionDate < today;
       wh += `<div class="plan-session${isDone ? ' plan-session-done' : ''}">`;
-      wh += `<div class="plan-session-check"><input type="checkbox" ${isDone ? 'checked' : ''} data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-green)"></div>`;
+      wh += matched
+        ? `<div class="plan-session-check"><input type="checkbox" checked disabled aria-label="Completed on Strava" title="Completed — matched a Strava activity" style="width:16px;height:16px;accent-color:var(--color-green)"></div>`
+        : `<div class="plan-session-check"><input type="checkbox" ${isDone ? 'checked' : ''} aria-label="Mark ${escapeHtml(s.name)} as done" data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-green)"></div>`;
       wh += `<div class="plan-session-day">${escapeHtml(String(s.day || '').slice(0, 3))}</div>`;
       wh += `<div class="plan-session-body">`;
       wh += `<div class="plan-session-top"><span class="plan-session-sport" style="background:${sc}22;color:${sc}">${se} ${escapeHtml(s.sport)}</span>`;
       wh += `<span class="plan-session-name">${escapeHtml(s.name)}</span>`;
       wh += `<span class="plan-session-tss">TSS ${escapeHtml(s.tss)}</span>`;
+      if (matched) wh += `<span class="plan-session-actual" title="${escapeHtml(fmtSportName(matched.sport))} · ${escapeHtml(fmtDuration(matched.duration))}">✓ ${escapeHtml(matched.tss)} TSS actual</span>`;
+      else if (isMissed) wh += `<span class="plan-session-missed">missed</span>`;
       if (s.zwo_file && hasZwo && zwoFiles[s.zwo_file]) {
         wh += `<button class="plan-zwo-btn" data-zwo="${escapeHtml(s.zwo_file)}" onclick="downloadZwo(this.dataset.zwo)">⬇ .zwo</button>`;
       } else if (s.zwo_file && !hasZwo) {
@@ -1241,7 +1393,10 @@ function downloadAllZwos() {
 async function loadSavedPlan() {
   if (typeof loadTrainingPlan === 'function') {
     const saved = await loadTrainingPlan();
-    if (saved) { trainingPlan = saved; renderTrainingPlan(); document.getElementById('btnImportZwo').style.display = 'inline-flex'; }
+    if (saved) {
+      trainingPlan = saved; renderTrainingPlan(); document.getElementById('btnImportZwo').style.display = 'inline-flex';
+      if (allActivities.length) computePMC(); // weekly goal can now come from the plan
+    }
   }
   if (typeof loadZwoFiles === 'function') {
     const saved = await loadZwoFiles();
@@ -1258,9 +1413,4 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof initAuth === 'function') initAuth();
   // Handle Strava OAuth callback if present in URL
   if (typeof handleStravaCallback === 'function') handleStravaCallback();
-  // Ensure plan file inputs work
-  const pji = document.getElementById('planJsonInput');
-  if (pji) pji.addEventListener('change', function() { importPlanJson(this.files); });
-  const pzi = document.getElementById('planZwoInput');
-  if (pzi) pzi.addEventListener('change', function() { importZwoFiles(this.files); });
 });

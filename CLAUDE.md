@@ -56,6 +56,9 @@ training-plan/             # Sample training plan data (JSON + ZWO files)
 - **ATL (Acute Training Load)**: 7-day exponential moving average of TSS = "fatigue"
 - **TSB (Training Stress Balance)**: CTL - ATL = "form"
 - **PMC (Performance Management Chart)**: Plots CTL, ATL, TSB, and daily TSS over time
+- **Ramp rate**: CTL change over the last 7 days (>8/week = too fast). **TSB zones**: `tsbZone()` in `app.js`
+- **Plan vs actual**: `matchPlanToActivities()` ticks plan sessions matched to an activity on the same day with a compatible sport; plan week dates get their year from the plan's `race_date` (`planWeekStart()`)
+- **Activities come from Strava** for the owner; `.FIT` upload is secondary (account menu → Upload .FIT files)
 
 ## Critical Development Rules
 
@@ -137,6 +140,7 @@ firebase deploy --only firestore:rules
 - Vanilla JavaScript — no build step, no bundler, no framework
 - Functions use camelCase, with descriptive names (`buildPMCChart`, `renderComparison`)
 - CSS uses BEM-like class naming (`.plan-week-card`, `.compare-chart-wrap`)
-- Dark theme throughout — background `#1a1a2e`, accent `#e94560`
+- Dark theme throughout — colours are CSS variables in `:root` of `styles.css` (background `--bg-base: #0a0b0f`, accent `--color-blue: #3b82f6`). Text colours `--text-dim`/`--text-muted` meet WCAG AA contrast; mirror them in Chart.js tick colours (`#a3a8bc`/`#858aa3`)
+- Interactive elements are real `<button>`s (never clickable `div`s) so keyboard and screen readers work
 - All Firestore operations go through `js/database.js` — never call Firestore directly from `app.js`
 - Chart instances stored in module-level variables (`pmcChart`, `compareChart`, `plannerChart`) and destroyed before recreation to prevent memory leaks

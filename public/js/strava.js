@@ -336,11 +336,14 @@ function updateStravaUI() {
   const syncBtn = document.getElementById('btnStravaSync');
   const disconnectBtn = document.getElementById('btnStravaDisconnect');
   const statusEl = document.getElementById('stravaStatus');
+  const emptyBtn = document.getElementById('btnEmptyStrava');
+  const connected = !!(stravaTokens && stravaTokens.access_token);
+  if (emptyBtn) emptyBtn.textContent = connected ? '🔶 Sync your Strava activities' : '🔶 Connect Strava';
 
   if (stravaTokens && stravaTokens.access_token) {
     if (connectBtn) connectBtn.style.display = 'none';
     if (syncBtn) syncBtn.style.display = 'inline-flex';
-    if (disconnectBtn) disconnectBtn.style.display = 'inline-flex';
+    if (disconnectBtn) disconnectBtn.style.display = 'flex';
     if (statusEl) {
       const name = stravaTokens.athlete ? `${stravaTokens.athlete.firstname} ${stravaTokens.athlete.lastname}` : 'Connected';
       statusEl.textContent = `🔶 ${name}`;
