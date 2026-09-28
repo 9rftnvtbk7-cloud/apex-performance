@@ -1,0 +1,729 @@
+{
+  "race": "Trail de Saint-Nolff (30km / D+600m)",
+  "raceDate": "2026-11-15",
+  "totalWeeks": 10,
+  "ftpWatts": 200,
+  "generated": "2026-09-28",
+  "weeks": [
+    {
+      "week": 1,
+      "phase": "BASE",
+      "dates": "7 – 13 sept.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W01 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W01 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W01 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W01 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W01 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W01 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W01 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "phase": "BASE",
+      "dates": "14 – 20 sept.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W02 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W02 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W02 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W02 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W02 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W02 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W02 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "phase": "BASE",
+      "dates": "21 – 27 sept.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W03 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W03 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W03 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W03 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W03 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W03 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W03 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "phase": "BUILD",
+      "dates": "28 sept. – 4 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W04 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W04 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W04 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W04 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W04 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W04 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W04 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "phase": "BUILD",
+      "dates": "5 – 11 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W05 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W05 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W05 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W05 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W05 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W05 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W05 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "phase": "BUILD",
+      "dates": "12 – 18 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W06 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W06 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W06 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W06 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W06 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W06 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W06 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "phase": "BUILD",
+      "dates": "19 – 25 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W07 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W07 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W07 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W07 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W07 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W07 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W07 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "phase": "PEAK",
+      "dates": "26 oct. – 1 nov.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W08 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W08 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W08 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W08 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W08 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W08 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W08 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "phase": "PEAK",
+      "dates": "2 – 8 nov.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W09 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W09 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W09 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W09 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W09 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W09 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W09 Sun – Sortie longue trail",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "phase": "TAPER",
+      "dates": "9 – 15 nov.",
+      "tss": 397,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W10 Mon – Renfo A",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W10 Tue – Vélo Tempo 3×8min",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W10 Wed – Footing Z2",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W10 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W10 Fri – Natation technique",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W10 Sat – Fractionné côtes",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "race",
+          "name": "W10 Sun – Trail de Saint-Nolff 30km",
+          "description": "50min au total. Échauffement 10min progressif en Z1→Z2 (FC ≤ 135 bpm), cadence 90-95 rpm.\nCorps de séance : 3×8min @ 170W (85% FTP) avec 2min récup Z1 entre chaque bloc. Rester assis, buste relâché, respiration contrôlée & régulière. Si la FC dépasse 160 bpm > réduire de 10W ; si < 150 bpm après 4min, garder la cible.\nRetour au calme 10min Z1 < 120W. 💪 Hydratation : 500ml + électrolytes.\nConsignes techniques : pédaler rond, éviter les à-coups, tenir la cadence ≥ 85 rpm même en fin de bloc. Noter la sensation (RPE 1→10) & la FC moyenne de chaque bloc dans le carnet. Renfo associé (si temps) : gainage 3×45s, pont fessier 3×12, fentes marchées 3×10/jambe, mollets excentriques 3×15 — tempo 3-1-1, récup 45s. Priorité à la qualité d'exécution plutôt qu'au volume. En cas de fatigue > 7/10 au réveil ou FC repos > +7 bpm : transformer en 40min Z1 < 135 bpm. <Ne pas> sauter l'échauffement : il conditionne la qualité des blocs × 3. Terminer par 5min d'étirements doux → mobilité hanches et chaîne postérieure (ischios, mollets).",
+          "tss": 180,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    }
+  ]
+}

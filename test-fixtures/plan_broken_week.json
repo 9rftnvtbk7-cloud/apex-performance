@@ -1,0 +1,664 @@
+{
+  "race": "Trail de Saint-Nolff (30km / D+600m)",
+  "raceDate": "2026-11-15",
+  "totalWeeks": 10,
+  "ftpWatts": 200,
+  "generated": "2026-09-28",
+  "weeks": [
+    {
+      "week": 1,
+      "phase": "BASE",
+      "dates": "7 – 13 sept.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W01 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W01 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W01 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W01 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W01 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W01 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W01 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "phase": "BASE",
+      "dates": "14 – 20 sept.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W02 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W02 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W02 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W02 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W02 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W02 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W02 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "phase": "BASE",
+      "dates": "21 – 27 sept.",
+      "tss": 307,
+      "sessionCount": 6
+    },
+    {
+      "week": 4,
+      "phase": "BUILD",
+      "dates": "28 sept. – 4 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W04 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W04 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W04 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W04 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W04 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W04 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W04 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "phase": "BUILD",
+      "dates": "5 – 11 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W05 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W05 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W05 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W05 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W05 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W05 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W05 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "phase": "BUILD",
+      "dates": "12 – 18 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W06 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W06 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W06 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W06 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W06 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W06 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W06 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "phase": "BUILD",
+      "dates": "19 – 25 oct.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W07 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W07 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W07 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W07 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W07 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W07 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W07 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "phase": "PEAK",
+      "dates": "26 oct. – 1 nov.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W08 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W08 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W08 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W08 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W08 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W08 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W08 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "phase": "PEAK",
+      "dates": "2 – 8 nov.",
+      "tss": 307,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W09 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W09 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W09 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W09 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W09 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W09 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "run",
+          "name": "W09 Sun – Sortie longue trail",
+          "description": "Sortie longue trail — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 90,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "phase": "TAPER",
+      "dates": "9 – 15 nov.",
+      "tss": 397,
+      "sessionCount": 6,
+      "sessions": [
+        {
+          "day": "Monday",
+          "sport": "strength",
+          "name": "W10 Mon – Renfo A",
+          "description": "Renfo A — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 25,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Tuesday",
+          "sport": "bike",
+          "name": "W10 Tue – Vélo Tempo 3×8min",
+          "description": "Vélo Tempo 3×8min — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 55,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Wednesday",
+          "sport": "run",
+          "name": "W10 Wed – Footing Z2",
+          "description": "Footing Z2 — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 40,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Thursday",
+          "sport": "rest",
+          "name": "W10 Thu – Repos",
+          "description": "Repos — repos complet, FC ≤ 150 bpm.",
+          "tss": 0,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Friday",
+          "sport": "swim",
+          "name": "W10 Fri – Natation technique",
+          "description": "Natation technique — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 30,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Saturday",
+          "sport": "run",
+          "name": "W10 Sat – Fractionné côtes",
+          "description": "Fractionné côtes — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 60,
+          "completed": false,
+          "zwoFile": null
+        },
+        {
+          "day": "Sunday",
+          "sport": "race",
+          "name": "W10 Sun – Trail de Saint-Nolff 30km",
+          "description": "Trail de Saint-Nolff 30km — séance clé de la semaine, FC ≤ 150 bpm.",
+          "tss": 180,
+          "completed": false,
+          "zwoFile": null
+        }
+      ]
+    }
+  ]
+}
