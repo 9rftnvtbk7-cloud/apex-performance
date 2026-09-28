@@ -94,9 +94,10 @@ async function handleStravaCallback() {
   }
 
   showToast('Connecting to Strava…', '⏳');
+  console.info('[Strava] Callback received, exchanging code');
 
   try {
-    // Exchange code for tokens via the Cloud Function (which holds the Client Secret)
+    // Exchange code for tokens via the Worker (which holds the Client Secret)
     const response = await callAuthedFunction('stravaTokenExchange', { code });
 
     if (!response.ok) {
@@ -105,6 +106,7 @@ async function handleStravaCallback() {
     }
 
     const data = await response.json();
+    console.info('[Strava] Token exchange OK');
     stravaTokens = {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
@@ -112,9 +114,11 @@ async function handleStravaCallback() {
       athlete: data.athlete
     };
 
-    await saveStravaTokens();
+    // Update the UI now; don't block on Firestore's server acknowledgement
+    // (writes are queued locally and sync when the connection allows)
     updateStravaUI();
     showToast(`Connected to Strava as ${data.athlete?.firstname || 'athlete'}`, '🔶');
+    saveStravaTokens().then(ok => console.info(ok ? '[Strava] Tokens saved to Firestore' : '[Strava] Token save failed'));
 
   } catch (err) {
     console.error('Strava OAuth error:', err);
@@ -127,7 +131,7 @@ async function handleStravaCallback() {
 // ══════════════════════════════════════════════
 
 async function saveStravaTokens() {
-  if (!currentUser || !stravaTokens) return;
+  if (!currentUser || !stravaTokens) return false;
   try {
     await db.collection('users').doc(currentUser.uid).collection('settings').doc('strava').set({
       access_token: stravaTokens.access_token,
@@ -136,14 +140,20 @@ async function saveStravaTokens() {
       athlete: stravaTokens.athlete || null,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch (e) { console.error('Error saving Strava tokens:', e); }
+    return true;
+  } catch (e) {
+    console.error('Error saving Strava tokens:', e);
+    showToast('Could not save Strava connection — you may need to reconnect', '⚠️');
+    return false;
+  }
 }
 
 async function loadStravaTokens() {
   if (!currentUser) return;
   try {
     const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('strava').get();
-    if (doc.exists) {
+    // Don't overwrite fresher tokens from an OAuth callback that finished while we were reading
+    if (doc.exists && !stravaTokens) {
       stravaTokens = doc.data();
       updateStravaUI();
     }
@@ -168,8 +178,8 @@ async function ensureValidToken() {
     stravaTokens.access_token = data.access_token;
     stravaTokens.refresh_token = data.refresh_token;
     stravaTokens.expires_at = data.expires_at;
-    
-    await saveStravaTokens();
+
+    saveStravaTokens(); // queued locally; don't block the sync on the server ack
     return true;
   } catch (e) {
     console.error('Token refresh error:', e);

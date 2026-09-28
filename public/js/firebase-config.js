@@ -24,12 +24,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// Firestore settings for better offline support
-db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-  if (err.code === 'failed-precondition') {
-    console.warn('Firestore persistence: Multiple tabs open');
-  } else if (err.code === 'unimplemented') {
-    console.warn('Firestore persistence: Browser not supported');
-  }
-});
+// No offline persistence (enablePersistence): with multi-tab IndexedDB persistence,
+// writes could stay queued forever in Safari (e.g. Strava tokens never reaching the
+// server). Default in-memory cache + default network settings are reliable here.

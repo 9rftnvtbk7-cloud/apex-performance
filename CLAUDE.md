@@ -114,7 +114,8 @@ firebase deploy --only firestore:rules
 1. **Hosting serves only `public/`**: never put docs, logs, worker code or secrets in `public/` — everything in it is downloadable from the live site.
 2. **Compare charts clipping**: Bottom of comparison charts can clip if container height is too small. `.compare-chart-wrap` uses `min-height: 300px` with padding.
 3. **Push permissions**: Pushing to GitHub from Claude Code is currently blocked (GitHub App not installed for this org). Deploy must be done manually or via GitHub Codespaces.
-4. **Free plan only**: the owner does not want to pay for Firebase Blaze. Anything needing a server goes in the Cloudflare Worker, not Cloud Functions.
+4. **Do not re-enable Firestore offline persistence** (`db.enablePersistence({ synchronizeTabs: true })`): in Safari it left writes queued forever (Strava tokens were exchanged but never saved, so "Connect Strava" appeared to do nothing). The app uses Firestore's default in-memory cache.
+5. **Free plan only**: the owner does not want to pay for Firebase Blaze. Anything needing a server goes in the Cloudflare Worker, not Cloud Functions.
 
 ## Development Workflow
 
