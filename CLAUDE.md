@@ -78,6 +78,7 @@ Always declare state variables at the top of `app.js`. An undeclared variable (l
 Always validate JavaScript before deploying:
 ```bash
 for f in public/js/*.js worker/src/index.js; do node --check "$f"; done
+node --test tests/          # app logic: TSS, Strava sync, planner, deletes
 (cd worker && npm test)
 ```
 A stray brace or syntax error will silently break the entire app with no console output.
@@ -113,7 +114,7 @@ firebase deploy --only firestore:rules
 
 1. **Hosting serves only `public/`**: never put docs, logs, worker code or secrets in `public/` — everything in it is downloadable from the live site.
 2. **Compare charts clipping**: Bottom of comparison charts can clip if container height is too small. `.compare-chart-wrap` uses `min-height: 300px` with padding.
-3. **Push permissions**: Pushing to GitHub from Claude Code is currently blocked (GitHub App not installed for this org). Deploy must be done manually or via GitHub Codespaces.
+3. **Push permissions**: In the local Claude Code CLI, `git push` uses the owner's own GitHub credentials but needs the owner's approval (the repo is public); the owner runs pushes and deploys themselves unless they allow it. Claude Code on the web would need the Claude GitHub App installed on the `9rftnvtbk7-cloud` account.
 4. **Do not re-enable Firestore offline persistence** (`db.enablePersistence({ synchronizeTabs: true })`): in Safari it left writes queued forever (Strava tokens were exchanged but never saved, so "Connect Strava" appeared to do nothing). The app uses Firestore's default in-memory cache.
 5. **Free plan only**: the owner does not want to pay for Firebase Blaze. Anything needing a server goes in the Cloudflare Worker, not Cloud Functions.
 

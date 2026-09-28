@@ -11,6 +11,7 @@ let plannerData = [];
 let raceDates = [];
 let plannerInited = false;
 let currentRange = 'all';
+let sessionDataLoaded = false;
 
 // ══════════════════════════════════════════════
 // Safety & Date Helpers
@@ -68,6 +69,7 @@ function switchTab(tabId, btn) {
 
   if (tabId === 'compare') { initCompareDefaults(); renderComparison(); }
   if (tabId === 'planner') initPlanner();
+  if (tabId === 'plan') scrollToCurrentWeek();
 }
 
 // ══════════════════════════════════════════════
@@ -77,16 +79,32 @@ function computeTSS(act) {
   const ftp = +document.getElementById('inputFtp').value || 200;
   const lthr = +document.getElementById('inputLthr').value || 165;
   const ts = paceToSpd(document.getElementById('inputPace').value || '5:00');
+  const css = swimPaceToSpd(document.getElementById('inputSwimPace').value || '2:00');
   const d = act.duration;
-  if (act.np > 0 && ftp > 0) { const i = act.np / ftp; return { tss: Math.round(d * act.np * i / (ftp * 3600) * 100), intensityFactor: +i.toFixed(2) }; }
-  if (act.avgPower > 0 && isCyc(act.sport)) { const p = act.np || act.avgPower, i = p / ftp; return { tss: Math.round(d * p * i / (ftp * 3600) * 100), intensityFactor: +i.toFixed(2) }; }
+  // Power-based TSS for cycling only: running power is not comparable to cycling FTP
+  if (isCyc(act.sport) && ftp > 0 && (act.np > 0 || act.avgPower > 0)) { const p = act.np || act.avgPower, i = p / ftp; return { tss: Math.round(d * p * i / (ftp * 3600) * 100), intensityFactor: +i.toFixed(2) }; }
   if (isRun(act.sport) && act.avgSpeed > 0 && ts > 0) { const i = act.avgSpeed / ts; return { tss: Math.round(Math.min(d / 3600 * i * i * 100, 500)), intensityFactor: +i.toFixed(2) }; }
+  // Swim TSS (sTSS): cubic in intensity relative to critical swim speed
+  if (act.sport === 'swimming' && act.avgSpeed > 0 && css > 0) { const i = act.avgSpeed / css; return { tss: Math.round(Math.min(d / 3600 * i ** 3 * 100, 500)), intensityFactor: +i.toFixed(2) }; }
   if (act.avgHr > 0 && lthr > 0) { const i = act.avgHr / lthr; return { tss: Math.round(Math.min(d / 3600 * i * i * 100, 500)), intensityFactor: +i.toFixed(2) }; }
   return { tss: Math.round(Math.min(d / 3600 * 50, 500)), intensityFactor: null };
 }
 function isCyc(s) { return ['cycling', 'indoor_cycling', 'virtual_ride', 'e_biking'].includes(s); }
 function isRun(s) { return ['running', 'walking', 'hiking', 'trail_running'].includes(s); }
 function paceToSpd(s) { const p = s.split(':'); return 1000 / ((+p[0] || 5) * 60 + (+p[1] || 0)); }
+function swimPaceToSpd(s) { const p = s.split(':'); return 100 / ((+p[0] || 2) * 60 + (+p[1] || 0)); }
+
+// Recompute TSS/IF for every activity with the current formulas and thresholds.
+// Returns the activities whose values changed (so callers can persist them).
+function recomputeAllTss() {
+  const changed = [];
+  for (const a of allActivities) {
+    const t = computeTSS(a);
+    if (t.tss !== a.tss || t.intensityFactor !== a.intensityFactor) changed.push(a);
+    a.tss = t.tss; a.intensityFactor = t.intensityFactor;
+  }
+  return changed;
+}
 
 // ══════════════════════════════════════════════
 // PMC
@@ -570,11 +588,16 @@ function initPlanner() {
     const we = addDays(ws, 6);
     plannerData.push({ weekStart: ws, weekLabel: `${ws.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${we.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`, monthLabel: ws.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), tss: 0 });
   }
-  // Restore saved planner data
+  // Restore saved planner data by week start date (not position), so plans don't shift as weeks pass
   if (savedPlannerWeeks && savedPlannerWeeks.length) {
-    for (let i = 0; i < Math.min(savedPlannerWeeks.length, plannerData.length); i++) {
-      plannerData[i].tss = savedPlannerWeeks[i].tss || 0;
+    const tssByWeek = {};
+    for (const w of savedPlannerWeeks) {
+      const d = new Date(w.weekStart);
+      if (isNaN(d)) continue;
+      // Round to the nearest local midnight: older saves could be an hour off across DST
+      tssByWeek[localDateKey(new Date(d.getTime() + 12 * 3600000))] = w.tss || 0;
     }
+    for (const p of plannerData) p.tss = tssByWeek[localDateKey(p.weekStart)] || 0;
   }
   renderPlannerGrid(); updatePlannerForecast();
   // Auto-populate from plan if planner is empty
@@ -857,14 +880,16 @@ function updateSelectionUI() {
 async function deleteSelectedActivities() {
   const n = selectedActivityIds.size;
   if (!n || !confirm('Delete ' + n + ' activit' + (n > 1 ? 'ies' : 'y') + '? This cannot be undone.')) return;
-  for (const id of selectedActivityIds) {
-    if (id && !id.startsWith('local-') && typeof deleteActivity === 'function' && currentUser) {
-      await deleteActivity(id);
-    }
-    const idx = allActivities.findIndex(a => a.id === id);
-    if (idx >= 0) allActivities.splice(idx, 1);
+  const ids = [...selectedActivityIds];
+  const remoteIds = ids.filter(id => id && !id.startsWith('local-'));
+  if (remoteIds.length && typeof deleteActivities === 'function' && currentUser) {
+    // Only remove from the screen once Firestore confirms, so nothing reappears on reload
+    if (!(await deleteActivities(remoteIds))) { showToast('Delete failed — nothing was removed', '❌'); return; }
   }
+  const toRemove = new Set(ids);
+  allActivities = allActivities.filter(a => !toRemove.has(a.id));
   selectedActivityIds.clear();
+  updateSelectionUI();
   showToast('Deleted ' + n + ' activit' + (n > 1 ? 'ies' : 'y'), '🗑');
   refreshDashboard();
 }
@@ -916,18 +941,16 @@ function refreshDashboard() {
   document.getElementById('dashboardSection').style.display = has ? 'block' : 'none';
   document.getElementById('btnClear').style.display = has ? 'inline-flex' : 'none';
   if (has) { computePMC(); buildPMCChart(); renderTrainingTable(); initCompareDefaults(); }
-  loadSavedPlan();
-  // Load Strava tokens on first dashboard load
-  if (typeof loadStravaTokens === 'function' && currentUser && !stravaTokens) loadStravaTokens();
+  // Plan, ZWO files, race dates and Strava tokens only need loading once per session
+  if (!sessionDataLoaded && currentUser) {
+    sessionDataLoaded = true;
+    loadSavedPlan();
+    if (typeof loadStravaTokens === 'function' && !stravaTokens) loadStravaTokens();
+  }
 }
 
 function recalcAll() {
-  const changed = [];
-  for (const a of allActivities) {
-    const t = computeTSS(a);
-    if (t.tss !== a.tss || t.intensityFactor !== a.intensityFactor) changed.push(a);
-    a.tss = t.tss; a.intensityFactor = t.intensityFactor;
-  }
+  const changed = recomputeAllTss();
   refreshDashboard();
   if (typeof saveSettings === 'function') saveSettings();
   // Persist recalculated TSS so it survives a reload
@@ -935,9 +958,13 @@ function recalcAll() {
 }
 
 async function clearAll() {
-  if (!confirm('Clear all imported activities?')) return;
-  if (typeof deleteAllActivities === 'function' && currentUser) await deleteAllActivities();
+  const n = allActivities.length;
+  if (!confirm(`Permanently delete all ${n} activities from your account?\n\nStrava activities can be re-imported afterwards with "Sync Strava".`)) return;
+  if (typeof deleteAllActivities === 'function' && currentUser) {
+    if (!(await deleteAllActivities())) { showToast('Delete failed — your activities were not removed', '❌'); return; }
+  }
   allActivities = []; pmcResult = {}; plannerInited = false;
+  selectedActivityIds.clear();
   if (pmcChart) { pmcChart.destroy(); pmcChart = null; }
   if (compareChart) { compareChart.destroy(); compareChart = null; }
   if (plannerChart) { plannerChart.destroy(); plannerChart = null; }
@@ -1078,12 +1105,11 @@ function isWeekCurrent(dateStr, now) {
 }
 
 function scrollToCurrentWeek() {
-  const el = document.querySelector('.plan-week-current');
-  if (el) {
-    setTimeout(() => {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 150);
-  }
+  // Wait for the tab fade-in (150ms in switchTab) so the element is visible
+  setTimeout(() => {
+    const el = document.querySelector('.plan-week-current');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 250);
 }
 
 function renderTrainingPlan() {
@@ -1179,9 +1205,6 @@ function renderTrainingPlan() {
     wh += `</div></div>`;
   }
   document.getElementById('planWeeks').innerHTML = wh;
-
-  // Auto-scroll to current week
-  scrollToCurrentWeek();
 }
 
 function togglePlanZones() {

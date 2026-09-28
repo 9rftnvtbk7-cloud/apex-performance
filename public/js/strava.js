@@ -10,6 +10,8 @@ const STRAVA_REDIRECT_URI = window.location.origin; // Automatically matches you
 // Cloudflare Worker (worker/) that holds the Strava Client Secret — set to the URL printed by `wrangler deploy`
 const STRAVA_PROXY_URL = 'https://apex-strava.t4ng9shfbw.workers.dev';
 const STRAVA_STATE_KEY = 'stravaOAuthState';
+// Re-check the last 7 days on each sync to catch activities uploaded late
+const STRAVA_RESYNC_OVERLAP_SEC = 7 * 86400;
 
 // ── State ──
 let stravaTokens = null; // { access_token, refresh_token, expires_at }
@@ -203,69 +205,76 @@ async function syncStravaActivities() {
 
   showToast('Fetching activities from Strava…', '🔶');
 
+  let imported = 0;
   try {
-    let afterEpoch = 0;
-    if (typeof allActivities !== 'undefined' && allActivities.length) {
-      const newest = allActivities.reduce((a, b) => a.startDate > b.startDate ? a : b);
-      afterEpoch = Math.floor(newest.startDate.getTime() / 1000);
-    }
+    // Strava IDs already imported (stored as fileName "strava_<id>"): the reliable duplicate check
+    const stravaIdOf = a => (/^strava_(\d+)$/.exec(a.fileName || '') || [])[1];
+    const knownIds = new Set(allActivities.map(stravaIdOf).filter(Boolean));
 
-    let page = 1;
-    let imported = 0;
+    // Resume from the newest Strava activity we have, minus a week: activities uploaded late
+    // (e.g. synced from a head unit days later) have older start dates and would be missed.
+    // With `after` set (0 = everything), Strava returns oldest first, so an interrupted
+    // first sync resumes cleanly next time.
+    let newestMs = 0;
+    for (const a of allActivities) if (stravaIdOf(a) && a.startDate.getTime() > newestMs) newestMs = a.startDate.getTime();
+    const afterEpoch = newestMs ? Math.floor(newestMs / 1000) - STRAVA_RESYNC_OVERLAP_SEC : 0;
+
+    const perPage = 200;   // Strava's maximum
+    const maxPages = 50;   // 10,000 activities per sync, well within the 100 requests / 15 min limit
     let totalFetched = 0;
-    const perPage = 100;
+    let hitPageLimit = false;
 
-    while (true) {
-      const url = `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}${afterEpoch ? '&after=' + afterEpoch : ''}`;
+    for (let page = 1; ; page++) {
+      const url = `https://www.strava.com/api/v3/athlete/activities?per_page=${perPage}&page=${page}&after=${afterEpoch}`;
       const resp = await fetch(url, {
         headers: { 'Authorization': `Bearer ${stravaTokens.access_token}` }
       });
 
       if (resp.status === 429) {
-        showToast('Strava rate limit hit — try again in 15 minutes', '⚠️');
+        showToast('Strava rate limit hit — imported what we could, sync again in 15 minutes', '⚠️');
         break;
       }
       if (!resp.ok) throw new Error(`Strava API error: ${resp.status}`);
 
       const activities = await resp.json();
       if (!activities.length) break;
-
       totalFetched += activities.length;
 
+      const fresh = [];
       for (const sa of activities) {
+        if (knownIds.has(String(sa.id))) continue;
         const act = stravaToActivity(sa);
         if (!act) continue;
-
+        // Also skip activities already imported another way (e.g. a .FIT upload of the same ride)
         const isDup = allActivities.some(a =>
-          Math.abs(a.startDate.getTime() - act.startDate.getTime()) < 60000 &&
-          a.sport === act.sport
+          !stravaIdOf(a) && a.sport === act.sport &&
+          Math.abs(a.startDate.getTime() - act.startDate.getTime()) < 60000
         );
         if (isDup) continue;
-
-        if (typeof computeTSS === 'function') {
-          const tssInfo = computeTSS(act);
-          act.tss = tssInfo.tss;
-          act.intensityFactor = tssInfo.intensityFactor;
-        }
-
-        if (typeof saveActivity === 'function' && currentUser) {
-          const docId = await saveActivity(act);
-          act.id = docId;
-        }
-        allActivities.push(act);
-        imported++;
+        const tssInfo = computeTSS(act);
+        act.tss = tssInfo.tss;
+        act.intensityFactor = tssInfo.intensityFactor;
+        fresh.push(act);
+        knownIds.add(String(sa.id));
       }
 
-      if (activities.length < perPage || page > 10) break;
-      page++;
+      if (fresh.length) {
+        if (typeof saveActivitiesBatch === 'function' && currentUser) await saveActivitiesBatch(fresh);
+        allActivities.push(...fresh);
+        imported += fresh.length;
+        if (activities.length === perPage) showToast(`Imported ${imported} activities so far…`, '🔶');
+      }
+
+      if (activities.length < perPage) break;
+      if (page >= maxPages) { hitPageLimit = true; break; }
     }
 
     if (imported > 0) {
       showToast(`Imported ${imported} new activit${imported > 1 ? 'ies' : 'y'} from Strava`, '🔶');
-      if (typeof refreshDashboard === 'function') refreshDashboard();
     } else {
       showToast(`Already up to date (checked ${totalFetched} activities)`, '✅');
     }
+    if (hitPageLimit) showToast('More activities remain — click Sync Strava again to continue', 'ℹ️');
 
     if (currentUser) {
       db.collection('users').doc(currentUser.uid).collection('settings').doc('strava').update({
@@ -277,6 +286,8 @@ async function syncStravaActivities() {
     console.error('Strava sync error:', err);
     showToast('Strava sync failed: ' + err.message, '❌');
   } finally {
+    // Show whatever was imported, even if a later page failed
+    if (imported > 0 && typeof refreshDashboard === 'function') refreshDashboard();
     if (syncBtn) { syncBtn.disabled = false; syncBtn.textContent = '🔶 Sync Strava'; }
   }
 }
@@ -295,7 +306,10 @@ function stravaToActivity(sa) {
     'Crossfit': 'fitness_equipment', 'Elliptical': 'fitness_equipment', 'StairStepper': 'fitness_equipment',
   };
 
-  const sport = sportMap[sa.type] || sportMap[sa.sport_type] || 'other';
+  // sport_type is Strava's newer, more specific field (e.g. TrailRun, GravelRide)
+  const sport = sportMap[sa.sport_type] || sportMap[sa.type] || 'other';
+  // Only trust power from a real power meter; Strava's estimated watts would skew TSS
+  const hasDevicePower = sa.device_watts === true;
 
   return {
     sport,
@@ -304,8 +318,8 @@ function stravaToActivity(sa) {
     distance: Math.round(sa.distance || 0),
     avgHr: sa.average_heartrate ? Math.round(sa.average_heartrate) : null,
     maxHr: sa.max_heartrate ? Math.round(sa.max_heartrate) : null,
-    avgPower: sa.average_watts ? Math.round(sa.average_watts) : null,
-    np: sa.weighted_average_watts ? Math.round(sa.weighted_average_watts) : null,
+    avgPower: hasDevicePower && sa.average_watts ? Math.round(sa.average_watts) : null,
+    np: hasDevicePower && sa.weighted_average_watts ? Math.round(sa.weighted_average_watts) : null,
     avgSpeed: sa.average_speed || 0,
     calories: sa.kilojoules ? Math.round(sa.kilojoules) : null,
     tss: 0,

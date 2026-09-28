@@ -104,7 +104,7 @@ The main application logic. Contains:
 
 ### js/database.js (~256 lines)
 All Firestore operations. Every function is a standalone async function:
-- `loadUserData()` / `saveActivity()` / `deleteActivity()`
+- `loadUserData()` / `saveActivity()` / `saveActivitiesBatch()` / `deleteActivities()` / `deleteAllActivities()` (batched, under Firestore's 500-write limit)
 - `saveSettings()` / `savePlannerData()`
 - `saveTrainingPlan()` / `loadTrainingPlan()`
 - `saveZwoFiles()` / `loadZwoFiles()`
