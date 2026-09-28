@@ -6,7 +6,7 @@
   <title>Apex — Performance Management</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▲</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=202609281758">
+  <link rel="stylesheet" href="css/styles.css?v=202609281824">
 
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -78,8 +78,8 @@
     <div id="dashboardSection" style="display:none">
       <div class="nav-tabs" role="tablist">
         <button class="nav-tab is-active" role="tab" aria-selected="true" onclick="switchTab('overview',this)">📊 Overview</button>
-        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('compare',this)">📈 Compare</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('plan',this)">🏋️ Plan</button>
+        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('compare',this)">📈 Compare</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('planner',this)">📅 Planner</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('log',this)">📋 Log</button>
       </div>
@@ -124,6 +124,15 @@
           <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
           <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
           <div class="stat-card stat-card--lastweek"><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
+        </div>
+
+        <!-- Next 2 days from the training plan -->
+        <div class="card upcoming" id="upcomingCard" style="display:none">
+          <div class="card-top-bar" style="margin-bottom:12px">
+            <div class="card-title">Next 2 days</div>
+            <button class="btn-reset empty-state-link" onclick="openPlanTab()">Open plan →</button>
+          </div>
+          <div class="upcoming-grid" id="upcomingDays"></div>
         </div>
 
         <!-- This Week Mini Summary -->
@@ -336,12 +345,12 @@
 </div>
 
 <!-- App Scripts (order matters) -->
-<script src="js/firebase-config.js?v=202609281758"></script>
-<script src="js/auth.js?v=202609281758"></script>
-<script src="js/database.js?v=202609281758"></script>
-<script src="js/fit-parser.js?v=202609281758"></script>
-<script src="js/strava.js?v=202609281758"></script>
-<script src="js/plan-import.js?v=202609281758"></script>
-<script src="js/app.js?v=202609281758"></script>
+<script src="js/firebase-config.js?v=202609281824"></script>
+<script src="js/auth.js?v=202609281824"></script>
+<script src="js/database.js?v=202609281824"></script>
+<script src="js/fit-parser.js?v=202609281824"></script>
+<script src="js/strava.js?v=202609281824"></script>
+<script src="js/plan-import.js?v=202609281824"></script>
+<script src="js/app.js?v=202609281824"></script>
 </body>
 </html>

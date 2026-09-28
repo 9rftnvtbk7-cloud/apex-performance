@@ -1403,6 +1403,55 @@ function renderTrainingPlan() {
     wh += `</div></div>`;
   }
   document.getElementById('planWeeks').innerHTML = wh;
+  renderUpcomingSessions();
+}
+
+// ── Overview: today's and tomorrow's planned sessions ──
+function sessionsOnDate(plan, date) {
+  const key = localDateKey(date), out = [];
+  for (const week of plan.weeks || []) {
+    const start = planWeekStart(week, plan);
+    for (const s of week.sessions || []) {
+      const d = planSessionDate(start, s.day);
+      if (d && localDateKey(d) === key) out.push(s);
+    }
+  }
+  return out;
+}
+
+function renderUpcomingSessions(now = new Date()) {
+  const card = document.getElementById('upcomingCard');
+  if (!card) return;
+  if (!trainingPlan) { card.style.display = 'none'; return; }
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const matches = matchPlanToActivities(trainingPlan);
+  const days = [today, addDays(today, 1)];
+  const sportEmojis = { bike: '🚴', run: '🏃', swim: '🏊', strength: '💪', 'strength+swim': '💪🏊', rest: '😴', race: '🏁' };
+  const dayHtml = (date, i) => {
+    const sessions = sessionsOnDate(trainingPlan, date);
+    const title = `<div class="upcoming-day-title"><strong>${i === 0 ? 'Today' : 'Tomorrow'}</strong> · ${escapeHtml(date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }))}</div>`;
+    if (!sessions.length) return `<div class="upcoming-day">${title}<div class="upcoming-empty">Nothing planned</div></div>`;
+    return `<div class="upcoming-day">${title}${sessions.map(s => {
+      const matched = matches.get(s.id);
+      const done = !!(isSessionTicked(s) || matched);
+      const box = s.sport === 'rest' ? '<span style="width:16px;flex-shrink:0"></span>'
+        : matched ? `<input type="checkbox" checked disabled aria-label="Completed on Strava" title="Completed — matched a Strava activity">`
+        : `<input type="checkbox" ${done ? 'checked' : ''} aria-label="Mark ${escapeHtml(s.name)} as done" data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)">`;
+      const tss = s.tss ? `<span class="plan-session-tss">TSS ${escapeHtml(s.tss)}</span>` : '';
+      const actual = matched ? ` <span class="plan-session-actual">✓ ${escapeHtml(matched.tss)} TSS actual</span>` : '';
+      return `<div class="upcoming-session${done ? ' is-done' : ''}">${box}<div style="min-width:0">
+        <div class="upcoming-session-name">${sportEmojis[s.sport] || '🏋️'} ${escapeHtml(s.name)}</div>
+        ${s.description ? `<div class="plan-session-desc is-clamped" style="font-size:13px;color:var(--text-dim)">${escapeHtml(s.description)}</div>` : ''}
+        ${sessionMetaHtml(s)}<div style="margin-top:4px">${tss}${actual}</div></div></div>`;
+    }).join('')}</div>`;
+  };
+  document.getElementById('upcomingDays').innerHTML = days.map(dayHtml).join('');
+  card.style.display = 'block';
+}
+
+function openPlanTab() {
+  const btn = [...document.querySelectorAll('.nav-tab')].find(b => b.getAttribute('onclick')?.includes("'plan'"));
+  if (btn) switchTab('plan', btn);
 }
 
 // Duration, HR and power targets under the session name

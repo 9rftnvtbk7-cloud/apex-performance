@@ -441,3 +441,27 @@ test('Storage: a missing part is reported, not silently ignored', async () => {
   store.set('current_part_0', { data: '{"weeks":', index: 0 });
   await assert.rejects(run(`loadTrainingPlan()`), /part 2 of 2 is missing/);
 });
+
+// ── Overview: next 2 days ──
+test('Next 2 days shows today and tomorrow from the plan, tickable, with rest days and done state', () => {
+  const { run, ctx, el } = makeEnv();
+  ctx.__text = fixture('plan_detailed.json');
+  run(`planCompletions = { 'w4-2-tue': true }; allActivities = []; trainingPlan = normalizePlan(__text).plan;`);
+  run(`renderUpcomingSessions(new Date(2026, 8, 28, 9))`); // Monday 28 Sep = week 4
+  const html = el('upcomingDays').innerHTML;
+  assert.equal(el('upcomingCard').style.display, 'block');
+  assert.match(html, /<strong>Today<\/strong> · Mon 28 Sept?/);
+  assert.match(html, /💪 W04 Mon – Renfo A/);
+  assert.match(html, /data-session-id="w4-1-mon"/);
+  assert.match(html, /<strong>Tomorrow<\/strong>/);
+  assert.match(html, /upcoming-session is-done"><input type="checkbox" checked aria-label="Mark W04 Tue/);
+  assert.match(html, /⚡ 170W \(85% FTP\)/);
+  // Thursday: rest day has no checkbox; Sunday → Monday of a week after the plan: nothing planned
+  run(`renderUpcomingSessions(new Date(2026, 9, 1, 9))`);
+  assert.match(el('upcomingDays').innerHTML, /😴 W04 Thu – Repos/);
+  run(`renderUpcomingSessions(new Date(2026, 10, 15, 9))`);
+  assert.match(el('upcomingDays').innerHTML, /🏁 W10 Sun – Trail de Saint-Nolff 30km[\s\S]*Nothing planned/);
+  // No plan → card hidden
+  run(`trainingPlan = null; renderUpcomingSessions()`);
+  assert.equal(el('upcomingCard').style.display, 'none');
+});

@@ -29,12 +29,15 @@ public/                    # Firebase Hosting root — ONLY this folder is serve
   js/firebase-config.js    # Firebase project credentials (public by design)
   js/fit-parser.js         # Binary FIT protocol parser (ArrayBuffer/DataView)
   js/strava.js             # Strava OAuth + activity sync
+  js/plan-import.js        # Training plan parsing/validation (normalizePlan) — see schema below
 worker/src/index.js        # Cloudflare Worker: Strava token exchange/refresh, verifies Firebase ID tokens
 worker/test/index.test.js  # Worker tests — `cd worker && npm test`
 worker/wrangler.toml       # Worker config (Client ID, project ID, allowed origins; no secrets)
 firebase.json              # Hosting (no-cache, security headers), firestore rules
 firestore.rules            # User-scoped security rules
 training-plan/             # Sample training plan data (JSON + ZWO files)
+test-fixtures/             # Plan import fixtures (short/long/detailed/broken) + import diagnosis
+tests/app.test.mjs         # App logic tests (node --test tests/)
 ```
 
 ## Architecture
@@ -127,6 +130,52 @@ firebase deploy --only firestore:rules
 2. Validate: `for f in public/js/*.js; do node --check "$f"; done`
 3. Test locally: `firebase serve --only hosting` (requires Firebase CLI)
 4. Deploy: `firebase deploy --only hosting`
+
+## Training plan import schema
+
+Import via Plan tab → "Import Plan JSON". `normalizePlan()` in `js/plan-import.js` validates the file; errors
+name the week/session and are shown in the Plan tab, and nothing is imported. Generate new plans in this format
+(reference example: `test-fixtures/plan_detailed.json`).
+
+```jsonc
+{                                   // may also be wrapped as {"trainingPlan": { ... }}
+  "name": "Saint-Nolff Trail 30K",  // optional — shown as the plan title (fallback: race)
+  "version": "v2.1",                // optional — badge next to the title (also plan_version)
+  "race": "Trail de Saint-Nolff",   // optional
+  "raceDate": "2026-11-15",         // optional — ISO date (or text like "First weekend of May 2026"); sets the plan year
+  "startDate": "2026-09-07",        // optional — Monday of week 1, used when week dates can't be read
+  "ftpWatts": 200, "generated": "2026-09-28", "athlete": "…",   // optional
+  "weeks": [                        // REQUIRED, non-empty
+    {
+      "week": 1,                    // optional (defaults to position)
+      "phase": "BASE",              // optional
+      "dates": "7 – 13 sept.",      // optional — English or French ("Feb 23 – Mar 1", "28 sept. – 4 oct.")
+      "startDate": "2026-09-07",    // optional — wins over "dates"
+      "color": "#2E7D32", "note": "…",                              // optional
+      "tss": 0, "sessionCount": 0,  // ignored — recomputed from the sessions
+      "sessions": [                 // REQUIRED (may be empty)
+        {
+          "day": "Tuesday",         // REQUIRED — Monday…Sunday (or lundi…dimanche)
+          "sport": "bike",          // REQUIRED — bike | run | swim | strength | strength+swim | rest | race
+          "name": "W01 Tue – Tempo",// recommended
+          "description": "…",       // optional — short summary on the card (≤200 chars; longer is clamped)
+          "tss": 55,                // optional, default 0
+          "id": "W01_Tue_Bike",     // optional — generated as w{week}-{n}-{day}; keep stable to keep ticks
+          "completed": false,       // optional
+          "zwoFile": null,          // optional (also zwo_file)
+          "details": "## Warm-up\n- 10min Z1→Z2…",  // optional — Markdown: #, -/*/1. lists, >, **b**, *i*, `code`
+          "durationMin": 50,        // optional
+          "hrTarget": "≤135 bpm", "powerTarget": "170W (85% FTP)",    // optional text
+          "steps": [ { "label": "3×8min", "duration": "8min", "target": "170W", "rest": "2min Z1" } ]  // optional
+        }
+      ]
+    }
+  ]
+}
+```
+
+Storage: the normalised plan is one JSON string in `plan/current`; above 800 KB it is split into
+`plan/current_part_N` documents (see `saveTrainingPlan`). Ticks live in `plan/completions`, keyed by session id.
 
 ## Security Rules
 

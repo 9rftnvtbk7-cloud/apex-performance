@@ -474,6 +474,19 @@ select[multiple].compare-select option:checked {
   .plan-steps th, .plan-steps td { padding: 5px 5px; }
 }
 
+/* ── Overview: next 2 days ── */
+.upcoming-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.upcoming-day { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+.upcoming-day-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 8px; }
+.upcoming-day-title strong { color: var(--color-blue); }
+.upcoming-session { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+.upcoming-session + .upcoming-session { border-top: 1px solid var(--border-color); }
+.upcoming-session input { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--color-green); cursor: pointer; flex-shrink: 0; }
+.upcoming-session-name { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.upcoming-session.is-done .upcoming-session-name { text-decoration: line-through; color: var(--text-dim); }
+.upcoming-empty { font-size: 13px; color: var(--text-dim); }
+@media (max-width: 600px) { .upcoming-grid { grid-template-columns: 1fr; } }
+
 /* ── Plan import status ── */
 .plan-import-status { position: relative; border-radius: 12px; padding: 14px 44px 14px 16px; margin-bottom: 20px; font-size: 14px; border: 1px solid var(--border-color); }
 .plan-import-status[hidden] { display: none; }
