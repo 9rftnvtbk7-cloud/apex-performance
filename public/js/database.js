@@ -271,29 +271,3 @@ async function loadRaceDatesData() {
   } catch(e) { console.error('Error loading race dates:', e); }
   return null;
 }
-
-
-// ── Pending FIT files from email ──
-async function loadPendingFits() {
-  if (!currentUser) return [];
-  try {
-    const snap = await db.collection('users').doc(currentUser.uid)
-      .collection('pending_fits')
-      .where('processed', '==', false)
-      .get();
-    const pending = [];
-    snap.forEach(doc => {
-      pending.push({ id: doc.id, ...doc.data() });
-    });
-    return pending;
-  } catch(e) { console.error('Error loading pending FITs:', e); }
-  return [];
-}
-
-async function markPendingFitProcessed(docId) {
-  if (!currentUser) return;
-  try {
-    await db.collection('users').doc(currentUser.uid)
-      .collection('pending_fits').doc(docId).update({ processed: true });
-  } catch(e) { console.error('Error marking FIT processed:', e); }
-}

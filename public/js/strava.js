@@ -7,17 +7,19 @@
 const STRAVA_CLIENT_ID = '222662'; 
 const STRAVA_REDIRECT_URI = window.location.origin; // Automatically matches your app URL (e.g., https://apex-performance-1fe0a.web.app)
 
-const FUNCTIONS_BASE_URL = 'https://us-central1-apex-performance-1fe0a.cloudfunctions.net';
+// Cloudflare Worker (worker/) that holds the Strava Client Secret — set to the URL printed by `wrangler deploy`
+const STRAVA_PROXY_URL = 'https://apex-strava.t4ng9shfbw.workers.dev';
 const STRAVA_STATE_KEY = 'stravaOAuthState';
 
 // ── State ──
 let stravaTokens = null; // { access_token, refresh_token, expires_at }
 
-// POST to one of our Cloud Functions with the user's Firebase ID token
+// POST to the Strava token proxy with the user's Firebase ID token
 async function callAuthedFunction(name, body) {
   if (!currentUser) throw new Error('Not signed in');
+  if (STRAVA_PROXY_URL.includes('YOUR-SUBDOMAIN')) throw new Error('Strava proxy URL not configured');
   const idToken = await currentUser.getIdToken();
-  return fetch(`${FUNCTIONS_BASE_URL}/${name}`, {
+  return fetch(`${STRAVA_PROXY_URL}/${name}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
     body: JSON.stringify(body)

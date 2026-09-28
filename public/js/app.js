@@ -917,7 +917,6 @@ function refreshDashboard() {
   document.getElementById('btnClear').style.display = has ? 'inline-flex' : 'none';
   if (has) { computePMC(); buildPMCChart(); renderTrainingTable(); initCompareDefaults(); }
   loadSavedPlan();
-  processPendingFits();
   // Load Strava tokens on first dashboard load
   if (typeof loadStravaTokens === 'function' && currentUser && !stravaTokens) loadStravaTokens();
 }
@@ -1215,51 +1214,6 @@ function downloadAllZwos() {
 }
 
 // Init auth on page load
-
-async function processPendingFits() {
-  if (typeof loadPendingFits !== 'function') return;
-  const pending = await loadPendingFits();
-  if (!pending.length) return;
-  
-  showToast(`Processing ${pending.length} emailed FIT file${pending.length > 1 ? 's' : ''}...`, '📧');
-  let n = 0;
-  
-  for (const pf of pending) {
-    try {
-      // Decode base64 to ArrayBuffer
-      const binary = atob(pf.fitBase64);
-      const bytes = new Uint8Array(binary.length);
-      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-      const buf = bytes.buffer;
-      
-      const parsed = parseFitFile(buf);
-      const tssInfo = computeTSS(parsed);
-      const act = { ...parsed, tss: tssInfo.tss, intensityFactor: tssInfo.intensityFactor, fileName: pf.fileName || 'email.fit' };
-      
-      const isDup = allActivities.some(a => Math.abs(a.startDate.getTime() - act.startDate.getTime()) < 60000 && a.sport === act.sport);
-      if (!isDup) {
-        if (typeof saveActivity === 'function' && currentUser) {
-          const docId = await saveActivity(act);
-          act.id = docId;
-        }
-        allActivities.push(act);
-        n++;
-        log(`  ✓ [email] ${act.sport} ${fmtDate(act.startDate)} TSS=${act.tss}`, 'ok');
-      }
-      
-      // Mark as processed
-      await markPendingFitProcessed(pf.id);
-    } catch(e) {
-      console.error('Error processing emailed FIT:', e);
-      log(`  ✗ [email] ${pf.fileName}: ${e.message}`, 'err');
-    }
-  }
-  
-  if (n > 0) {
-    showToast(`Imported ${n} emailed activit${n > 1 ? 'ies' : 'y'}`, '📧');
-    refreshDashboard();
-  }
-}
 
 async function loadSavedPlan() {
   if (typeof loadTrainingPlan === 'function') {

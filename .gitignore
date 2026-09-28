@@ -9,3 +9,7 @@ node_modules/
 
 # Logs
 *.log
+
+# Cloudflare Worker local state
+.wrangler/
+.dev.vars

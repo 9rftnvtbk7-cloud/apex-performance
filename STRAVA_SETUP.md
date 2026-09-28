@@ -29,34 +29,32 @@ Open `js/strava.js` and replace the placeholder:
 const STRAVA_CLIENT_ID = '12345';  // ← your Client ID (number)
 ```
 
-### 2B. Server-side (Client ID + Secret)
+### 2B. Server-side (Client Secret) — Cloudflare Worker
 
-In Terminal, from your project folder:
-
-```bash
-cd functions && npm install && cd ..
-
-# Client ID is not secret: put it in functions/.env (git-ignored)
-echo 'STRAVA_CLIENT_ID=12345' > functions/.env
-
-# Client Secret goes to Google Secret Manager (you will be prompted for the value)
-firebase functions:secrets:set STRAVA_CLIENT_SECRET
-```
-
-Replace `12345` with your Client ID. Never commit the Client Secret.
-
-Then deploy the functions:
+Strava requires the Client Secret to stay on a server. Apex uses a free Cloudflare Worker
+(`worker/`) for this — no Firebase Blaze plan needed. One-time setup:
 
 ```bash
-firebase deploy --only functions
+cd worker
+npm install
+npx wrangler login                          # free Cloudflare account, no card needed
+npx wrangler secret put STRAVA_CLIENT_SECRET  # paste the secret when prompted
+npx wrangler deploy                         # prints https://apex-strava.<you>.workers.dev
+cd ..
 ```
+
+The Client ID is not secret: it lives in `worker/wrangler.toml` (`STRAVA_CLIENT_ID`).
+Never commit the Client Secret.
+
+Then paste the Worker URL printed by `wrangler deploy` into `STRAVA_PROXY_URL` at the top of
+`public/js/strava.js`.
 
 ---
 
 ## Step 3: Deploy and test
 
 ```bash
-firebase deploy --only hosting,functions
+firebase deploy --only hosting
 ```
 
 1. Open **https://apex-performance-1fe0a.web.app**
@@ -70,9 +68,9 @@ firebase deploy --only hosting,functions
 
 ## How it works
 
-- **Connect**: OAuth2 flow — you authorize on Strava, they send a code back to Apex, which exchanges it for tokens via a Cloud Function (so the Client Secret never touches the browser).
+- **Connect**: OAuth2 flow — you authorize on Strava, they send a code back to Apex, which exchanges it for tokens via the Cloudflare Worker in `worker/` (so the Client Secret never touches the browser).
 - **Sync**: Fetches your activities from the Strava API using the stored access token. Only imports activities newer than your latest existing activity (incremental sync).
-- **Token refresh**: Access tokens expire after 6 hours. The app automatically refreshes them using the refresh token via a Cloud Function.
+- **Token refresh**: Access tokens expire after 6 hours. The app automatically refreshes them using the refresh token via the Cloudflare Worker.
 - **Disconnect**: Removes stored tokens from Firestore. Already-imported activities remain.
 
 ---
@@ -86,7 +84,13 @@ firebase deploy --only hosting,functions
 
 ## Troubleshooting
 
-**"Strava API credentials not configured on server"** — Set `STRAVA_CLIENT_ID` in `functions/.env` and the `STRAVA_CLIENT_SECRET` secret from Step 2B and redeploy functions.
+**"Strava proxy URL not configured"** — Set `STRAVA_PROXY_URL` in `public/js/strava.js` to your Worker URL and redeploy hosting.
+
+**"Strava API credentials not configured on server"** — Run `npx wrangler secret put STRAVA_CLIENT_SECRET` in `worker/` (Step 2B).
+
+**"Unauthorized" from the Worker** — Check `FIREBASE_PROJECT_ID` in `worker/wrangler.toml`, and that you are signed in to Apex.
+
+**CORS error in the console** — Add your site's origin to `ALLOWED_ORIGINS` in `worker/wrangler.toml` and run `npx wrangler deploy`.
 
 **"Token exchange failed"** — Check that your Authorization Callback Domain at strava.com/settings/api exactly matches `apex-performance-1fe0a.web.app` (no https://, no trailing slash).
 

@@ -31,14 +31,5 @@ service cloud.firestore {
     match /users/{userId}/plan/{docId} {
       allow read, write: if isOwner(userId);
     }
-
-    // Pending FIT files from email: only the Cloud Function (Admin SDK) creates them.
-    // The client may read them, delete them, or flip `processed` to true.
-    match /users/{userId}/pending_fits/{docId} {
-      allow read, delete: if isOwner(userId);
-      allow update: if isOwner(userId)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['processed'])
-        && request.resource.data.processed == true;
-    }
   }
 }

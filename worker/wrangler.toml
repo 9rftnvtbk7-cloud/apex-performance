@@ -1,0 +1,13 @@
+name = "apex-strava"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+# Publish on the free https://apex-strava.<subdomain>.workers.dev URL
+workers_dev = true
+
+[vars]
+STRAVA_CLIENT_ID = "222662"
+FIREBASE_PROJECT_ID = "apex-performance-1fe0a"
+ALLOWED_ORIGINS = "https://apex-performance-1fe0a.web.app,https://apex-performance-1fe0a.firebaseapp.com,http://localhost:5000"
+
+# The Strava Client Secret is NOT stored here. Set it with:
+#   npx wrangler secret put STRAVA_CLIENT_SECRET

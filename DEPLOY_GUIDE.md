@@ -51,8 +51,8 @@ firebase deploy --only hosting
 |---|---|
 | Frontend only | `firebase deploy --only hosting` |
 | Firestore rules | `firebase deploy --only firestore:rules` |
-| Cloud Functions | `cd functions && npm install && cd .. && firebase deploy --only functions` |
-| Everything at once | `firebase deploy` |
+| Strava proxy (Cloudflare Worker) | `cd worker && npx wrangler deploy` |
+| Everything at once | `firebase deploy --only hosting,firestore:rules` |
 | Test locally first | `firebase serve --only hosting` (opens at localhost:5000) |
 
 ---

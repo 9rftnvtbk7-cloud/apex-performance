@@ -24,9 +24,8 @@ npm install -g firebase-tools
 firebase login
 firebase deploy --only hosting
 
-# For Cloud Functions (required for Strava):
-cd functions && npm install && cd ..
-firebase deploy --only functions
+# Strava token proxy (Cloudflare Worker, free) — see STRAVA_SETUP.md
+cd worker && npm install && npx wrangler deploy && cd ..
 
 # For Firestore rules:
 firebase deploy --only firestore:rules
@@ -43,9 +42,8 @@ public/js/database.js          # Firestore CRUD
 public/js/auth.js              # Firebase Auth (Google Sign-In)
 public/js/firebase-config.js   # Firebase credentials
 public/js/fit-parser.js        # Binary FIT file parser
-functions/index.js      # Cloud Functions (email ingestion + Strava token exchange)
-functions/package.json  # Function dependencies
-AppsScript.gs           # Gmail polling script
+worker/src/index.js     # Cloudflare Worker: Strava token exchange/refresh (holds the secret)
+worker/test/            # Worker tests (cd worker && npm test)
 firebase.json           # Firebase config
 firestore.rules         # Firestore security rules
 ```

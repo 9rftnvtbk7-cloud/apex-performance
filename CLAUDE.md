@@ -12,10 +12,9 @@ Triathlon fitness tracking web app. Users upload FIT files (or sync via Strava),
 
 - **Frontend**: Vanilla JS (no framework), single-page app with tab navigation
 - **Charts**: Chart.js 4.4.1 (loaded from CDN)
-- **Backend**: Firebase (Auth, Firestore, Cloud Functions v2, Hosting)
+- **Backend**: Firebase (Auth, Firestore, Hosting) on the free Spark plan — no Cloud Functions
 - **Auth**: Firebase Authentication with Google Sign-In
-- **Cloud Functions**: Node.js 22, Firebase Functions v2 SDK
-- **Email ingestion**: Google Apps Script polls Gmail → Cloud Function → Firestore
+- **Server-side**: one Cloudflare Worker (`worker/`, free tier) holding the Strava Client Secret
 - **Strava**: OAuth integration for automatic activity sync
 
 ## File Structure
@@ -30,10 +29,10 @@ public/                    # Firebase Hosting root — ONLY this folder is serve
   js/firebase-config.js    # Firebase project credentials (public by design)
   js/fit-parser.js         # Binary FIT protocol parser (ArrayBuffer/DataView)
   js/strava.js             # Strava OAuth + activity sync
-functions/index.js         # Cloud Functions: email ingestion + Strava token exchange
-functions/package.json     # Node 22, firebase-admin, firebase-functions v7, busboy
-AppsScript.gs              # Gmail polling script (runs every 5 min)
-firebase.json              # Hosting (no-cache), functions, firestore rules
+worker/src/index.js        # Cloudflare Worker: Strava token exchange/refresh, verifies Firebase ID tokens
+worker/test/index.test.js  # Worker tests — `cd worker && npm test`
+worker/wrangler.toml       # Worker config (Client ID, project ID, allowed origins; no secrets)
+firebase.json              # Hosting (no-cache, security headers), firestore rules
 firestore.rules            # User-scoped security rules
 training-plan/             # Sample training plan data (JSON + ZWO files)
 ```
@@ -43,7 +42,6 @@ training-plan/             # Sample training plan data (JSON + ZWO files)
 ### Data Flow
 1. User uploads `.fit` files → `fit-parser.js` parses binary → activity saved to Firestore
 2. OR Strava OAuth sync → `strava.js` fetches activities → saved to Firestore
-3. OR Email pipeline: Gmail → Apps Script → Cloud Function → `pending_fits` collection → client processes on login
 4. `database.js` loads all activities → `app.js` computes PMC metrics → Chart.js renders
 
 ### Firestore Collections (all under `/users/{userId}/`)
@@ -51,7 +49,6 @@ training-plan/             # Sample training plan data (JSON + ZWO files)
 - `settings/{docId}` — User settings (FTP, threshold pace, etc.)
 - `planner/{docId}` — 26-week planner grid data
 - `plan/{docId}` — Imported training plan JSON + ZWO files
-- `pending_fits/{docId}` — FIT files received via email, awaiting client processing
 
 ### Key Concepts
 - **TSS (Training Stress Score)**: Calculated per activity. Priority: NP-based > power-based > pace-based > HR-based > duration fallback
@@ -80,7 +77,8 @@ Always declare state variables at the top of `app.js`. An undeclared variable (l
 ### Syntax Validation
 Always validate JavaScript before deploying:
 ```bash
-for f in public/js/*.js functions/index.js; do node --check "$f"; done
+for f in public/js/*.js worker/src/index.js; do node --check "$f"; done
+(cd worker && npm test)
 ```
 A stray brace or syntax error will silently break the entire app with no console output.
 
@@ -92,15 +90,14 @@ A stray brace or syntax error will silently break the entire app with no console
 
 ### Deploy Commands
 ```bash
-# Full deploy (hosting + functions + rules)
-firebase deploy
+# Hosting + rules (the project is on Spark: never deploy functions)
+firebase deploy --only hosting,firestore:rules
 
 # Hosting only (HTML/JS/CSS changes)
 firebase deploy --only hosting
 
-# Cloud Functions only
-cd functions && npm install && cd ..
-firebase deploy --only functions
+# Strava token proxy (Cloudflare Worker)
+cd worker && npx wrangler deploy
 
 # Firestore rules only
 firebase deploy --only firestore:rules
@@ -114,10 +111,10 @@ firebase deploy --only firestore:rules
 
 ## Known Issues and Gotchas
 
-1. **Hosting serves only `public/`**: never put docs, logs, functions code or secrets in `public/` — everything in it is downloadable from the live site.
+1. **Hosting serves only `public/`**: never put docs, logs, worker code or secrets in `public/` — everything in it is downloadable from the live site.
 2. **Compare charts clipping**: Bottom of comparison charts can clip if container height is too small. `.compare-chart-wrap` uses `min-height: 300px` with padding.
-3. **Cloud Functions push permissions**: Pushing to GitHub from Claude Code is currently blocked (GitHub App not installed for this org). Deploy must be done manually or via GitHub Codespaces.
-4. **Apps Script setup**: The Gmail polling script (`AppsScript.gs`) must be deployed separately in Google Apps Script console and requires a time-based trigger (every 5 minutes).
+3. **Push permissions**: Pushing to GitHub from Claude Code is currently blocked (GitHub App not installed for this org). Deploy must be done manually or via GitHub Codespaces.
+4. **Free plan only**: the owner does not want to pay for Firebase Blaze. Anything needing a server goes in the Cloudflare Worker, not Cloud Functions.
 
 ## Development Workflow
 
@@ -128,9 +125,9 @@ firebase deploy --only firestore:rules
 
 ## Security Rules
 
-- **Secrets never go in git.** `STRAVA_CLIENT_SECRET` and `APEX_API_KEY` live in Secret Manager (`firebase functions:secrets:set <NAME>`) and are read with `defineSecret`. Only non-secret values (`STRAVA_CLIENT_ID`) go in `functions/.env`, which is git-ignored.
+- **Secrets never go in git.** `STRAVA_CLIENT_SECRET` is a Cloudflare Worker secret (`npx wrangler secret put STRAVA_CLIENT_SECRET`). Only non-secret values go in `worker/wrangler.toml`.
 - **Never interpolate data into HTML unescaped.** Use `escapeHtml()` for every value inserted via `innerHTML`/template strings (including attributes), `safeColor()` for colours in `style`, and pass strings to inline handlers via `data-*` attributes, not `onclick="fn('${value}')"`.
-- **Browser-called Cloud Functions must verify the Firebase ID token** (`requireFirebaseUser`); the client sends it via `callAuthedFunction()` in `strava.js`.
+- **Worker endpoints must verify the Firebase ID token** (`verifyFirebaseIdToken` in `worker/src/index.js`); the client sends it via `callAuthedFunction()` in `strava.js`.
 - **Dates:** use `localDateKey()` / `addDays()` from `app.js` — never `toISOString().slice(0, 10)` for calendar days (it is UTC and shifts days in Europe).
 
 ## Coding Conventions

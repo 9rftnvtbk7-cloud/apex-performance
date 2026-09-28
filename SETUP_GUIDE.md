@@ -28,9 +28,8 @@ firebase deploy --only hosting
 # Deploy Firestore rules
 firebase deploy --only firestore:rules
 
-# Deploy Cloud Functions
-cd functions && npm install && cd ..
-firebase deploy --only functions
+# Deploy the Strava token proxy (Cloudflare Worker) — see STRAVA_SETUP.md
+cd worker && npm install && npx wrangler deploy && cd ..
 ```
 
 ## Local Development
@@ -64,14 +63,14 @@ firebase deploy --only hosting
 │   ├── auth.js                 # Firebase Auth (Google Sign-In)
 │   ├── firebase-config.js      # Firebase project credentials (DO NOT commit to public repos)
 │   └── fit-parser.js           # Binary FIT protocol parser
-├── functions/
-│   ├── index.js                # Cloud Function for email FIT ingestion
-│   └── package.json            # Function dependencies (Node.js 20)
+├── worker/                     # Cloudflare Worker: Strava token exchange/refresh
+│   ├── src/index.js            # Holds the Strava Client Secret, verifies Firebase ID tokens
+│   ├── test/index.test.js      # npm test
+│   └── wrangler.toml           # Worker config (no secrets)
 ├── training-plan/              # Sample training plan data for testing
 │   ├── training_plan_v5.json   # 10-week Olympic triathlon plan
 │   └── W01-W10/                # 47 ZWO workout files
-├── AppsScript.gs               # Google Apps Script for Gmail polling
-├── firebase.json               # Firebase hosting + functions config
+├── firebase.json               # Firebase hosting config
 ├── firestore.rules             # Firestore security rules
 ├── firestore.indexes.json      # Firestore query indexes
 ├── storage.rules               # Firebase Storage rules
@@ -87,10 +86,9 @@ firebase deploy --only hosting
 | Project ID      | `apex-performance-1fe0a`                 |
 | Hosting URL     | https://apex-performance-1fe0a.web.app   |
 | Firestore       | europe-west1                             |
-| Functions       | us-central1                              |
+| Strava proxy    | Cloudflare Worker (`worker/`)            |
 | Auth            | Google Sign-In                           |
-| Node.js         | 20 (18 was decommissioned)               |
-| Plan            | Blaze (pay-as-you-go, usage within free) |
+| Plan            | Spark (free) — no Cloud Functions        |
 
 ## Key Files to Understand
 
@@ -111,7 +109,8 @@ All Firestore operations. Every function is a standalone async function:
 - `saveTrainingPlan()` / `loadTrainingPlan()`
 - `saveZwoFiles()` / `loadZwoFiles()`
 - `savePlanCompletions()` / `loadPlanCompletions()`
-- `loadPendingFits()` / `markPendingFitProcessed()`
+- `saveRaceDatesData()` / `loadRaceDatesData()`
+- `updateActivitiesTss()`
 
 ### js/fit-parser.js (~200 lines)
 Binary FIT protocol parser. Reads ArrayBuffer from .FIT files and extracts:
@@ -147,18 +146,9 @@ sport, startDate, duration, distance, avgHr, maxHr, avgPower, normalizedPower, a
 1. **Safari file inputs**: Hidden inputs don't fire `onchange`. Always use `document.createElement('input')` dynamically.
 2. **Chart.js category axis**: `min`/`max` options don't work. Slice the data arrays before creating the chart.
 3. **Firebase cache**: JS/CSS cached aggressively. `firebase.json` sets `no-cache`, and script tags have `?v=timestamp`.
-4. **Node.js version**: Functions require Node 20 in `engines` field. Node 18 was decommissioned.
+4. **No Cloud Functions**: the project is on the free Spark plan. Server-side code lives in the Cloudflare Worker (`worker/`).
 5. **Firestore 1MB limit**: Plan/ZWO data stored as stringified JSON in single docs. May need splitting for large plans.
 6. **Global variables**: If a `let` declaration is missing, the entire script after that point fails silently. Always run `node --check app.js` before deploying.
-
-## Email Pipeline Setup (Optional)
-
-See Section 7 of the Handover Memo. Requires:
-1. Deploy Cloud Function (`firebase deploy --only functions`)
-2. Set API key (stored in Secret Manager): `firebase functions:secrets:set APEX_API_KEY` — the function rejects every request until this is set
-3. Set up Google Apps Script at script.google.com with `AppsScript.gs`
-4. Update CONFIG values in the script
-5. Run `setup()` to create the 5-minute trigger
 
 ## Contact
 
