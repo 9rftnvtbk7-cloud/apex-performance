@@ -20,7 +20,7 @@ function makeEnv() {
     setTimeout: (fn) => 0, requestAnimationFrame() {}, confirm: () => true,
     Chart: function () { this.destroy = () => {}; this.update = () => {}; },
     sessionStorage: { getItem() {}, setItem() {}, removeItem() {} },
-    crypto: globalThis.crypto, URLSearchParams, Date, Math, JSON, Set, Map, Array, Object, String, Number, isNaN, parseInt, Promise,
+    crypto: globalThis.crypto, TextEncoder, URLSearchParams, Date, Math, JSON, Set, Map, Array, Object, String, Number, isNaN, parseInt, Promise,
   };
   ctx.globalThis = ctx;
   vm.createContext(ctx);
@@ -391,4 +391,53 @@ test('Plan tab renders name, version, meta, details and steps; plain plans rende
   run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
   assert.ok(!/plan-session-details/.test(el('planWeeks').innerHTML));
   assert.match(el('planHeader').innerHTML, /<span class="plan-version">v5/);
+});
+
+// ── Storage (block D) ──
+// In-memory Firestore stand-in for the plan collection
+function fakePlanDb(run, ctx) {
+  ctx.__store = new Map();
+  run(`currentUser = { uid: 'u' };
+    db.collection = () => ({ doc: () => ({ collection: () => ({ doc: id => ({
+      id, get: async () => ({ exists: __store.has(id), data: () => __store.get(id) }) }) }) }) });
+    db.batch = () => { const ops = []; return {
+      set: (ref, data) => ops.push(['set', ref.id, data]), delete: ref => ops.push(['del', ref.id]),
+      commit: async () => { for (const [op, id, data] of ops) op === 'set' ? __store.set(id, data) : __store.delete(id); } }; };`);
+  return ctx.__store;
+}
+
+test('Storage: normal plans stay in one document; the long fixture is far below the limit', async () => {
+  const { run, ctx } = makeEnv();
+  const store = fakePlanDb(run, ctx);
+  ctx.__text = fixture('plan_long.json');
+  assert.equal(await run(`saveTrainingPlan(normalizePlan(__text).plan)`), true);
+  assert.deepEqual([...store.keys()], ['current']);
+  assert.ok(store.get('current').bytes < 100 * 1024, `long plan is ${store.get('current').bytes} bytes`);
+  assert.equal((await run(`loadTrainingPlan()`)).weeks.length, 10);
+});
+
+test('Storage: a plan over 800 KB is split into parts and read back identically (emoji-safe)', async () => {
+  const { run, ctx } = makeEnv();
+  const store = fakePlanDb(run, ctx);
+  // ~2.6 MB of details with emoji straddling every possible split point
+  ctx.__text = fixture('plan_detailed.json');
+  run(`var __big = normalizePlan(__text).plan;
+       __big.weeks.forEach(w => w.sessions.forEach(s => { s.details = '💪é'.repeat(9000) + s.id; }));`);
+  assert.equal(await run(`saveTrainingPlan(__big)`), true);
+  const parts = store.get('current').parts;
+  assert.ok(parts >= 2, `parts=${parts}`);
+  for (let i = 0; i < parts; i++) assert.ok(Buffer.byteLength(store.get(`current_part_${i}`).data) <= 1024 * 1024);
+  const back = await run(`loadTrainingPlan()`);
+  assert.equal(JSON.stringify(back), run('JSON.stringify(__big)'));
+  // Saving a small plan afterwards removes the leftover parts
+  assert.equal(await run(`saveTrainingPlan(normalizePlan(__text).plan)`), true);
+  assert.deepEqual([...store.keys()], ['current']);
+});
+
+test('Storage: a missing part is reported, not silently ignored', async () => {
+  const { run, ctx } = makeEnv();
+  const store = fakePlanDb(run, ctx);
+  store.set('current', { parts: 2 });
+  store.set('current_part_0', { data: '{"weeks":', index: 0 });
+  await assert.rejects(run(`loadTrainingPlan()`), /part 2 of 2 is missing/);
 });

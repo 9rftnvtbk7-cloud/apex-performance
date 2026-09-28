@@ -209,28 +209,65 @@ let savedPlannerWeeks = null;
 
 
 // ── Training Plan persistence ──
+// ── Training plan storage ──
+// A plan is stored as a JSON string in plan/current. Firestore documents max out at 1 MiB, so a plan
+// larger than PLAN_DOC_MAX_BYTES is split into parts plan/current_part_0..N-1 (same collection, so
+// the existing security rule covers them) and plan/current only records how many parts there are.
+const PLAN_DOC_MAX_BYTES = 800 * 1024;
+const PLAN_PART_CHARS = 200000; // ≤ 800 KB per part even if every character took 4 bytes in UTF-8
+
+// Split a string into parts without cutting a UTF-16 surrogate pair (emoji) in half
+function splitPlanJson(json, size = PLAN_PART_CHARS) {
+  const parts = [];
+  for (let i = 0; i < json.length;) {
+    let end = Math.min(i + size, json.length);
+    const c = json.charCodeAt(end - 1);
+    if (end < json.length && c >= 0xD800 && c <= 0xDBFF) end--; // high surrogate: keep the pair together
+    parts.push(json.slice(i, end));
+    i = end;
+  }
+  return parts;
+}
+
 // Returns true when the plan was saved
 async function saveTrainingPlan(planData) {
   if (!currentUser) return false;
+  const col = db.collection('users').doc(currentUser.uid).collection('plan');
   try {
-    await db.collection('users').doc(currentUser.uid)
-      .collection('plan').doc('current').set({
-        plan: JSON.stringify(planData),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+    const json = JSON.stringify(planData);
+    const bytes = new TextEncoder().encode(json).length;
+    const prev = await col.doc('current').get();
+    const prevParts = prev.exists ? (prev.data().parts || 0) : 0;
+    const batch = db.batch();
+    let parts = 0;
+    if (bytes <= PLAN_DOC_MAX_BYTES) {
+      batch.set(col.doc('current'), { plan: json, bytes, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    } else {
+      const chunks = splitPlanJson(json);
+      parts = chunks.length;
+      chunks.forEach((data, index) => batch.set(col.doc(`current_part_${index}`), { data, index }));
+      batch.set(col.doc('current'), { parts, bytes, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+    for (let i = parts; i < prevParts; i++) batch.delete(col.doc(`current_part_${i}`)); // leftovers from a bigger plan
+    await batch.commit();
     return true;
   } catch(e) { console.error('Error saving plan:', e); return false; }
 }
 
+// Returns the saved plan object, null when there is none. Throws if a stored plan can't be read.
 async function loadTrainingPlan() {
   if (!currentUser) return null;
-  try {
-    const doc = await db.collection('users').doc(currentUser.uid)
-      .collection('plan').doc('current').get();
-    if (doc.exists && doc.data().plan) {
-      return JSON.parse(doc.data().plan);
-    }
-  } catch(e) { console.error('Error loading plan:', e); }
+  const col = db.collection('users').doc(currentUser.uid).collection('plan');
+  const doc = await col.doc('current').get();
+  if (!doc.exists) return null;
+  const d = doc.data();
+  if (d.plan) return JSON.parse(d.plan);
+  if (d.parts) {
+    const snaps = await Promise.all(Array.from({ length: d.parts }, (_, i) => col.doc(`current_part_${i}`).get()));
+    const missing = snaps.findIndex(p => !p.exists);
+    if (missing >= 0) throw new Error(`Saved plan is incomplete (part ${missing + 1} of ${d.parts} is missing)`);
+    return JSON.parse(snaps.map(p => p.data().data).join(''));
+  }
   return null;
 }
 

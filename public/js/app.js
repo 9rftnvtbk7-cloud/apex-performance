@@ -1503,7 +1503,12 @@ function downloadAllZwos() {
 
 async function loadSavedPlan() {
   if (typeof loadTrainingPlan === 'function') {
-    const saved = await loadTrainingPlan();
+    let saved = null;
+    try { saved = await loadTrainingPlan(); }
+    catch (err) {
+      console.error('Error loading plan:', err);
+      showPlanImportStatus('error', 'Your saved plan could not be loaded — please re-import it', [err.message]);
+    }
     // Normalise saved plans too, so older ones get ids, dates and recomputed TSS
     const normalized = saved ? normalizePlan(saved) : null;
     if (normalized && normalized.errors.length) {
