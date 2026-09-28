@@ -349,3 +349,46 @@ test('Detail fields: kept when valid, dropped with a warning when not, absent �
   assert.deepEqual({ ...s.steps[0] }, { label: 'A', duration: '10', target: null, rest: null });
   assert.equal(s.steps.length, 1);
 });
+
+// ── Display (block C) ──
+test('Markdown is rendered safely: markup only from known syntax, raw HTML shown as text', () => {
+  const { run, ctx } = makeEnv();
+  ctx.__md = '## Échauffement\n- 10min **Z1→Z2** (FC ≤ 135)\n- `<Ne pas>` sauter\n\n1. 3×8min @ 170W\n2. *récup* 2min\n\n> fatigue > 7/10 : 40min Z1\n<img src=x onerror="alert(1)"> & <script>alert(2)</script>';
+  const html = run('renderMarkdownSafe(__md)');
+  assert.ok(!/<img|<script/i.test(html), html);
+  assert.match(html, /&lt;img src=x onerror=&quot;alert\(1\)&quot;&gt; &amp; &lt;script&gt;/);
+  assert.match(html, /<div class="plan-md-h">Échauffement<\/div>/);
+  assert.match(html, /<ul><li>10min <strong>Z1→Z2<\/strong> \(FC ≤ 135\)<\/li><li><code>&lt;Ne pas&gt;<\/code> sauter<\/li><\/ul>/);
+  assert.match(html, /<ol><li>3×8min @ 170W<\/li><li><em>récup<\/em> 2min<\/li><\/ol>/);
+  assert.match(html, /<blockquote>fatigue &gt; 7\/10 : 40min Z1<\/blockquote>/);
+});
+
+test('Plan tab renders name, version, meta, details and steps; plain plans render as before', () => {
+  const { run, ctx, el } = makeEnv();
+  run(`zwoFiles = {}; planCompletions = {}; allActivities = [];`);
+  ctx.__text = fixture('plan_detailed.json');
+  run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
+  const header = el('planHeader').innerHTML, weeks = el('planWeeks').innerHTML;
+  assert.match(header, /Saint-Nolff Trail 30K — 10-week plan <span class="plan-version">v2\.1<\/span>/);
+  assert.match(header, /🏁 15 Nov 2026/);
+  assert.match(header, /10 weeks · 70 sessions/);
+  assert.match(weeks, /⏱ 50 min/);
+  assert.match(weeks, /❤️ ≤160 bpm/);
+  assert.match(weeks, /⚡ 170W \(85% FTP\)/);
+  assert.match(weeks, /<details class="plan-session-details"><summary>Details<\/summary>/);
+  assert.match(weeks, /<td>3×8min<\/td><td>8min<\/td><td>170W<\/td><td>2min Z1<\/td>/);
+  // Each session has its own tickable id
+  assert.match(weeks, /data-session-id="w1-2-tue"/);
+  // Long descriptions are clamped on the card and shown in full in the details
+  ctx.__text = fixture('plan_long.json');
+  run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
+  const long = el('planWeeks').innerHTML;
+  assert.match(long, /class="plan-session-desc is-clamped"/);
+  assert.match(long, /<p class="plan-md-pre">50min au total/);
+  assert.ok(!/<Ne pas>/.test(long)); // escaped
+  // Old v5 plan: no details element, header keeps its version
+  ctx.__text = fs.readFileSync(new URL('../training-plan/training_plan_v5.json', import.meta.url), 'utf8');
+  run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
+  assert.ok(!/plan-session-details/.test(el('planWeeks').innerHTML));
+  assert.match(el('planHeader').innerHTML, /<span class="plan-version">v5/);
+});

@@ -433,6 +433,47 @@ select[multiple].compare-select option:checked {
 .plan-week-current .plan-week-header { background: rgba(59, 130, 246, 0.06); }
 .plan-week-current .plan-week-num::after { content: ' — THIS WEEK'; font-size: 11px; font-weight: 700; color: var(--color-blue); letter-spacing: 0.5px; }
 
+/* ── Plan header & detailed sessions ── */
+.plan-title { font-size: 20px; font-weight: 700; color: var(--text-primary); overflow-wrap: anywhere; }
+.plan-version { display: inline-block; vertical-align: middle; font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--color-blue); background: rgba(59,130,246,0.12); border-radius: 6px; padding: 2px 8px; margin-left: 6px; }
+.plan-subtitle { font-size: 14px; color: var(--text-dim); margin-top: 4px; overflow-wrap: anywhere; }
+.plan-week-header { flex-wrap: wrap; gap: 8px; }
+.plan-week-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.plan-session-body { min-width: 0; }
+.plan-session-check { align-self: flex-start; }
+.plan-session-desc { white-space: pre-line; overflow-wrap: anywhere; }
+.plan-session-desc.is-clamped { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.plan-session-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: 12px; color: var(--text-dim); }
+.plan-session-body:has(.plan-session-details) { cursor: pointer; }
+.plan-session-details { margin-top: 8px; cursor: auto; }
+.plan-session-details > summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--color-blue); list-style: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; }
+.plan-session-details > summary::-webkit-details-marker { display: none; }
+.plan-session-details > summary::before { content: '▸'; transition: transform 0.15s; }
+.plan-session-details[open] > summary::before { transform: rotate(90deg); }
+.plan-md { font-size: 13px; color: var(--text-main); line-height: 1.6; margin-top: 8px; overflow-wrap: anywhere; }
+.plan-md p { margin: 6px 0; }
+.plan-md-pre { white-space: pre-line; }
+.plan-md-h { font-weight: 700; margin: 12px 0 4px; color: var(--text-main); }
+.plan-md ul, .plan-md ol { margin: 4px 0 8px 20px; }
+.plan-md li { margin: 2px 0; }
+.plan-md blockquote { border-left: 3px solid var(--color-amber); padding: 4px 10px; margin: 8px 0; color: var(--text-dim); background: rgba(245,158,11,0.06); border-radius: 0 6px 6px 0; }
+.plan-md code { font-family: 'JetBrains Mono'; font-size: 12px; background: var(--bg-base); border: 1px solid var(--border-color); border-radius: 4px; padding: 0 4px; }
+.plan-steps-wrap { overflow-x: auto; margin-top: 10px; }
+.plan-steps { width: 100%; border-collapse: collapse; font-size: 12px; }
+/* Auto column sizing wraps at spaces only; the wrapper scrolls if a value is still too wide */
+.plan-steps th, .plan-steps td { vertical-align: top; }
+.plan-steps th { text-align: left; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; padding: 6px 8px; border-bottom: 1px solid var(--border-color); }
+.plan-steps td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-main); }
+@media (max-width: 600px) {
+  .plan-week-header { padding: 12px 14px; }
+  .plan-sessions { padding: 4px 6px; }
+  .plan-session { gap: 8px; padding: 10px 4px; }
+  .plan-session-day { min-width: 28px; font-size: 11px; }
+  .plan-title { font-size: 18px; }
+  .plan-zwo-btn, .plan-zwo-pending { margin-left: 0; }
+  .plan-steps th, .plan-steps td { padding: 5px 5px; }
+}
+
 /* ── Plan import status ── */
 .plan-import-status { position: relative; border-radius: 12px; padding: 14px 44px 14px 16px; margin-bottom: 20px; font-size: 14px; border: 1px solid var(--border-color); }
 .plan-import-status[hidden] { display: none; }
@@ -450,7 +491,7 @@ select[multiple].compare-select option:checked {
 .plan-session-missed { font-size: 11px; font-weight: 600; color: var(--color-red); background: rgba(244,63,94,0.1); padding: 2px 8px; border-radius: 4px; }
 
 /* ── Plan session done state ── */
-.plan-session-done { opacity: 0.5; }
+.plan-session-done .plan-session-day, .plan-session-done .plan-session-top, .plan-session-done .plan-session-desc, .plan-session-done .plan-session-meta { opacity: 0.55; }
 .plan-session-done .plan-session-name { text-decoration: line-through; }
 .plan-session-check { display: flex; align-items: center; padding-top: 3px; }
 

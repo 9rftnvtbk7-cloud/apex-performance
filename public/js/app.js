@@ -1290,16 +1290,24 @@ function renderTrainingPlan() {
   document.getElementById('planEmpty').style.display = 'none';
   document.getElementById('planContent').style.display = 'block';
 
-  // Header
+  // Header: plan name + version, then race, date and athlete
   const cal = p.calibration || {};
+  const planName = p.name || p.planName || p.race || 'Training Plan';
+  const planVersion = p.version || p.plan_version || p.planVersion || '';
+  const raceIso = parseIsoDate(p.raceDate);
+  const raceDateText = raceIso ? raceIso.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (p.raceDate || '');
+  const subtitle = [p.name && p.race ? p.race : '', raceDateText ? `🏁 ${raceDateText}` : '', p.athlete || '',
+    `${(p.weeks || []).length} weeks · ${(p.weeks || []).reduce((n, w) => n + (w.sessions || []).length, 0)} sessions`,
+    p.generated ? `generated ${p.generated}` : ''].filter(Boolean).map(escapeHtml).join(' · ');
+  const ftp = cal.ftp_watts || p.ftpWatts;
   document.getElementById('planHeader').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
-      <div>
-        <div style="font-size:20px;font-weight:700;color:var(--text-primary)">${escapeHtml(p.race || 'Training Plan')}</div>
-        <div style="font-size:14px;color:var(--text-muted);margin-top:4px">${escapeHtml(p.athlete)} · ${escapeHtml(p.race_date)} · ${escapeHtml(p.plan_version)}</div>
+      <div style="min-width:0">
+        <div class="plan-title">${escapeHtml(planName)}${planVersion ? ` <span class="plan-version">${escapeHtml(planVersion)}</span>` : ''}</div>
+        <div class="plan-subtitle">${subtitle}</div>
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        ${cal.ftp_watts ? `<div class="plan-cal-chip">FTP <strong>${escapeHtml(cal.ftp_watts)}W</strong></div>` : ''}
+        ${ftp ? `<div class="plan-cal-chip">FTP <strong>${escapeHtml(ftp)}W</strong></div>` : ''}
         ${cal.run_race_target_pace ? `<div class="plan-cal-chip">Run Target <strong>${escapeHtml(cal.run_race_target_pace)}</strong></div>` : ''}
         ${cal.bike_race_target_np ? `<div class="plan-cal-chip">Bike Target <strong>${escapeHtml(cal.bike_race_target_np)}</strong></div>` : ''}
         ${cal.swim_target ? `<div class="plan-cal-chip">Swim Target <strong>${escapeHtml(cal.swim_target)}</strong></div>` : ''}
@@ -1344,7 +1352,8 @@ function renderTrainingPlan() {
   const matches = matchPlanToActivities(p);
   for (let wi = 0; wi < (p.weeks || []).length; wi++) {
     const week = p.weeks[wi];
-    const phaseBg = safeColor(week.color, '#1e2030');
+    // Phase colour from the plan; readable neutral text when the plan has none
+    const phaseBg = safeColor(week.color, 'var(--text-dim)');
     const isCurrentWeek = isWeekCurrent(week, p, now);
     const weekStart = planWeekStart(week, p);
     // Actual TSS for weeks that have started (all activities in the week, planned or not)
@@ -1357,7 +1366,7 @@ function renderTrainingPlan() {
     wh += `<div class="plan-week-card${isCurrentWeek ? ' plan-week-current' : ''}" data-plan-week="${wi}" id="plan-week-${wi}">`;
     wh += `<div class="plan-week-header" style="border-left:4px solid ${isCurrentWeek ? 'var(--color-blue)' : phaseBg}">`;
     wh += `<div><span class="plan-week-num">W${escapeHtml(week.week)}</span> <span class="plan-week-phase" style="color:${phaseBg}">${escapeHtml(week.phase)}</span></div>`;
-    wh += `<div style="display:flex;align-items:center;gap:12px"><span style="font-size:13px;color:var(--text-dim)">${escapeHtml(week.dates)}</span>${actualHtml}<span class="plan-week-tss">TSS ${escapeHtml(week.tss)}</span></div>`;
+    wh += `<div class="plan-week-meta"><span style="font-size:13px;color:var(--text-dim)">${escapeHtml(week.dates)}</span>${actualHtml}<span class="plan-week-tss">TSS ${escapeHtml(week.tss)}</span></div>`;
     wh += `</div>`;
     if (week.note) wh += `<div class="plan-week-note">${escapeHtml(week.note)}</div>`;
     wh += `<div class="plan-sessions">`;
@@ -1386,13 +1395,80 @@ function renderTrainingPlan() {
         wh += `<span class="plan-zwo-pending" title="Import ZWO files to enable download">📄 .zwo</span>`;
       }
       wh += `</div>`;
-      wh += `<div class="plan-session-desc">${escapeHtml(s.description)}</div>`;
+      if (s.description) wh += `<div class="plan-session-desc${s.description.length > 200 ? ' is-clamped' : ''}">${escapeHtml(s.description)}</div>`;
+      wh += sessionMetaHtml(s);
+      wh += sessionDetailsHtml(s);
       wh += `</div></div>`;
     }
     wh += `</div></div>`;
   }
   document.getElementById('planWeeks').innerHTML = wh;
 }
+
+// Duration, HR and power targets under the session name
+function sessionMetaHtml(s) {
+  const items = [];
+  if (s.durationMin) items.push(`⏱ ${escapeHtml(fmtMinutes(s.durationMin))}`);
+  if (s.hrTarget) items.push(`❤️ ${escapeHtml(s.hrTarget)}`);
+  if (s.powerTarget) items.push(`⚡ ${escapeHtml(s.powerTarget)}`);
+  return items.length ? `<div class="plan-session-meta">${items.map(i => `<span>${i}</span>`).join('')}</div>` : '';
+}
+function fmtMinutes(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h}h${m ? String(m).padStart(2, '0') : ''}` : `${m} min`; }
+
+// Expandable details: Markdown text, steps table, and the full description when it was clamped
+function sessionDetailsHtml(s) {
+  const parts = [];
+  if (s.description && s.description.length > 200 && !s.details) parts.push(`<div class="plan-md"><p class="plan-md-pre">${escapeHtml(s.description)}</p></div>`);
+  if (s.details) parts.push(`<div class="plan-md">${renderMarkdownSafe(s.details)}</div>`);
+  if (s.steps && s.steps.length) {
+    parts.push(`<div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Step</th><th>Time</th><th>Target</th><th>Rest</th></tr></thead><tbody>${
+      s.steps.map(st => `<tr><td>${escapeHtml(st.label)}</td><td>${escapeHtml(st.duration || '—')}</td><td>${escapeHtml(st.target || '—')}</td><td>${escapeHtml(st.rest || '—')}</td></tr>`).join('')
+    }</tbody></table></div>`);
+  }
+  return parts.length ? `<details class="plan-session-details"><summary>Details</summary>${parts.join('')}</details>` : '';
+}
+
+// Minimal, safe Markdown → HTML. Every piece of text is escaped first; only these constructs
+// become markup: # headings, - / * / • and 1. lists, > quotes, **bold**, *italic* / _italic_,
+// `code`, paragraphs and line breaks. Raw HTML in the source is shown as text, links as text.
+function renderMarkdownSafe(md) {
+  const inline = t => escapeHtml(t)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g, '$1<em>$2</em>')
+    .replace(/(^|[^\w])_([^_\n]+)_(?!\w)/g, '$1<em>$2</em>');
+  const out = [];
+  let list = null, para = [];
+  const flushPara = () => { if (para.length) { out.push(`<p>${para.map(inline).join('<br>')}</p>`); para = []; } };
+  const flushList = () => { if (list) { out.push(`<${list.tag}>${list.items.map(i => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`); list = null; } };
+  for (const rawLine of String(md).replace(/\r\n?/g, '\n').split('\n')) {
+    const line = rawLine.trimEnd();
+    let m;
+    if (!line.trim()) { flushPara(); flushList(); continue; }
+    if ((m = line.match(/^\s*(#{1,6})\s+(.*)$/))) { flushPara(); flushList(); out.push(`<div class="plan-md-h">${inline(m[2])}</div>`); continue; }
+    if ((m = line.match(/^\s*>\s?(.*)$/))) { flushPara(); flushList(); out.push(`<blockquote>${inline(m[1])}</blockquote>`); continue; }
+    const ul = line.match(/^\s*[-*•]\s+(.*)$/), ol = line.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (ul || ol) {
+      flushPara();
+      const tag = ul ? 'ul' : 'ol';
+      if (!list || list.tag !== tag) { flushList(); list = { tag, items: [] }; }
+      list.items.push((ul || ol)[1]);
+      continue;
+    }
+    flushList();
+    para.push(line.trim());
+  }
+  flushPara(); flushList();
+  return out.join('');
+}
+
+// Tap anywhere on a session card with details to expand/collapse it
+document.addEventListener('click', e => {
+  const body = e.target.closest?.('.plan-session-body');
+  if (!body || e.target.closest('button, a, input, summary, .plan-session-details')) return;
+  const det = body.querySelector('.plan-session-details');
+  if (det) det.open = !det.open;
+});
 
 function togglePlanZones() {
   const el = document.getElementById('planZones');
