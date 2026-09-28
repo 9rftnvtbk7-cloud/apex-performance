@@ -37,6 +37,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: va
 .account-menu-item--danger { color: var(--color-red); }
 .account-menu-sep { height: 1px; background: var(--border-color); margin: 6px 4px; }
 
+/* ── THRESHOLDS ── */
+.threshold-save { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.threshold-del { color: var(--text-muted); padding: 2px 6px; }
+.threshold-del:hover:not(:disabled) { color: var(--color-red); }
+.threshold-del:disabled { opacity: 0.3; cursor: default; }
+
 /* ── SETTINGS DANGER ZONE ── */
 .danger-zone { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .danger-zone-text { font-size: 13px; color: var(--text-dim); }

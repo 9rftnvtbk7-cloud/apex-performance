@@ -26,7 +26,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -464,4 +464,52 @@ test('Next 2 days shows today and tomorrow from the plan, tickable, with rest da
   // No plan → card hidden
   run(`trainingPlan = null; renderUpcomingSessions()`);
   assert.equal(el('upcomingCard').style.display, 'none');
+});
+
+// ── Threshold history ──
+test('Thresholds: each activity is scored with the values valid on its date', () => {
+  const { run } = makeEnv();
+  run(`thresholdHistory = normalizeThresholdHistory([
+         { from: '2000-01-01', ftp: 200, lthr: 160, pace: '5:00', swimPace: '2:00' },
+         { from: '2026-06-01', ftp: 250, lthr: 165, pace: '4:30', swimPace: '1:45' }]);`);
+  // 1h at 250W NP: IF 1.25 in May (FTP 200) → 156 TSS; IF 1.0 in June (FTP 250) → 100 TSS
+  assert.equal(run(`computeTSS({ sport: 'cycling', duration: 3600, np: 250, startDate: new Date(2026, 4, 20) }).tss`), 156);
+  assert.equal(run(`computeTSS({ sport: 'cycling', duration: 3600, np: 250, startDate: new Date(2026, 5, 1, 6) }).tss`), 100);
+  // Before the first entry → first entry
+  assert.equal(run(`thresholdsAt(new Date(1999, 0, 1)).ftp`), 200);
+  assert.equal(run(`currentThresholds().ftp`), 250);
+});
+
+test('Thresholds: upsert replaces the same date, keeps order; bad stored values get defaults', () => {
+  const { run } = makeEnv();
+  run(`var __h = normalizeThresholdHistory([{ from: '2026-06-01', ftp: 250, lthr: 165, pace: '4:30', swimPace: '1:45' },
+         { from: '2000-01-01', ftp: 200, lthr: 160, pace: 'fast', swimPace: '2:00' }, { from: 'bad', ftp: 1 }]);`);
+  assert.deepEqual([...run(`__h.map(h => h.from)`)], ['2000-01-01', '2026-06-01']);
+  assert.equal(run(`__h[0].pace`), '5:00');
+  run(`__h = upsertThresholds(__h, { from: '2026-06-01', ftp: 260, lthr: 165, pace: '4:30', swimPace: '1:45' });
+       __h = upsertThresholds(__h, { from: '2026-03-01', ftp: 230, lthr: 162, pace: '4:40', swimPace: '1:50' });`);
+  assert.deepEqual([...run(`__h.map(h => h.from + ':' + h.ftp)`)], ['2000-01-01:200', '2026-03-01:230', '2026-06-01:260']);
+});
+
+test('Thresholds: saving from a date rescores only activities from that date', async () => {
+  const { run, el } = makeEnv();
+  run(`thresholdHistory = [{ from: '2000-01-01', ftp: 200, lthr: 165, pace: '5:00', swimPace: '2:00' }];
+       allActivities = [
+         { id: 'may', sport: 'cycling', duration: 3600, np: 200, startDate: new Date(2026, 4, 10), tss: 100, intensityFactor: 1 },
+         { id: 'jul', sport: 'cycling', duration: 3600, np: 200, startDate: new Date(2026, 6, 10), tss: 100, intensityFactor: 1 }];
+       var __saved = null; saveThresholdHistory = async h => { __saved = h; return true; };
+       var __updated = []; updateActivitiesTss = a => { __updated = a.map(x => x.id); };
+       refreshDashboard = () => {}; saveSettings = () => {};`);
+  el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:45';
+  el('inputThresholdFrom').value = '2026-06-01';
+  assert.equal(await run('saveThresholdsFromInputs()'), true);
+  assert.equal(run('__saved.length'), 2);
+  assert.equal(run(`allActivities[0].tss`), 100);   // May unchanged
+  assert.equal(run(`allActivities[1].tss`), 64);    // July: 200W at FTP 250 → IF 0.8 → 64
+  assert.deepEqual([...run('__updated')], ['jul']);
+  // Invalid pace → rejected, nothing saved
+  el('inputPace').value = 'fast';
+  run('__saved = null');
+  assert.equal(await run('saveThresholdsFromInputs()'), false);
+  assert.equal(run('__saved'), null);
 });

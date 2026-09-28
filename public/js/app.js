@@ -78,10 +78,12 @@ function switchTab(tabId, btn) {
 // TSS Calculation
 // ══════════════════════════════════════════════
 function computeTSS(act) {
-  const ftp = +document.getElementById('inputFtp').value || 200;
-  const lthr = +document.getElementById('inputLthr').value || 165;
-  const ts = paceToSpd(document.getElementById('inputPace').value || '5:00');
-  const css = swimPaceToSpd(document.getElementById('inputSwimPace').value || '2:00');
+  // Thresholds that were valid on the activity's date (see thresholds.js)
+  const th = thresholdsAt(act.startDate);
+  const ftp = +th.ftp || 200;
+  const lthr = +th.lthr || 165;
+  const ts = paceToSpd(th.pace || '5:00');
+  const css = swimPaceToSpd(th.swimPace || '2:00');
   const d = act.duration;
   // Power-based TSS for cycling only: running power is not comparable to cycling FTP
   if (isCyc(act.sport) && ftp > 0 && (act.np > 0 || act.avgPower > 0)) { const p = act.np || act.avgPower, i = p / ftp; return { tss: Math.round(d * p * i / (ftp * 3600) * 100), intensityFactor: +i.toFixed(2) }; }

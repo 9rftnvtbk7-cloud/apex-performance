@@ -19,6 +19,16 @@ async function loadUserData() {
       if (s.thresholdPace) document.getElementById('inputPace').value = s.thresholdPace;
       if (s.swimPace) document.getElementById('inputSwimPace').value = s.swimPace;
     }
+    // Threshold history; first load migrates the single saved settings to one entry "from the start"
+    const thDoc = await db.collection('users').doc(uid).collection('settings').doc('thresholds').get();
+    thresholdHistory = normalizeThresholdHistory(thDoc.exists ? thDoc.data().history : []);
+    if (!thresholdHistory.length) {
+      thresholdHistory = [{ from: THRESHOLDS_FROM_START, ...readThresholdInputs() }];
+      saveThresholdHistory(thresholdHistory);
+    }
+    fillThresholdInputs(currentThresholds());
+    document.getElementById('inputThresholdFrom').value = localDateKey(new Date());
+    renderThresholdHistory();
 
     // Load activities
     const snap = await db.collection('users').doc(uid).collection('activities')
@@ -157,16 +167,31 @@ async function updateActivitiesTss(activities) {
   }
 }
 
-// ── Save athlete settings ──
+// ── Save the dated threshold history (settings/thresholds) ──
+async function saveThresholdHistory(history) {
+  if (!currentUser) return false;
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('settings').doc('thresholds').set({
+      history, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    return true;
+  } catch (err) {
+    console.error('Threshold save error:', err);
+    showToast('Could not save thresholds', '❌');
+    return false;
+  }
+}
+
+// ── Save athlete settings (current thresholds, kept for compatibility) ──
 async function saveSettings() {
   if (!currentUser) return;
   const uid = currentUser.uid;
   try {
     await db.collection('users').doc(uid).collection('settings').doc('athlete').set({
-      ftp: +document.getElementById('inputFtp').value || 200,
-      lthr: +document.getElementById('inputLthr').value || 165,
-      thresholdPace: document.getElementById('inputPace').value || '5:00',
-      swimPace: document.getElementById('inputSwimPace').value || '2:00',
+      ftp: currentThresholds().ftp,
+      lthr: currentThresholds().lthr,
+      thresholdPace: currentThresholds().pace,
+      swimPace: currentThresholds().swimPace,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
   } catch (err) {

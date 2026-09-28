@@ -63,11 +63,19 @@
     <div class="settings-panel" id="settingsPanel">
       <div class="settings-panel-title">Athlete Settings</div>
       <div class="settings-grid">
-        <div><label class="settings-label" for="inputFtp">FTP (watts)</label><input type="number" class="settings-input" id="inputFtp" value="200" onchange="recalcAll()"></div>
-        <div><label class="settings-label" for="inputLthr">LTHR (bpm)</label><input type="number" class="settings-input" id="inputLthr" value="165" onchange="recalcAll()"></div>
-        <div><label class="settings-label" for="inputPace">Threshold Pace (min/km)</label><input type="text" class="settings-input" id="inputPace" value="5:00" onchange="recalcAll()"></div>
-        <div><label class="settings-label" for="inputSwimPace">Swim CSS Pace (min/100m)</label><input type="text" class="settings-input" id="inputSwimPace" value="2:00" onchange="recalcAll()"></div>
+        <div><label class="settings-label" for="inputFtp">FTP (watts)</label><input type="number" class="settings-input" id="inputFtp" value="200" min="1"></div>
+        <div><label class="settings-label" for="inputLthr">LTHR (bpm)</label><input type="number" class="settings-input" id="inputLthr" value="165" min="1"></div>
+        <div><label class="settings-label" for="inputPace">Threshold Pace (min/km)</label><input type="text" class="settings-input" id="inputPace" value="5:00" inputmode="numeric" placeholder="4:30"></div>
+        <div><label class="settings-label" for="inputSwimPace">Swim CSS Pace (min/100m)</label><input type="text" class="settings-input" id="inputSwimPace" value="2:00" inputmode="numeric" placeholder="1:45"></div>
       </div>
+      <div class="threshold-save">
+        <label class="settings-label" for="inputThresholdFrom" style="margin:0">Effective from</label>
+        <input type="date" class="compare-date-input" id="inputThresholdFrom">
+        <button class="btn-base btn-upload" onclick="saveThresholdsFromInputs()">Save thresholds</button>
+        <span class="danger-zone-text">Activities from this date on are rescored; earlier ones keep their thresholds.</span>
+      </div>
+      <div class="settings-panel-title" style="margin-top:20px;font-size:14px">Threshold history</div>
+      <div id="thresholdHistory"></div>
       <div class="danger-zone" id="dangerZone" style="display:none">
         <div class="danger-zone-text"><strong style="color:var(--color-red)">Danger zone</strong> — permanently delete every activity from your account. Strava activities can be re-imported with Sync.</div>
         <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear">🗑 Delete all activities</button>
@@ -350,6 +358,7 @@
 <script src="js/database.js?v=202609281824"></script>
 <script src="js/fit-parser.js?v=202609281824"></script>
 <script src="js/strava.js?v=202609281824"></script>
+<script src="js/thresholds.js?v=1"></script>
 <script src="js/plan-import.js?v=202609281824"></script>
 <script src="js/app.js?v=202609281824"></script>
 </body>
