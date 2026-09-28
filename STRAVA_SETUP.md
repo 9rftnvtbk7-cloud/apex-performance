@@ -36,10 +36,14 @@ In Terminal, from your project folder:
 ```bash
 cd functions && npm install && cd ..
 
-firebase functions:config:set strava.client_id="12345" strava.client_secret="abcdef1234567890"
+# Client ID is not secret: put it in functions/.env (git-ignored)
+echo 'STRAVA_CLIENT_ID=12345' > functions/.env
+
+# Client Secret goes to Google Secret Manager (you will be prompted for the value)
+firebase functions:secrets:set STRAVA_CLIENT_SECRET
 ```
 
-Replace `12345` with your Client ID and `abcdef1234567890` with your Client Secret.
+Replace `12345` with your Client ID. Never commit the Client Secret.
 
 Then deploy the functions:
 
@@ -82,7 +86,7 @@ firebase deploy --only hosting,functions
 
 ## Troubleshooting
 
-**"Strava API credentials not configured on server"** — Run the `firebase functions:config:set` command from Step 2B and redeploy functions.
+**"Strava API credentials not configured on server"** — Set `STRAVA_CLIENT_ID` in `functions/.env` and the `STRAVA_CLIENT_SECRET` secret from Step 2B and redeploy functions.
 
 **"Token exchange failed"** — Check that your Authorization Callback Domain at strava.com/settings/api exactly matches `apex-performance-1fe0a.web.app` (no https://, no trailing slash).
 

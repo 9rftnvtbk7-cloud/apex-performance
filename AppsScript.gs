@@ -29,7 +29,7 @@ const CONFIG = {
   // The email address registered in your Apex app (for user lookup)
   APEX_USER_EMAIL: "YOUR_EMAIL@gmail.com",
   
-  // API key for authentication (set the same in Firebase config)
+  // API key for authentication — must match: firebase functions:secrets:set APEX_API_KEY
   API_KEY: "YOUR_SECRET_API_KEY_HERE",
   
   // Gmail label for processed emails (created automatically)

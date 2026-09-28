@@ -55,10 +55,10 @@ firebase deploy --only hosting
 ## Project Structure
 
 ```
-├── index.html                  # Main app shell (all 5 tabs)
-├── css/
-│   └── styles.css              # Complete dark theme
-├── js/
+├── public/                     # Everything served by Firebase Hosting
+│   ├── index.html              # Main app shell (all 5 tabs)
+│   ├── css/styles.css          # Complete dark theme
+│   └── js/
 │   ├── app.js                  # Core logic (~1160 lines) - PMC, charts, comparison, planner, plan
 │   ├── database.js             # Firestore CRUD operations
 │   ├── auth.js                 # Firebase Auth (Google Sign-In)
@@ -155,7 +155,7 @@ sport, startDate, duration, distance, avgHr, maxHr, avgPower, normalizedPower, a
 
 See Section 7 of the Handover Memo. Requires:
 1. Deploy Cloud Function (`firebase deploy --only functions`)
-2. Set API key: `firebase functions:config:set apex.api_key="your-secret"`
+2. Set API key (stored in Secret Manager): `firebase functions:secrets:set APEX_API_KEY` — the function rejects every request until this is set
 3. Set up Google Apps Script at script.google.com with `AppsScript.gs`
 4. Update CONFIG values in the script
 5. Run `setup()` to create the 5-minute trigger

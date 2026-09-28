@@ -1,0 +1,11 @@
+# Secrets
+.env
+.env.*
+*.secret.local
+
+# Dependencies and build caches
+node_modules/
+.firebase/
+
+# Logs
+*.log

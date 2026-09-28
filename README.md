@@ -35,14 +35,14 @@ firebase deploy --only firestore:rules
 ## File Structure
 
 ```
-index.html              # App shell (all 5 tabs)
-css/styles.css          # Dark theme styles
-js/app.js               # Core app logic
-js/strava.js            # Strava OAuth + activity sync
-js/database.js          # Firestore CRUD
-js/auth.js              # Firebase Auth (Google Sign-In)
-js/firebase-config.js   # Firebase credentials
-js/fit-parser.js        # Binary FIT file parser
+public/index.html              # App shell (all 5 tabs)
+public/css/styles.css          # Dark theme styles
+public/js/app.js               # Core app logic
+public/js/strava.js            # Strava OAuth + activity sync
+public/js/database.js          # Firestore CRUD
+public/js/auth.js              # Firebase Auth (Google Sign-In)
+public/js/firebase-config.js   # Firebase credentials
+public/js/fit-parser.js        # Binary FIT file parser
 functions/index.js      # Cloud Functions (email ingestion + Strava token exchange)
 functions/package.json  # Function dependencies
 AppsScript.gs           # Gmail polling script

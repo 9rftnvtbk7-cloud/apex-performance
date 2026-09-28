@@ -21,14 +21,15 @@ Triathlon fitness tracking web app. Users upload FIT files (or sync via Strava),
 ## File Structure
 
 ```
-index.html                 # App shell — all 5 tabs (Overview, Compare, Plan, Planner, Log)
-css/styles.css             # Dark-theme styles (~270 lines)
-js/app.js                  # Core app logic (~1200 lines) — charts, comparison, plan, planner
-js/auth.js                 # Firebase Auth with Google Sign-In
-js/database.js             # Firestore CRUD operations
-js/firebase-config.js      # Firebase project credentials
-js/fit-parser.js           # Binary FIT protocol parser (ArrayBuffer/DataView)
-js/strava.js               # Strava OAuth + activity sync
+public/                    # Firebase Hosting root — ONLY this folder is served
+  index.html               # App shell — all 5 tabs (Overview, Compare, Plan, Planner, Log)
+  css/styles.css           # Dark-theme styles
+  js/app.js                # Core app logic — charts, comparison, plan, planner
+  js/auth.js               # Firebase Auth with Google Sign-In
+  js/database.js           # Firestore CRUD operations
+  js/firebase-config.js    # Firebase project credentials (public by design)
+  js/fit-parser.js         # Binary FIT protocol parser (ArrayBuffer/DataView)
+  js/strava.js             # Strava OAuth + activity sync
 functions/index.js         # Cloud Functions: email ingestion + Strava token exchange
 functions/package.json     # Node 22, firebase-admin, firebase-functions v7, busboy
 AppsScript.gs              # Gmail polling script (runs every 5 min)
@@ -79,9 +80,7 @@ Always declare state variables at the top of `app.js`. An undeclared variable (l
 ### Syntax Validation
 Always validate JavaScript before deploying:
 ```bash
-node --check js/app.js
-node --check js/database.js
-node --check js/strava.js
+for f in public/js/*.js functions/index.js; do node --check "$f"; done
 ```
 A stray brace or syntax error will silently break the entire app with no console output.
 
@@ -115,17 +114,24 @@ firebase deploy --only firestore:rules
 
 ## Known Issues and Gotchas
 
-1. **Hosting serves from root**: `firebase.json` has `"public": "."` — the entire repo root is served. The `js/` and `css/` subdirectories contain the actual source; root-level `app.js` and `styles.css` are older copies that should not be edited.
+1. **Hosting serves only `public/`**: never put docs, logs, functions code or secrets in `public/` — everything in it is downloadable from the live site.
 2. **Compare charts clipping**: Bottom of comparison charts can clip if container height is too small. `.compare-chart-wrap` uses `min-height: 300px` with padding.
 3. **Cloud Functions push permissions**: Pushing to GitHub from Claude Code is currently blocked (GitHub App not installed for this org). Deploy must be done manually or via GitHub Codespaces.
 4. **Apps Script setup**: The Gmail polling script (`AppsScript.gs`) must be deployed separately in Google Apps Script console and requires a time-based trigger (every 5 minutes).
 
 ## Development Workflow
 
-1. Make changes to files in `js/`, `css/`, or `index.html`
-2. Validate: `node --check js/app.js && node --check js/database.js`
+1. Make changes to files in `public/` (`js/`, `css/`, `index.html`)
+2. Validate: `for f in public/js/*.js; do node --check "$f"; done`
 3. Test locally: `firebase serve --only hosting` (requires Firebase CLI)
 4. Deploy: `firebase deploy --only hosting`
+
+## Security Rules
+
+- **Secrets never go in git.** `STRAVA_CLIENT_SECRET` and `APEX_API_KEY` live in Secret Manager (`firebase functions:secrets:set <NAME>`) and are read with `defineSecret`. Only non-secret values (`STRAVA_CLIENT_ID`) go in `functions/.env`, which is git-ignored.
+- **Never interpolate data into HTML unescaped.** Use `escapeHtml()` for every value inserted via `innerHTML`/template strings (including attributes), `safeColor()` for colours in `style`, and pass strings to inline handlers via `data-*` attributes, not `onclick="fn('${value}')"`.
+- **Browser-called Cloud Functions must verify the Firebase ID token** (`requireFirebaseUser`); the client sends it via `callAuthedFunction()` in `strava.js`.
+- **Dates:** use `localDateKey()` / `addDays()` from `app.js` — never `toISOString().slice(0, 10)` for calendar days (it is UTC and shifts days in Europe).
 
 ## Coding Conventions
 
