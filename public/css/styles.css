@@ -750,3 +750,12 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .danger-zone__title { font-weight: 600; }
 @media (max-width: 480px) { .settings-grid { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .plan-steps th, .plan-steps td { padding: 8px 7px; } .workout-export .plan-zwo-btn { font-size: 13px; } }
+
+/* Settings: threshold history list */
+.threshold-list { background: var(--bg-card-sub); border-radius: var(--r-lg); overflow: hidden; }
+.threshold-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--border-subtle); }
+.threshold-row:first-child { border-top: none; }
+.threshold-row__main { flex: 1; min-width: 0; }
+.threshold-row__title { font-size: 15px; font-weight: 600; }
+.threshold-row__meta { font-size: 13px; color: var(--text-dim); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.threshold-del[disabled] { opacity: .35; cursor: default; }

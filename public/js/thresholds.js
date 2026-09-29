@@ -94,9 +94,11 @@ function renderThresholdHistory() {
   if (!el) return;
   if (!thresholdHistory.length) { el.innerHTML = ''; return; }
   const rows = [...thresholdHistory].reverse().map((h, i) => {
-    const from = h.from === THRESHOLDS_FROM_START ? 'start' : h.from;
-    return `<tr><td>${escapeHtml(from)}${i === 0 ? ' <span class="plan-version">current</span>' : ''}</td><td>${escapeHtml(h.ftp)} W</td><td>${escapeHtml(h.lthr)} bpm</td><td>${escapeHtml(h.pace)}/km</td><td>${escapeHtml(h.swimPace)}/100m</td>
-      <td><button class="btn-reset threshold-del" data-from="${escapeHtml(h.from)}" onclick="deleteThresholdEntry(this.dataset.from)" aria-label="Delete thresholds from ${escapeHtml(from)}"${thresholdHistory.length <= 1 ? ' disabled' : ''}>✕</button></td></tr>`;
+    const d = h.from === THRESHOLDS_FROM_START ? null : parseIsoDate(h.from);
+    const from = d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : h.from === THRESHOLDS_FROM_START ? 'Start' : h.from;
+    return `<div class="threshold-row"><div class="threshold-row__main"><div class="threshold-row__title">${d ? 'From ' : ''}${escapeHtml(from)}${i === 0 ? ' <span class="plan-version">current</span>' : ''}</div>
+      <div class="threshold-row__meta">FTP ${escapeHtml(h.ftp)} W · LTHR ${escapeHtml(h.lthr)} bpm · Run ${escapeHtml(h.pace)}/km · Swim ${escapeHtml(h.swimPace)}/100 m</div></div>
+      <button class="icon-btn threshold-del" data-from="${escapeHtml(h.from)}" onclick="deleteThresholdEntry(this.dataset.from)" aria-label="Delete thresholds from ${escapeHtml(from)}"${thresholdHistory.length <= 1 ? ' disabled' : ''}>✕</button></div>`;
   }).join('');
-  el.innerHTML = `<div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>From</th><th>FTP</th><th>LTHR</th><th>Run pace</th><th>Swim CSS</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  el.innerHTML = `<div class="threshold-list">${rows}</div>`;
 }
