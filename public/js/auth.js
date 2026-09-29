@@ -30,6 +30,11 @@ async function signInWithGoogle() {
   try {
     await auth.signInWithPopup(googleProvider);
   } catch (err) {
+    // Installed app (standalone) or blocked popup: fall back to a full-page redirect
+    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(err.code)) {
+      try { await auth.signInWithRedirect(googleProvider); return; } catch (e) { err = e; }
+    }
+    if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
     console.error('Sign-in error:', err);
     showToast('Sign-in failed: ' + err.message, '❌');
   }

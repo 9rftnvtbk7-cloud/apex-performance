@@ -23,6 +23,11 @@
 
 body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: var(--text-main); min-height: 100vh; line-height: 1.5; }
 
+/* ── Icons (sprite in index.html) ── */
+.icon { width: 1.15em; height: 1.15em; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; vertical-align: -0.2em; }
+.nav-tab { display: inline-flex; align-items: center; gap: 8px; }
+.week-summary-sport-icon .icon { width: 24px; height: 24px; color: var(--text-dim); }
+
 /* Visible keyboard focus everywhere (inputs keep their blue border on click) */
 :focus-visible { outline: 2px solid var(--color-blue); outline-offset: 2px; }
 /* Unstyled button for clickable text/legend items */
@@ -283,10 +288,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: va
   .user-pill { padding: 4px 10px 4px 4px; }
   .user-name { font-size: 12px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Nav tabs: horizontal scroll */
-  .nav-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; scrollbar-width: none; -ms-overflow-style: none; }
-  .nav-tabs::-webkit-scrollbar { display: none; }
-  .nav-tab { padding: 9px 14px; font-size: 13px; }
+  /* Nav tabs: bottom tab bar (thumb reach, like native apps) */
+  .nav-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 150; width: 100%; margin: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0;
+    border-radius: 0; border-width: 1px 0 0; padding: 4px 2px calc(4px + env(safe-area-inset-bottom)); background: rgba(18,20,28,0.96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .nav-tab { flex-direction: column; gap: 3px; padding: 6px 0; font-size: 10px; font-weight: 600; border-radius: 10px; min-width: 0; }
+  .nav-tab .icon { width: 22px; height: 22px; }
+  .nav-tab.is-active { background: transparent; color: var(--color-blue); }
+  .nav-tab:hover { background: transparent; }
+  .app-main { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .toast-notification { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .btn-label { display: none; }
+  .app-header { padding-top: calc(12px + env(safe-area-inset-top)); }
 
   /* Stat cards */
   .stat-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }

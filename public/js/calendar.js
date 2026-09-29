@@ -74,7 +74,6 @@ function renderCalendar(now = new Date()) {
   const actsByDay = {};
   for (const a of allActivities) (actsByDay[localDateKey(a.startDate)] ||= []).push(a);
   const month = (calendarCursor || now).getMonth();
-  const sportEmojis = { bike: '🚴', run: '🏃', swim: '🏊', strength: '💪', 'strength+swim': '💪🏊', rest: '😴', race: '🏁' };
 
   let html = `<div class="cal-grid cal-grid--${calendarView}">`;
   if (calendarView === 'month') html += ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Week'].map(d => `<div class="cal-head">${d}</div>`).join('');
@@ -92,7 +91,7 @@ function renderCalendar(now = new Date()) {
         return `<button class="btn-reset cal-chip cal-chip--${c}" draggable="true" data-session-id="${escapeHtml(s.id)}"
           ondragstart="calendarDragId=this.dataset.sessionId; event.dataTransfer.setData('text/plain', this.dataset.sessionId)"
           onclick="openSessionDialog(this.dataset.sessionId)" title="${escapeHtml(s.name)}${m ? ` — actual ${m.tss} TSS` : ''}">
-          ${sportEmojis[s.sport] || '🏋️'} <span class="cal-chip-name">${escapeHtml(calendarSessionName(s.name))}</span>${s.tss ? ` <small>${escapeHtml(s.tss)}${m ? `→${escapeHtml(m.tss)}` : ''}</small>` : ''}${planOverrides[s.id] ? ' ↪' : ''}</button>`;
+          ${sportIcon(s.sport)} <span class="cal-chip-name">${escapeHtml(calendarSessionName(s.name))}</span>${s.tss ? ` <small>${escapeHtml(s.tss)}${m ? `→${escapeHtml(m.tss)}` : ''}</small>` : ''}${planOverrides[s.id] ? ' ↪' : ''}</button>`;
       }).join('') + acts.filter(a => !matchedActs.has(a)).map(a =>
         `<button class="btn-reset cal-chip cal-chip--unplanned" data-id="${escapeHtml(a.id || '')}" onclick="if (this.dataset.id) openActivityDetail(this.dataset.id)" title="Unplanned: ${escapeHtml(a.name || fmtSportName(a.sport))}">${sportEmoji(a.sport)} <span class="cal-chip-name">${escapeHtml(a.name || fmtSportName(a.sport))}</span> <small>${escapeHtml(a.tss || 0)}</small></button>`).join('');
       const cls = ['cal-day', key === localDateKey(today) ? 'is-today' : '', calendarView === 'month' && d.getMonth() !== month ? 'is-other-month' : ''].filter(Boolean).join(' ');

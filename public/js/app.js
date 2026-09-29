@@ -262,7 +262,7 @@ function loadSeries(acts, f0, today = new Date()) {
 }
 
 // ── Fitness per sport ──
-const PMC_SPORTS = { bike: { label: 'Bike', emoji: '🚴', test: s => isCyc(s) }, run: { label: 'Run', emoji: '🏃', test: s => isRun(s) }, swim: { label: 'Swim', emoji: '🏊', test: s => s === 'swimming' } };
+const PMC_SPORTS = { bike: { label: 'Bike', icon: 'bike', test: s => isCyc(s) }, run: { label: 'Run', icon: 'run', test: s => isRun(s) }, swim: { label: 'Swim', icon: 'swim', test: s => s === 'swimming' } };
 
 function pmcSeriesFor(key) {
   if (key === 'all' || !PMC_SPORTS[key]) return pmcResult;
@@ -283,7 +283,7 @@ function renderSportFitness() {
     const s = pmcSeriesFor(key), n = s.ctlVals.length;
     const ramp = n > 7 ? s.ctlVals[n - 1] - s.ctlVals[n - 8] : 0;
     return `<button class="btn-reset sport-fitness-chip${pmcSport === key ? ' is-active' : ''}" aria-pressed="${pmcSport === key}" onclick="setPmcSport(pmcSport === '${key}' ? 'all' : '${key}'); renderSportFitness(); document.getElementById('pmcSportSelect').value = pmcSport;">
-      ${sp.emoji} ${sp.label} <strong>${s.lastCtl.toFixed(0)}</strong> <small style="color:${rampInfo(ramp).color}">${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)}/wk</small></button>`;
+      ${sportIcon(sp.icon)} ${sp.label} <strong>${s.lastCtl.toFixed(0)}</strong> <small style="color:${rampInfo(ramp).color}">${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)}/wk</small></button>`;
   }).join('');
   el.innerHTML = chips ? `<span class="sport-fitness-label">Fitness by sport</span>${chips}` : '';
 }
@@ -1026,7 +1026,14 @@ function fmtDuration(s) { if (!s || s <= 0) return '—'; const h = Math.floor(s
 function fmtDist(m, sport) { if (!m || m <= 0) return '—'; if (sport === 'swimming') return `${m}m`; return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m}m`; }
 function fmtSportName(s) { return (s || 'other').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()); }
 function sportTagClass(s) { if (isCyc(s)) return 'cycling'; if (isRun(s)) return 'running'; if (s === 'swimming') return 'swimming'; return 'other'; }
-function sportEmoji(s) { if (isCyc(s)) return '🚴'; if (['running', 'walking'].includes(s)) return '🏃'; if (s === 'hiking') return '🥾'; if (s === 'swimming') return '🏊'; if (s === 'rowing') return '🚣'; return '💪'; }
+// Sport icon (SVG from the sprite in index.html) for activity sports and plan sports
+function sportIcon(s) {
+  const id = isCyc(s) || s === 'bike' ? 'bike' : ['running', 'trail_running', 'run'].includes(s) ? 'run' : ['walking', 'hiking'].includes(s) ? 'walk'
+    : s === 'swimming' || s === 'swim' ? 'swim' : ['strength', 'strength+swim', 'fitness_equipment'].includes(s) ? 'strength'
+    : s === 'rest' ? 'rest' : s === 'race' ? 'race' : 'other';
+  return `<svg class="icon icon-sport icon-${id}" aria-hidden="true"><use href="#i-${id}"/></svg>`;
+}
+function sportEmoji(s) { return sportIcon(s); }
 
 // ══════════════════════════════════════════════
 // File Handling (with Firebase persistence)
@@ -1426,7 +1433,7 @@ function renderTrainingPlan() {
   if (p.zones) {
     let zh = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
     if (p.zones.bike) {
-      zh += '<div><div style="font-weight:600;margin-bottom:8px;color:var(--color-blue)">🚴 Bike Zones (FTP: ' + escapeHtml(p.zones.bike.ftp) + 'W)</div>';
+      zh += '<div><div style="font-weight:600;margin-bottom:8px;color:var(--color-blue)">' + sportIcon('bike') + ' Bike Zones (FTP: ' + escapeHtml(p.zones.bike.ftp) + 'W)</div>';
       zh += '<table class="zone-table"><tr><th>Zone</th><th>Name</th><th>Power</th><th>%FTP</th></tr>';
       for (const [zk, zv] of Object.entries(p.zones.bike)) {
         if (zk === 'ftp') continue;
@@ -1435,7 +1442,7 @@ function renderTrainingPlan() {
       zh += '</table></div>';
     }
     if (p.zones.run) {
-      zh += '<div><div style="font-weight:600;margin-bottom:8px;color:var(--color-green)">🏃 Run Zones</div>';
+      zh += '<div><div style="font-weight:600;margin-bottom:8px;color:var(--color-green)">' + sportIcon('run') + ' Run Zones</div>';
       zh += '<table class="zone-table"><tr><th>Zone</th><th>Name</th><th>Pace</th><th>HR</th></tr>';
       for (const [zk, zv] of Object.entries(p.zones.run)) {
         zh += `<tr><td>${escapeHtml(zk)}</td><td>${escapeHtml(zv.name)}</td><td>${escapeHtml(zv.pace)}</td><td>${escapeHtml(zv.hr)}</td></tr>`;
@@ -1449,7 +1456,6 @@ function renderTrainingPlan() {
   // Weeks
   const hasZwo = Object.keys(zwoFiles).length > 0;
   const sportColors = { bike: '#3b82f6', run: '#10b981', swim: '#06b6d4', strength: '#a855f7', 'strength+swim': '#8b5cf6' };
-  const sportEmojis = { bike: '🚴', run: '🏃', swim: '🏊', strength: '💪', 'strength+swim': '💪🏊' };
 
   let wh = '';
   const now = new Date();
@@ -1478,7 +1484,7 @@ function renderTrainingPlan() {
     wh += `<div class="plan-sessions">`;
     for (const s of (week.sessions || [])) {
       const sc = sportColors[s.sport] || '#6b7280';
-      const se = sportEmojis[s.sport] || '🏋️';
+      const se = sportIcon(s.sport);
       const hasFile = s.zwo_file && (hasZwo ? zwoFiles[s.zwo_file] : true);
       const matched = matches.get(s.id);
       const isDone = !!(isSessionTicked(s) || matched);
@@ -1534,7 +1540,6 @@ function renderUpcomingSessions(now = new Date()) {
   const today = new Date(now); today.setHours(0, 0, 0, 0);
   const matches = matchPlanToActivities(trainingPlan);
   const days = [today, addDays(today, 1)];
-  const sportEmojis = { bike: '🚴', run: '🏃', swim: '🏊', strength: '💪', 'strength+swim': '💪🏊', rest: '😴', race: '🏁' };
   const dayHtml = (date, i) => {
     const sessions = sessionsOnDate(trainingPlan, date);
     const title = `<div class="upcoming-day-title"><strong>${i === 0 ? 'Today' : 'Tomorrow'}</strong> · ${escapeHtml(date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }))}</div>`;
@@ -1548,7 +1553,7 @@ function renderUpcomingSessions(now = new Date()) {
       const tss = s.tss ? `<span class="plan-session-tss">TSS ${escapeHtml(s.tss)}</span>` : '';
       const actual = matched ? ` <span class="plan-session-actual">✓ ${escapeHtml(matched.tss)} TSS actual</span>` : '';
       return `<div class="upcoming-session${done ? ' is-done' : ''}">${box}<div style="min-width:0">
-        <div class="upcoming-session-name">${sportEmojis[s.sport] || '🏋️'} ${escapeHtml(s.name)}</div>
+        <div class="upcoming-session-name">${sportIcon(s.sport)} ${escapeHtml(s.name)}</div>
         ${s.description ? `<div class="plan-session-desc is-clamped" style="font-size:13px;color:var(--text-dim)">${escapeHtml(s.description)}</div>` : ''}
         ${sessionMetaHtml(s)}<div style="margin-top:4px">${tss}${actual}</div></div></div>`;
     }).join('')}</div>`;
@@ -1693,6 +1698,10 @@ async function loadSavedPlan() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Installable app + offline shell (see sw.js)
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.warn('Service worker not registered:', err));
+  }
   if (typeof initAuth === 'function') initAuth();
   // Handle Strava OAuth callback if present in URL
   if (typeof handleStravaCallback === 'function') handleStravaCallback();
