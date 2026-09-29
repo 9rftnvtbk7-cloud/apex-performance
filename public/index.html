@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0b0f">
+  <meta name="theme-color" content="#0C0D10" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F4F3EF" media="(prefers-color-scheme: light)">
+  <meta name="color-scheme" content="dark light">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,8 +13,9 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/icons/icon-180.png">
   <title>Apex — Performance Management</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>▲</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=202609290954">
 
   <!-- Chart.js -->
@@ -24,15 +27,24 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<!-- Icon set (24×24 line icons), used via <svg class="icon"><use href="#i-…"/></svg> -->
+<!-- Icon set (24×24 line icons, stroke 1.8), used via <svg class="icon"><use href="#i-…"/></svg> -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-  <symbol id="i-overview" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
-  <symbol id="i-plan" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/></symbol>
-  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
-  <symbol id="i-compare" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></symbol>
-  <symbol id="i-planner" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></symbol>
-  <symbol id="i-log" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18"/></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24"><path d="M5 6h14M5 12h14M5 18h9"/></symbol>
+  <symbol id="i-season" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/></symbol>
+  <symbol id="i-activities" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
   <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-14.3 4.9M4 12a8 8 0 0 1 14.3-4.9"/><path d="M18 3v4h-4M6 21v-4h4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></symbol>
+  <symbol id="i-bug" viewBox="0 0 24 24"><rect x="8" y="7" width="8" height="13" rx="4"/><path d="M12 7V4M4 13h4M16 13h4M5 7l3 2M19 7l-3 2M5 19l3-2M19 19l-3-2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-unlink" viewBox="0 0 24 24"><path d="M9 15l6-6M10 6l1-1a4.2 4.2 0 0 1 6 6l-1 1M14 18l-1 1a4.2 4.2 0 0 1-6-6l1-1"/></symbol>
   <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></symbol>
   <symbol id="i-run" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="M4 17l5 1 1-2M15 21v-4l-4-3 1-6M7 12V9l5-1 3 3 3 1"/></symbol>
   <symbol id="i-swim" viewBox="0 0 24 24"><path d="M2 18c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M2 13c2 0 2-1.5 4-1.5s2 1.5 4 1.5 2-1.5 4-1.5 2 1.5 4 1.5"/><circle cx="17" cy="6" r="2"/><path d="M5 10l4-4 3 3"/></symbol>
@@ -41,409 +53,391 @@
   <symbol id="i-race" viewBox="0 0 24 24"><path d="M4 22V4M4 4h13l-2 4 2 4H4"/></symbol>
   <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><path d="M9 21l2-6 3 2v4M8 12l2-4h3l3 4M10 8l-1 5"/></symbol>
   <symbol id="i-other" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M12 3.5 L21.5 20 H2.5 Z" fill="currentColor" stroke="none"/></symbol>
 </svg>
 
-<!-- ═══════ AUTH SCREEN ═══════ -->
+<!-- ═══════ SIGN-IN ═══════ -->
 <div id="authSection" class="auth-screen">
-  <div class="auth-logo-icon">▲</div>
-  <div class="auth-title">Apex</div>
-  <div class="auth-subtitle">Performance management for endurance athletes. Upload your .FIT files, track CTL/ATL/TSB, and plan your training.</div>
-  <button class="btn-google" onclick="signInWithGoogle()">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+  <div class="logo-mark logo-mark--lg" aria-hidden="true"><svg class="icon"><use href="#i-mark"/></svg></div>
+  <h1 class="auth-title">Apex</h1>
+  <p class="auth-subtitle">Your training from Strava: fitness, form, plan and season, in one place.</p>
+  <button class="btn btn--google" onclick="signInWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="18" height="18">
     Sign in with Google
   </button>
 </div>
 
 <!-- ═══════ APP (hidden until signed in) ═══════ -->
-<div id="appSection" style="display:none">
+<div id="appSection" class="app-shell" style="display:none">
 
-  <header class="app-header">
-    <div class="app-logo">
-      <div class="app-logo-icon">▲</div>
-      <div class="app-logo-text">Apex<small>Performance Management</small></div>
+  <!-- Desktop: sidebar. Phone: its nav becomes the bottom tab bar, brand/footer move to the header -->
+  <aside class="sidebar">
+    <div class="sidebar__brand"><span class="logo-mark" aria-hidden="true"><svg class="icon"><use href="#i-mark"/></svg></span>Apex</div>
+    <nav class="nav-tabs" role="tablist" aria-label="Sections">
+      <button class="nav-tab is-active" role="tab" aria-selected="true" onclick="switchTab('overview',this)"><svg class="icon" aria-hidden="true"><use href="#i-today"/></svg><span>Today</span></button>
+      <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('calendar',this)"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span>Calendar</span></button>
+      <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('plan',this)"><svg class="icon" aria-hidden="true"><use href="#i-plan"/></svg><span>Plan</span></button>
+      <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('season',this)"><svg class="icon" aria-hidden="true"><use href="#i-season"/></svg><span>Season</span></button>
+      <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('log',this)"><svg class="icon" aria-hidden="true"><use href="#i-activities"/></svg><span>Activities</span></button>
+    </nav>
+    <div class="sidebar__foot">
+      <div class="sidebar__sync"><span class="status-dot" id="sidebarSyncDot"></span><span id="sidebarSyncText">Strava not connected</span></div>
+      <button class="sidebar__user" data-account-trigger onclick="toggleAccountMenu()" aria-haspopup="menu" aria-controls="accountMenu">
+        <span class="avatar" id="sidebarInitials" aria-hidden="true"></span><span class="sidebar__user-name" id="sidebarUserName"></span><span class="sidebar__more" aria-hidden="true">···</span>
+      </button>
     </div>
-    <div class="header-buttons">
-      <span id="stravaStatus" style="display:none;font-size:12px;color:#fc4c02;font-weight:600"></span>
-      <button class="btn-base btn-strava" id="btnStravaConnect" onclick="stravaConnect()">🔶 Connect Strava</button>
-      <button class="btn-base btn-strava btn-strava-sync" id="btnStravaSync" onclick="syncStravaActivities()" style="display:none">🔶 Sync Strava</button>
-      <button class="btn-base btn-ghost" onclick="toggleSettings()" aria-controls="settingsPanel" aria-expanded="false" id="btnSettings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="btn-label">Settings</span></button>
-      <div class="account-menu-wrap">
-        <button class="user-pill" id="btnAccount" onclick="toggleAccountMenu()" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu" title="Account">
-          <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none">
-          <span class="user-name" id="userName"></span>
-          <span aria-hidden="true" style="color:var(--text-muted);font-size:11px">▾</span>
-        </button>
-        <div class="account-menu" id="accountMenu" role="menu">
-          <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();triggerFitUpload()">↑ Upload .FIT files…</button>
-          <button class="btn-reset account-menu-item" role="menuitem" id="btnStravaDisconnect" onclick="closeAccountMenu();stravaDisconnect()" style="display:none">🔶 Disconnect Strava</button>
-          <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();toggleDebug()">🔍 Show debug log</button>
-          <div class="account-menu-sep" role="separator"></div>
-          <button class="btn-reset account-menu-item account-menu-item--danger" role="menuitem" onclick="closeAccountMenu();signOut()">⎋ Sign out</button>
+  </aside>
+
+  <div class="app-body">
+    <header class="app-header">
+      <div class="app-header__brand"><span class="logo-mark" aria-hidden="true"><svg class="icon"><use href="#i-mark"/></svg></span>Apex</div>
+      <div class="app-header__actions">
+        <span id="stravaStatus" class="visually-hidden"></span>
+        <button class="btn btn--strava btn--sm" id="btnStravaConnect" onclick="stravaConnect()">Connect with Strava</button>
+        <button class="sync-pill" id="btnStravaSync" data-state="ok" onclick="syncStravaActivities()" style="display:none" aria-label="Sync with Strava now"><span class="status-dot"></span><span class="sync-pill__text">Synced</span></button>
+        <button class="btn btn--secondary btn--sm desktop-only" onclick="toggleSettings()" aria-controls="settingsPanel" aria-expanded="false" id="btnSettings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="btn-label">Settings</span></button>
+        <div class="account-menu-wrap">
+          <button class="avatar-btn" id="btnAccount" data-account-trigger onclick="toggleAccountMenu()" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu" title="Account">
+            <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none">
+            <span class="avatar" id="headerInitials" aria-hidden="true"></span>
+            <span class="visually-hidden" id="userName"></span>
+          </button>
         </div>
       </div>
+    </header>
+
+    <!-- Account sheet (phone: bottom sheet; desktop: popover) -->
+    <div class="account-menu" id="accountMenu" role="menu" aria-label="Account">
+      <div class="account-menu__handle" aria-hidden="true"></div>
+      <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();toggleSettings()"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg>Settings</button>
+      <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();triggerFitUpload()"><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg>Upload .FIT files…</button>
+      <button class="btn-reset account-menu-item" role="menuitem" id="btnStravaDisconnect" onclick="closeAccountMenu();stravaDisconnect()" style="display:none"><svg class="icon" aria-hidden="true"><use href="#i-unlink"/></svg>Disconnect Strava</button>
+      <button class="btn-reset account-menu-item" role="menuitem" onclick="closeAccountMenu();toggleDebug()"><svg class="icon" aria-hidden="true"><use href="#i-bug"/></svg>Show debug log</button>
+      <div class="account-menu-sep" role="separator"></div>
+      <button class="btn-reset account-menu-item account-menu-item--danger" role="menuitem" onclick="closeAccountMenu();signOut()"><svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>Sign out</button>
     </div>
-  </header>
 
-  <main class="app-main">
-    <div class="settings-panel" id="settingsPanel">
-      <div class="settings-panel-title">Athlete Settings</div>
-      <div class="settings-grid">
-        <div><label class="settings-label" for="inputFtp">FTP (watts)</label><input type="number" class="settings-input" id="inputFtp" value="200" min="1"></div>
-        <div><label class="settings-label" for="inputLthr">LTHR (bpm)</label><input type="number" class="settings-input" id="inputLthr" value="165" min="1"></div>
-        <div><label class="settings-label" for="inputPace">Threshold Pace (min/km)</label><input type="text" class="settings-input" id="inputPace" value="5:00" inputmode="numeric" placeholder="4:30"></div>
-        <div><label class="settings-label" for="inputSwimPace">Swim CSS Pace (min/100m)</label><input type="text" class="settings-input" id="inputSwimPace" value="2:00" inputmode="numeric" placeholder="1:45"></div>
-      </div>
-      <div class="threshold-save">
-        <label class="settings-label" for="inputThresholdFrom" style="margin:0">Effective from</label>
-        <input type="date" class="compare-date-input" id="inputThresholdFrom">
-        <button class="btn-base btn-upload" onclick="saveThresholdsFromInputs()">Save thresholds</button>
-        <span class="danger-zone-text">Activities from this date on are rescored; earlier ones keep their thresholds.</span>
-      </div>
-      <div class="settings-panel-title" style="margin-top:20px;font-size:14px">Threshold history</div>
-      <div id="thresholdHistory"></div>
-      <div class="danger-zone" id="dangerZone" style="display:none">
-        <div class="danger-zone-text"><strong style="color:var(--color-red)">Danger zone</strong> — permanently delete every activity from your account. Strava activities can be re-imported with Sync.</div>
-        <button class="btn-base btn-clear" onclick="clearAll()" id="btnClear">🗑 Delete all activities</button>
-      </div>
-    </div>
-    <div class="debug-panel" id="debugPanel"></div>
+    <main class="app-main">
+      <div class="debug-panel" id="debugPanel"></div>
 
-    <div id="dashboardSection" style="display:none">
-      <div class="nav-tabs" role="tablist">
-        <button class="nav-tab is-active" role="tab" aria-selected="true" onclick="switchTab('overview',this)"><svg class="icon" aria-hidden="true"><use href="#i-overview"/></svg><span>Overview</span></button>
-        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('plan',this)"><svg class="icon" aria-hidden="true"><use href="#i-plan"/></svg><span>Plan</span></button>
-        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('calendar',this)"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg><span>Calendar</span></button>
-        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('compare',this)"><svg class="icon" aria-hidden="true"><use href="#i-compare"/></svg><span>Compare</span></button>
-        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('planner',this)"><svg class="icon" aria-hidden="true"><use href="#i-planner"/></svg><span>Planner</span></button>
-        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('log',this)"><svg class="icon" aria-hidden="true"><use href="#i-log"/></svg><span>Log</span></button>
-      </div>
+      <div id="dashboardSection" style="display:none">
 
-      <!-- OVERVIEW TAB -->
-      <div class="tab-content is-active" id="tab-overview" role="tabpanel">
-        <!-- Shown until the first activity is imported -->
-        <div class="empty-state" id="uploadDropzone" style="display:none" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
-          <div class="empty-state-hero" style="cursor:default">
-            <div class="empty-state-icon" aria-hidden="true">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 36l10-14 8 9 8-15 10 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="empty-state-title">Bring in your training from Strava</div>
-            <div class="empty-state-desc">Apex imports your activities and builds your fitness, fatigue and form curves.</div>
-            <div class="empty-state-actions">
-              <button class="btn-base btn-strava-sync" id="btnEmptyStrava" onclick="emptyStateStrava()">🔶 Connect Strava</button>
-              <button class="btn-reset empty-state-link" onclick="triggerFitUpload()">or upload .FIT files</button>
-            </div>
+        <!-- ═══════ TODAY ═══════ -->
+        <div class="tab-content is-active" id="tab-overview" role="tabpanel">
+          <div class="page-head">
+            <div><h1 class="page-title" id="todayTitle">Today</h1><div class="page-caption" id="todayCaption"></div></div>
+            <div class="page-actions desktop-only"><button class="btn btn--secondary" onclick="syncStravaActivities()">Sync now</button></div>
           </div>
-          <div class="empty-state-steps">
-            <div class="empty-state-step">
-              <div class="empty-state-step-num">1</div>
-              <div class="empty-state-step-text"><strong>Connect Strava</strong> — authorize Apex to read your activities</div>
+
+          <!-- Shown until the first activity is imported -->
+          <div class="card empty-state" id="uploadDropzone" style="display:none" ondrop="onDrop(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)">
+            <div class="empty-state__title">Bring in your training from Strava</div>
+            <p class="empty-state__text">Apex imports your activities and builds your fitness, fatigue and form curves.</p>
+            <button class="btn btn--strava" id="btnEmptyStrava" onclick="emptyStateStrava()">Connect with Strava</button>
+            <button class="btn-reset link" onclick="triggerFitUpload()">or upload .FIT files</button>
+          </div>
+
+          <div id="overviewContent" class="today-grid">
+            <div class="card readiness-card" id="readinessCard" style="display:none">
+              <div id="readinessBody"></div>
             </div>
-            <div class="empty-state-step">
-              <div class="empty-state-step-num">2</div>
-              <div class="empty-state-step-text"><strong>Sync</strong> — imports your full history, then only new activities each time</div>
+
+            <!-- Today's session card + tomorrow row (rendered by renderUpcomingSessions) -->
+            <div id="upcomingCard" class="upcoming" style="display:none">
+              <div id="upcomingDays" class="upcoming__days"></div>
             </div>
-            <div class="empty-state-step">
-              <div class="empty-state-step-num">3</div>
-              <div class="empty-state-step-text"><strong>Track</strong> fitness (CTL), fatigue (ATL) and form (TSB), and plan your season</div>
-            </div>
-          </div>
-        </div>
 
-        <div id="overviewContent">
-        <!-- Today: readiness from form + wellness -->
-        <div class="card" id="readinessCard" style="display:none">
-          <div class="card-top-bar" style="margin-bottom:10px"><div class="card-title">Today</div></div>
-          <div id="readinessBody"></div>
-        </div>
-
-        <!-- Next 2 days from the training plan -->
-        <div class="card upcoming" id="upcomingCard" style="display:none">
-          <div class="card-top-bar" style="margin-bottom:12px">
-            <div class="card-title">Next 2 days</div>
-            <button class="btn-reset empty-state-link" onclick="openPlanTab()">Open plan →</button>
-          </div>
-          <div class="upcoming-grid" id="upcomingDays"></div>
-        </div>
-
-        <div class="stat-cards">
-          <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub" id="subCtl">42-day exponential avg</div></div>
-          <div class="stat-card stat-card--atl"><div class="stat-card-label">ATL — Fatigue</div><div class="stat-card-value" id="valAtl">0</div><div class="stat-card-sub">7-day exponential avg</div></div>
-          <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
-          <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
-          <div class="stat-card stat-card--lastweek"><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
-        </div>
-
-        <div class="sport-fitness" id="sportFitness"></div>
-
-        <div class="card">
-          <div class="card-top-bar">
-            <div class="card-title">Performance Management Chart</div>
-            <select class="compare-select" id="pmcSportSelect" aria-label="Sport shown on the chart" onchange="setPmcSport(this.value); renderSportFitness();" style="padding:6px 10px;font-size:13px">
-              <option value="all">All sports</option><option value="bike">Bike</option><option value="run">Run</option><option value="swim">Swim</option>
-            </select>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" role="group" aria-label="Chart date range">
-              <button class="range-btn is-active" onclick="setChartRange('all',this)">All</button>
-              <button class="range-btn" onclick="setChartRange(90,this)">90d</button>
-              <button class="range-btn" onclick="setChartRange(60,this)">60d</button>
-              <button class="range-btn" onclick="setChartRange(30,this)">30d</button>
-              <input type="date" class="compare-date-input" id="chartRangeFrom" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px;margin-left:8px" title="Custom from date" aria-label="Custom range start">
-              <input type="date" class="compare-date-input" id="chartRangeTo" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px" title="Custom to date" aria-label="Custom range end">
-            </div>
-          </div>
-          <div class="chart-canvas-wrap"><canvas id="chartCanvas"></canvas></div>
-          <div class="chart-legend">
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(0, this)"><span class="chart-legend-line" style="background:var(--color-blue)" aria-hidden="true"></span>CTL (Fitness)</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(1, this)"><span class="chart-legend-line" style="background:var(--color-red)" aria-hidden="true"></span>ATL (Fatigue)</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(2, this)"><span class="chart-legend-line" style="background:var(--color-green)" aria-hidden="true"></span>TSB (Form)</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(3, this)"><span class="chart-legend-dot" style="background:var(--color-amber)" aria-hidden="true"></span>TSS Points</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(4, this)"><span class="chart-legend-line" style="background:var(--color-blue);opacity:.4" aria-hidden="true"></span>Forecast</button>
-          </div>
-          <div class="forecast-bar">
-            <span class="forecast-bar-label">Forecast</span>
-            <input type="range" class="forecast-slider" id="sliderForecastDays" aria-label="Forecast days" min="0" max="60" value="14" oninput="updateForecast()">
-            <span class="forecast-days-display" id="displayForecastDays">14 days</span>
-            <span class="forecast-bar-label" style="margin-left:12px">Avg daily TSS</span>
-            <input type="number" class="forecast-tss-input" id="inputForecastTss" aria-label="Forecast average daily TSS" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
-          </div>
-        </div>
-        <!-- This Week Mini Summary -->
-        <div class="week-summary" id="weekSummary" style="display:none">
-          <div class="week-summary-title">This Week</div>
-          <div class="week-summary-grid">
-            <div class="week-summary-sport" id="weekSummaryCycling">
-              <div class="week-summary-sport-icon"><svg class="icon" aria-hidden="true"><use href="#i-bike"/></svg></div>
-              <div class="week-summary-sport-details">
-                <div class="week-summary-sport-name">Cycling</div>
-                <div class="week-summary-sport-stats" id="weekCyclingStats">—</div>
+            <section class="today-week">
+              <div class="section-head"><h2 class="section-title">This week</h2><span class="section-meta" id="weekPhaseLabel"></span></div>
+              <div class="card week-card" id="weekSummary" style="display:none">
+                <div class="week-card__top">
+                  <div><span class="week-card__value" id="valWeekTss">0</span><span class="week-card__of" id="weekProgressText">/ — TSS</span></div>
+                  <span class="week-card__status" id="weekProgressLabel"></span>
+                </div>
+                <div class="week-progress" id="weekProgressBar" role="img" aria-label="Sessions this week"></div>
+                <div class="week-progress__days" id="weekProgressDays" aria-hidden="true"></div>
+                <p class="week-card__caption"><span id="subWeekTss"></span> Last week <span id="valLastWeekTss">0</span> TSS across <span id="subLastWeekTss">0 activities</span>.</p>
+                <div class="week-sports desktop-only">
+                  <span><svg class="icon" aria-hidden="true"><use href="#i-bike"/></svg><span id="weekCyclingStats">—</span></span>
+                  <span><svg class="icon" aria-hidden="true"><use href="#i-run"/></svg><span id="weekRunningStats">—</span></span>
+                  <span><svg class="icon" aria-hidden="true"><use href="#i-swim"/></svg><span id="weekSwimmingStats">—</span></span>
+                  <span><svg class="icon" aria-hidden="true"><use href="#i-strength"/></svg><span id="weekOtherStats">—</span></span>
+                </div>
               </div>
-            </div>
-            <div class="week-summary-sport" id="weekSummaryRunning">
-              <div class="week-summary-sport-icon"><svg class="icon" aria-hidden="true"><use href="#i-run"/></svg></div>
-              <div class="week-summary-sport-details">
-                <div class="week-summary-sport-name">Running</div>
-                <div class="week-summary-sport-stats" id="weekRunningStats">—</div>
+            </section>
+
+            <section class="today-fitness">
+              <div class="section-head"><h2 class="section-title">Fitness</h2><button class="btn-reset link-muted" onclick="openSeason('forecast')">Season ›</button></div>
+              <div class="card fitness-card">
+                <div class="fitness-card__head">
+                  <div class="pmc-stats">
+                    <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-ctl)"></i>Fitness<span class="desktop-only"> · CTL</span></div><div class="pmc-stat__value" id="valCtl">0</div><div class="pmc-stat__sub" id="subCtl">42-day avg</div></div>
+                    <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-atl)"></i>Fatigue<span class="desktop-only"> · ATL</span></div><div class="pmc-stat__value" id="valAtl">0</div><div class="pmc-stat__sub">7-day avg</div></div>
+                    <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-tsb)"></i>Form<span class="desktop-only"> · TSB</span></div><div class="pmc-stat__value" id="valTsb">0</div><div class="pmc-stat__sub" id="subTsb">CTL − ATL</div></div>
+                    <div class="pmc-stat pmc-stat--sports"><div class="pmc-stat__label">By sport</div><div class="sport-fitness" id="sportFitness"></div></div>
+                  </div>
+                  <div class="fitness-card__controls">
+                    <div class="segmented" role="group" aria-label="Chart range">
+                      <button class="segmented__opt range-btn" onclick="setChartRange(42,this)">6W</button>
+                      <button class="segmented__opt range-btn" onclick="setChartRange(91,this)">3M</button>
+                      <button class="segmented__opt range-btn is-active" onclick="setChartRange(182,this)">6M</button>
+                      <button class="segmented__opt range-btn" onclick="setChartRange(365,this)">1Y</button>
+                      <button class="segmented__opt range-btn" onclick="toggleCustomRange(this)" aria-controls="customRange">Custom</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="custom-range" id="customRange" hidden>
+                  <label>From <input type="date" class="input input--sm" id="chartRangeFrom" onchange="setCustomChartRange()"></label>
+                  <label>To <input type="date" class="input input--sm" id="chartRangeTo" onchange="setCustomChartRange()"></label>
+                </div>
+                <div class="chart-canvas-wrap"><canvas id="chartCanvas"></canvas></div>
+                <div class="chart-legend">
+                  <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(0, this)"><i style="background:var(--color-ctl)"></i>Fitness</button>
+                  <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(1, this)"><i style="background:var(--color-atl)"></i>Fatigue</button>
+                  <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="false" onclick="toggleChartDataset(2, this)"><i style="background:var(--color-tsb)"></i>Form</button>
+                  <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(3, this)"><i class="sq" style="background:var(--color-tss)"></i>TSS</button>
+                  <details class="chip-popover">
+                    <summary class="toggle-chip" id="forecastChip">Forecast <span id="displayForecastDays">14 days</span></summary>
+                    <div class="chip-popover__body">
+                      <label class="field-label" for="sliderForecastDays">Days ahead</label>
+                      <input type="range" class="range" id="sliderForecastDays" min="0" max="60" value="14" oninput="updateForecast()">
+                      <label class="field-label" for="inputForecastTss">Average daily TSS</label>
+                      <input type="number" class="input input--sm" id="inputForecastTss" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
+                      <button class="btn-reset link" onclick="toggleChartDataset(4, this)" aria-pressed="true">Hide forecast</button>
+                    </div>
+                  </details>
+                  <select class="select select--chip" id="pmcSportSelect" aria-label="Sport shown on the chart" onchange="setPmcSport(this.value); renderSportFitness();">
+                    <option value="all">All sports</option><option value="bike">Bike</option><option value="run">Run</option><option value="swim">Swim</option>
+                  </select>
+                </div>
               </div>
-            </div>
-            <div class="week-summary-sport" id="weekSummarySwimming">
-              <div class="week-summary-sport-icon"><svg class="icon" aria-hidden="true"><use href="#i-swim"/></svg></div>
-              <div class="week-summary-sport-details">
-                <div class="week-summary-sport-name">Swimming</div>
-                <div class="week-summary-sport-stats" id="weekSwimmingStats">—</div>
-              </div>
-            </div>
-            <div class="week-summary-sport" id="weekSummaryOther">
-              <div class="week-summary-sport-icon"><svg class="icon" aria-hidden="true"><use href="#i-strength"/></svg></div>
-              <div class="week-summary-sport-details">
-                <div class="week-summary-sport-name">Other</div>
-                <div class="week-summary-sport-stats" id="weekOtherStats">—</div>
-              </div>
-            </div>
-          </div>
-          <div class="week-summary-bar-wrap">
-            <div class="week-summary-bar-label">
-              <span id="weekProgressLabel">Weekly TSS Progress</span>
-              <span id="weekProgressText">0 / 0 TSS</span>
-            </div>
-            <div class="week-summary-bar">
-              <div class="week-summary-bar-fill" id="weekProgressBar"></div>
-            </div>
-          </div>
+            </section>
+          </div><!-- /overviewContent -->
         </div>
 
-        <!-- Insights from detailed Strava data -->
-        <div class="card" id="insightsCard" style="display:none">
-          <div class="card-top-bar" style="margin-bottom:12px"><div class="card-title">Training insights</div></div>
-          <div id="insightsBody"></div>
-        </div>
-        </div><!-- /overviewContent -->
-      </div>
-
-      <!-- CALENDAR TAB -->
-      <div class="tab-content" id="tab-calendar" role="tabpanel">
-        <div class="card">
-          <div class="card-top-bar">
-            <div style="display:flex;align-items:center;gap:8px">
-              <button class="range-btn" onclick="calendarShift(-1)" aria-label="Previous">‹</button>
-              <div class="card-title" id="calendarTitle" style="min-width:150px;text-align:center"></div>
-              <button class="range-btn" onclick="calendarShift(1)" aria-label="Next">›</button>
-              <button class="range-btn" onclick="calendarToday()">Today</button>
-            </div>
-            <div style="display:flex;gap:6px" role="group" aria-label="Calendar view">
-              <button class="range-btn cal-view-btn" data-view="week" onclick="setCalendarView('week')">Week</button>
-              <button class="range-btn cal-view-btn" data-view="month" onclick="setCalendarView('month')">Month</button>
+        <!-- ═══════ CALENDAR ═══════ -->
+        <div class="tab-content" id="tab-calendar" role="tabpanel">
+          <div class="page-head page-head--calendar">
+            <h1 class="page-title">Calendar</h1>
+            <div class="segmented" role="group" aria-label="Calendar view">
+              <button class="segmented__opt cal-view-btn" data-view="week" onclick="setCalendarView('week')">Week</button>
+              <button class="segmented__opt cal-view-btn" data-view="month" onclick="setCalendarView('month')">Month</button>
             </div>
           </div>
-          <div class="cal-legend"><span class="cal-chip cal-chip--green">on target</span><span class="cal-chip cal-chip--amber">partly</span><span class="cal-chip cal-chip--red">missed / off</span><span class="cal-chip cal-chip--planned">planned</span><span class="cal-chip cal-chip--unplanned">unplanned</span><span class="insight-muted" style="margin:0">Drag a session to another day, or tap it to move it.</span></div>
+          <div class="cal-nav">
+            <button class="icon-btn" onclick="calendarShift(-1)" aria-label="Previous"><svg class="icon"><use href="#i-chevron-left"/></svg></button>
+            <div class="cal-nav__title"><div id="calendarTitle"></div><div class="cal-nav__sub" id="calendarSub"></div></div>
+            <button class="icon-btn" onclick="calendarShift(1)" aria-label="Next"><svg class="icon"><use href="#i-chevron-right"/></svg></button>
+            <button class="btn btn--secondary btn--sm" onclick="calendarToday()">Today</button>
+          </div>
+          <div class="cal-legend">
+            <span class="cal-legend__item"><b class="glyph glyph--ok">✓</b>On target</span><span class="cal-legend__item"><b class="glyph glyph--partial">◐</b>Partly</span><span class="cal-legend__item"><b class="glyph glyph--missed">✕</b>Missed</span><span class="cal-legend__item"><b class="glyph">○</b>Planned</span><span class="cal-legend__item"><b class="glyph">+</b>Unplanned</span>
+            <span class="cal-legend__hint">Drag a session to another day, or tap it to move it</span>
+          </div>
           <div id="calendarGrid"></div>
         </div>
-      </div>
 
-      <!-- COMPARE TAB -->
-      <div class="tab-content" id="tab-compare">
-        <div class="card">
-          <div class="card-top-bar"><div class="card-title">Period Comparison</div></div>
-          <div class="compare-controls">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">Mode</label>
-            <select class="compare-select" id="compareMode" onchange="onCompareModeChange()">
-              <option value="range">Date Range</option>
-              <option value="year">Year vs Year</option>
-              <option value="month">Month vs Month</option>
-            </select>
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Grouping</label>
-            <select class="compare-select" id="compareGrouping" onchange="renderComparison()"><option value="week">Weekly</option><option value="month" selected>Monthly</option><option value="year">Yearly</option></select>
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Sport</label>
-            <select class="compare-select" id="compareSport" onchange="renderComparison()"><option value="all">All Sports</option></select>
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Calculation</label>
-            <select class="compare-select" id="compareCalc" onchange="renderComparison()">
-              <option value="total">Period Total</option>
-              <option value="cumulative">Running Total</option>
-            </select>
+        <!-- ═══════ PLAN ═══════ -->
+        <div class="tab-content" id="tab-plan" role="tabpanel">
+          <div class="page-head">
+            <h1 class="page-title">Plan</h1>
+            <details class="menu">
+              <summary class="btn btn--secondary btn--sm">Import</summary>
+              <div class="menu__body">
+                <button class="btn-reset menu__item" onclick="this.closest('details').open=false; triggerPlanImport()" id="btnImportPlan">Import plan (JSON)…</button>
+                <button class="btn-reset menu__item" onclick="this.closest('details').open=false; triggerZwoImport()" id="btnImportZwo" style="display:none">Import ZWO files…</button>
+                <button class="btn-reset menu__item" onclick="this.closest('details').open=false; downloadAllZwos()" id="btnDownloadAllZwo" style="display:none">Download all ZWO files</button>
+              </div>
+            </details>
           </div>
-          <div class="compare-controls" id="compareRangeControls">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">From</label>
-            <input type="date" class="compare-date-input" id="compareFrom" onchange="renderComparison()">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">To</label>
-            <input type="date" class="compare-date-input" id="compareTo" onchange="renderComparison()">
-          </div>
-          <div class="compare-controls" id="compareYearControls" style="display:none">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">Year A</label>
-            <select class="compare-select" id="compareYearA" onchange="renderComparison()"></select>
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Year B</label>
-            <select class="compare-select" id="compareYearB" onchange="renderComparison()"></select>
-          </div>
-          <div class="compare-controls" id="compareMonthControls" style="display:none;align-items:flex-start">
-            <label class="settings-label" style="margin-bottom:0;line-height:2">Months A</label>
-            <select class="compare-select" id="compareMonthA" multiple size="5" onchange="renderComparison()" style="min-width:140px;height:auto"></select>
-            <label class="settings-label" style="margin-bottom:0;line-height:2;margin-left:12px">Months B</label>
-            <select class="compare-select" id="compareMonthB" multiple size="5" onchange="renderComparison()" style="min-width:140px;height:auto"></select>
-          </div>
-          <div class="compare-grid" id="compareMetrics"></div>
-          <div id="compareChartArea" class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
-        </div>
-        <div class="card" id="bestEffortsCard">
-          <div class="card-top-bar">
-            <div class="card-title">Best efforts</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <select class="compare-select" id="bestEffortsKind" aria-label="Sport" onchange="renderBestEfforts()"><option value="power">Power (rides)</option><option value="pace">Pace (runs)</option></select>
-              <select class="compare-select" id="bestEffortsRange" aria-label="Period" onchange="renderBestEfforts()"><option value="28">Last 28 days</option><option value="90" selected>Last 90 days</option><option value="365">Last 365 days</option></select>
-            </div>
-          </div>
-          <div class="insight-muted" id="bestEffortsEmpty">No detailed Strava data yet — it is fetched automatically in the background after each sync.</div>
-          <div class="chart-canvas-wrap" style="height:300px"><canvas id="bestEffortsCanvas"></canvas></div>
-        </div>
-      </div>
-
-      <!-- PLAN TAB -->
-      <div class="tab-content" id="tab-plan">
-        <div class="card" style="margin-bottom:24px">
-          <div class="card-top-bar">
-            <div class="card-title">Training Plan</div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn-base btn-ghost" onclick="triggerPlanImport()" id="btnImportPlan">📥 Import Plan JSON</button>
-              <button class="btn-base btn-ghost" onclick="triggerZwoImport()" id="btnImportZwo" style="display:none">📦 Import ZWO Files</button>
-              <button class="btn-base btn-upload" onclick="downloadAllZwos()" id="btnDownloadAllZwo" style="display:none">⬇ Download All ZWOs</button>
-            </div>
-          </div>
-          <div id="planImportStatus" class="plan-import-status" role="status" aria-live="polite" hidden></div>
-          <div id="planEmpty" style="text-align:center;padding:48px 24px;color:var(--text-muted)">
-            <div style="font-size:48px;margin-bottom:16px">📋</div>
-            <div style="font-size:16px;font-weight:600;margin-bottom:8px">No training plan loaded</div>
-            <div style="font-size:14px">Import a plan JSON file to view your training schedule</div>
+          <div id="planImportStatus" class="status-panel plan-import-status" role="status" aria-live="polite" hidden></div>
+          <div id="planEmpty" class="card empty-state">
+            <div class="empty-state__title">No training plan yet</div>
+            <p class="empty-state__text">Import a plan file to follow your sessions, tick them off and export workouts.</p>
+            <button class="btn btn--primary" onclick="triggerPlanImport()">Import a plan (JSON)</button>
           </div>
           <div id="planContent" style="display:none">
-            <div id="planHeader" style="padding:16px 0;border-bottom:1px solid var(--border-subtle);margin-bottom:24px"></div>
-            <div id="planZonesToggle" style="margin-bottom:16px">
-              <button class="btn-base btn-ghost" onclick="togglePlanZones()" style="font-size:13px">📊 Show/Hide Zones</button>
-            </div>
-            <div id="planZones" style="display:none;margin-bottom:24px"></div>
+            <div id="planHeader" class="card plan-header"></div>
+            <div id="planZones" class="card" style="display:none"></div>
+            <div class="week-picker" id="planWeekPicker" role="group" aria-label="Jump to week"></div>
             <div id="planWeeks"></div>
-            <div id="planZwoList" style="margin-top:32px"></div>
+            <div id="planZwoList"></div>
           </div>
         </div>
-      </div>
 
-      <!-- PLANNER TAB -->
-      <div class="tab-content" id="tab-planner">
-        <div class="card">
-          <div class="card-top-bar"><div class="card-title">Training Planner — 26 Week Forecast</div></div>
-          <div class="planner-summary" style="margin-bottom:16px">
-            <div class="planner-summary-card"><div class="planner-summary-label">Projected CTL</div><div class="planner-summary-value" id="planCtl" style="color:var(--color-blue)">—</div></div>
-            <div class="planner-summary-card"><div class="planner-summary-label">Projected ATL</div><div class="planner-summary-value" id="planAtl" style="color:var(--color-red)">—</div></div>
-            <div class="planner-summary-card"><div class="planner-summary-label">Projected TSB</div><div class="planner-summary-value" id="planTsb" style="color:var(--color-green)">—</div></div>
-          </div>
-          <div id="raceDatesSection" style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <label class="settings-label" style="margin-bottom:0;line-height:2;font-size:13px">🏁 Race dates</label>
-            <div id="raceDateInputs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-            <button class="planner-preset-btn" onclick="addRaceDate()" style="padding:4px 12px;font-size:12px">+ Add race</button>
-          </div>
-          <div class="race-target">
-            <div class="settings-panel-title" style="font-size:14px;margin-bottom:10px">🎯 Race-day target</div>
-            <div class="race-target-form">
-              <label><span class="settings-label">Race</span><select class="compare-select" id="raceTargetRace"></select></label>
-              <label><span class="settings-label">Target CTL</span><input class="settings-input" type="number" id="raceTargetCtl" min="0" max="200"></label>
-              <label><span class="settings-label">Target TSB</span><input class="settings-input" type="number" id="raceTargetTsb" value="10" min="-30" max="40"></label>
-              <label><span class="settings-label">Taper (days)</span><input class="settings-input" type="number" id="raceTargetTaper" value="10" min="0" max="28"></label>
-              <button class="btn-base btn-upload" onclick="calculateRaceTarget()">Calculate</button>
+        <!-- ═══════ SEASON (Forecast · Compare · Insights) ═══════ -->
+        <div class="tab-content" id="tab-season" role="tabpanel">
+          <div class="page-head">
+            <h1 class="page-title">Season</h1>
+            <div class="segmented" role="group" aria-label="Season view">
+              <button class="segmented__opt season-view-btn is-active" data-view="forecast" onclick="setSeasonView('forecast')">Forecast</button>
+              <button class="segmented__opt season-view-btn" data-view="compare" onclick="setSeasonView('compare')">Compare</button>
+              <button class="segmented__opt season-view-btn" data-view="insights" onclick="setSeasonView('insights')">Insights</button>
             </div>
-            <div id="raceTargetResult"></div>
           </div>
-          <div class="planner-forecast-chart-wrap" style="margin-bottom:24px"><canvas id="plannerChart"></canvas></div>
-          <div class="planner-info">Enter your planned weekly TSS to project how your CTL, ATL, and TSB will evolve over the next 6 months.</div>
-          <div class="planner-actions">
-            <button class="planner-preset-btn" onclick="plannerPreset('fromplan')">📋 From Training Plan</button>
-            <button class="planner-preset-btn" onclick="plannerPreset('maintain')">🔄 Maintain current</button>
-            <button class="planner-preset-btn" onclick="plannerPreset('build')">📈 Progressive build</button>
-            <button class="planner-preset-btn" onclick="plannerPreset('taper')">📉 Taper</button>
-            <button class="planner-preset-btn" onclick="plannerPreset('polarized')">⚡ Polarized block</button>
-            <button class="planner-preset-btn" onclick="plannerPreset('clear')">✕ Clear all</button>
+
+          <!-- Forecast (planner + race-day target) -->
+          <div class="season-panel is-active" id="tab-planner">
+            <div class="pmc-stats pmc-stats--card card">
+              <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-ctl)"></i>Projected fitness</div><div class="pmc-stat__value" id="planCtl">—</div><div class="pmc-stat__sub">in 26 weeks</div></div>
+              <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-atl)"></i>Projected fatigue</div><div class="pmc-stat__value" id="planAtl">—</div></div>
+              <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-tsb)"></i>Projected form</div><div class="pmc-stat__value" id="planTsb">—</div></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">Races</h2><button class="btn btn--secondary btn--sm" onclick="addRaceDate()">+ Add race</button></div>
+              <div id="raceDateInputs" class="race-list"></div>
+            </div>
+            <div class="card race-target">
+              <div class="card-head"><h2 class="card-title">Race-day target</h2></div>
+              <div class="race-target-form">
+                <label><span class="field-label">Race</span><select class="select" id="raceTargetRace"></select></label>
+                <label><span class="field-label">Target fitness</span><input class="input" type="number" id="raceTargetCtl" min="0" max="200"></label>
+                <label><span class="field-label">Target form</span><input class="input" type="number" id="raceTargetTsb" value="10" min="-30" max="40"></label>
+                <label><span class="field-label">Taper (days)</span><input class="input" type="number" id="raceTargetTaper" value="10" min="0" max="28"></label>
+                <button class="btn btn--primary" onclick="calculateRaceTarget()">Calculate</button>
+              </div>
+              <div id="raceTargetResult"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">26-week forecast</h2></div>
+              <div class="planner-forecast-chart-wrap"><canvas id="plannerChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">Weekly load</h2></div>
+              <p class="card-text">Planned TSS per week; the forecast above follows it.</p>
+              <div class="planner-actions">
+                <button class="btn btn--secondary btn--sm" onclick="plannerPreset('fromplan')">From training plan</button>
+                <button class="btn btn--secondary btn--sm" onclick="plannerPreset('maintain')">Maintain</button>
+                <button class="btn btn--secondary btn--sm" onclick="plannerPreset('build')">Progressive build</button>
+                <button class="btn btn--secondary btn--sm" onclick="plannerPreset('taper')">Taper</button>
+                <button class="btn btn--secondary btn--sm" onclick="plannerPreset('polarized')">Polarized block</button>
+                <button class="btn btn--secondary btn--sm" onclick="plannerPreset('clear')">Clear</button>
+              </div>
+              <div class="planner-grid" id="plannerGrid"></div>
+            </div>
           </div>
-          <div style="overflow-x:auto"><div class="planner-grid" id="plannerGrid"></div></div>
+
+          <!-- Compare -->
+          <div class="season-panel" id="tab-compare">
+            <div class="card">
+              <div class="compare-controls">
+                <label><span class="field-label">Mode</span><select class="select" id="compareMode" onchange="onCompareModeChange()"><option value="range">Date range</option><option value="year">Year vs year</option><option value="month">Month vs month</option></select></label>
+                <label><span class="field-label">Grouping</span><select class="select" id="compareGrouping" onchange="renderComparison()"><option value="week">Weekly</option><option value="month" selected>Monthly</option><option value="year">Yearly</option></select></label>
+                <label><span class="field-label">Sport</span><select class="select" id="compareSport" onchange="renderComparison()"><option value="all">All sports</option></select></label>
+                <label><span class="field-label">Calculation</span><select class="select" id="compareCalc" onchange="renderComparison()"><option value="total">Period total</option><option value="cumulative">Running total</option></select></label>
+              </div>
+              <div class="compare-controls" id="compareRangeControls">
+                <label><span class="field-label">From</span><input type="date" class="input" id="compareFrom" onchange="renderComparison()"></label>
+                <label><span class="field-label">To</span><input type="date" class="input" id="compareTo" onchange="renderComparison()"></label>
+              </div>
+              <div class="compare-controls" id="compareYearControls" style="display:none">
+                <label><span class="field-label">Year A</span><select class="select" id="compareYearA" onchange="renderComparison()"></select></label>
+                <label><span class="field-label">Year B</span><select class="select" id="compareYearB" onchange="renderComparison()"></select></label>
+              </div>
+              <div class="compare-controls" id="compareMonthControls" style="display:none">
+                <label><span class="field-label">Months A</span><select class="select select--multi" id="compareMonthA" multiple size="5" onchange="renderComparison()"></select></label>
+                <label><span class="field-label">Months B</span><select class="select select--multi" id="compareMonthB" multiple size="5" onchange="renderComparison()"></select></label>
+              </div>
+              <div class="compare-grid" id="compareMetrics"></div>
+              <div id="compareChartArea" class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Insights -->
+          <div class="season-panel" id="tab-insights">
+            <div class="card" id="insightsCard" style="display:none">
+              <div class="card-head"><h2 class="card-title">Estimated FTP &amp; zones</h2></div>
+              <div id="insightsBody"></div>
+            </div>
+            <div class="card" id="bestEffortsCard">
+              <div class="card-head">
+                <h2 class="card-title">Best efforts</h2>
+                <div class="card-head__actions">
+                  <select class="select select--chip" id="bestEffortsKind" aria-label="Sport" onchange="renderBestEfforts()"><option value="power">Power · rides</option><option value="pace">Pace · runs</option></select>
+                  <select class="select select--chip" id="bestEffortsRange" aria-label="Period" onchange="renderBestEfforts()"><option value="28">28 days</option><option value="90" selected>90 days</option><option value="365">365 days</option></select>
+                </div>
+              </div>
+              <p class="card-text" id="bestEffortsEmpty">No detailed Strava data yet — it is fetched automatically in the background after each sync.</p>
+              <div class="chart-canvas-wrap chart-canvas-wrap--short"><canvas id="bestEffortsCanvas"></canvas></div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- LOG TAB -->
-      <div class="tab-content" id="tab-log">
-        <div class="training-card">
-          <div class="training-card-header">
-            <div style="display:flex;align-items:center;gap:16px">
-              <div class="training-card-title">Training Log</div>
-              <div class="training-card-count" id="activityCount">0 activities</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <span id="selectedCount" style="font-size:13px;color:var(--text-muted);display:none">0 selected</span>
-              <button class="btn-base btn-clear" id="btnDeleteSelected" style="display:none;padding:6px 14px;font-size:13px" onclick="deleteSelectedActivities()">🗑 Delete</button>
+        <!-- ═══════ ACTIVITIES ═══════ -->
+        <div class="tab-content" id="tab-log" role="tabpanel">
+          <div class="page-head">
+            <div><h1 class="page-title">Activities</h1><div class="page-caption" id="activityCount">0 activities</div></div>
+            <button class="btn-reset link-strong" id="btnSelectMode" onclick="toggleSelectMode()" aria-pressed="false">Select</button>
+          </div>
+          <div class="log-toolbar">
+            <label class="search"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><input type="search" class="search__input" id="logSearch" placeholder="Search activities" oninput="renderTrainingTable()" aria-label="Search activities"></label>
+            <div class="chip-row" id="logFilters" role="group" aria-label="Filter by sport">
+              <button class="chip is-active" data-filter="all" onclick="setLogFilter('all')">All</button>
+              <button class="chip" data-filter="run" onclick="setLogFilter('run')"><i style="background:var(--sport-run)"></i>Run</button>
+              <button class="chip" data-filter="bike" onclick="setLogFilter('bike')"><i style="background:var(--sport-bike)"></i>Bike</button>
+              <button class="chip" data-filter="swim" onclick="setLogFilter('swim')"><i style="background:var(--sport-swim)"></i>Swim</button>
+              <select class="select select--chip phone-only" id="logSort" aria-label="Sort" onchange="sortConfig = { key: this.value, dir: 'desc' }; renderTrainingTable()">
+                <option value="date">Sort: date</option><option value="tss">Sort: TSS</option><option value="distance">Sort: distance</option><option value="duration">Sort: duration</option>
+              </select>
             </div>
           </div>
-          <div class="training-table-wrap">
+          <div class="select-bar" id="selectBar" hidden>
+            <label class="select-bar__all"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)"> All</label>
+            <span id="selectedCount">0 selected</span>
+            <button class="btn btn--danger btn--sm" id="btnDeleteSelected" style="display:none" onclick="deleteSelectedActivities()">Delete</button>
+          </div>
+          <div id="logList" class="log-list"></div>
+          <div class="card card--flush training-table-wrap">
             <table class="training-table"><thead><tr>
-              <th style="width:40px;cursor:default"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"></th>
+              <th class="col-check" style="cursor:default"><span class="visually-hidden">Select</span></th>
               <th onclick="sortColumn('date')" data-col="date" class="is-sorted">Date <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('name')" data-col="name">Activity <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('sport')" data-col="sport">Sport <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('duration')" data-col="duration">Duration <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('distance')" data-col="distance">Distance <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('tss')" data-col="tss">TSS <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('intensityFactor')" data-col="intensityFactor">IF <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('avgHr')" data-col="avgHr">Avg HR <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('avgPower')" data-col="avgPower">Avg Power <span class="sort-indicator">▼</span></th>
-              <th onclick="sortColumn('calories')" data-col="calories">Calories <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('duration')" data-col="duration" class="num">Duration <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('distance')" data-col="distance" class="num">Distance <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('tss')" data-col="tss" class="num">TSS <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('intensityFactor')" data-col="intensityFactor" class="num">IF <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('avgHr')" data-col="avgHr" class="num">Avg HR <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('avgPower')" data-col="avgPower" class="num">Power <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('calories')" data-col="calories" class="num">Energy <span class="sort-indicator">▼</span></th>
             </tr></thead><tbody id="tableBody"></tbody></table>
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 </div>
 
-<!-- Activity detail (opened from the Log) -->
-<dialog id="activityDialog" class="activity-dialog" aria-label="Activity details" onclose="destroyDetailVisuals()">
+<!-- Settings (sheet) -->
+<dialog id="settingsDialog" class="sheet" aria-label="Settings">
+  <div class="sheet__head"><h2 class="sheet__title">Settings</h2><button class="icon-btn" onclick="toggleSettings()" aria-label="Close">✕</button></div>
+  <div id="settingsPanel" class="settings-panel">
+    <h3 class="settings-section">Thresholds</h3>
+    <div class="settings-grid">
+      <label class="field"><span class="field-label">FTP (W)</span><input type="number" class="input" id="inputFtp" value="200" min="1"></label>
+      <label class="field"><span class="field-label">LTHR (bpm)</span><input type="number" class="input" id="inputLthr" value="165" min="1"></label>
+      <label class="field"><span class="field-label">Run threshold pace (min/km)</span><input type="text" class="input" id="inputPace" value="5:00" inputmode="numeric" placeholder="4:30"></label>
+      <label class="field"><span class="field-label">Swim CSS (min/100 m)</span><input type="text" class="input" id="inputSwimPace" value="2:00" inputmode="numeric" placeholder="1:45"></label>
+      <label class="field"><span class="field-label">Effective from</span><input type="date" class="input" id="inputThresholdFrom"></label>
+    </div>
+    <button class="btn btn--primary btn--block" onclick="saveThresholdsFromInputs()">Save thresholds</button>
+    <p class="card-text">Activities from this date on are rescored; earlier ones keep their thresholds.</p>
+    <h3 class="settings-section">History</h3>
+    <div id="thresholdHistory"></div>
+    <div class="card danger-zone" id="dangerZone" style="display:none">
+      <div><div class="danger-zone__title">Delete all activities</div><p class="card-text">Permanently removes every activity from your account. Strava activities can be re-imported with Sync.</p></div>
+      <button class="btn btn--danger-text" onclick="clearAll()" id="btnClear">Delete all…</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Activity detail -->
+<dialog id="activityDialog" class="sheet sheet--full activity-dialog" aria-label="Activity details" onclose="destroyDetailVisuals()">
   <div id="activityDialogBody"></div>
 </dialog>
 
-<!-- Planned session (opened from the Calendar) -->
-<dialog id="sessionDialog" class="activity-dialog" aria-label="Planned session">
+<!-- Planned session (from Today, Calendar, Plan) -->
+<dialog id="sessionDialog" class="sheet" aria-label="Planned session">
   <div id="sessionDialogBody"></div>
 </dialog>
 
@@ -455,6 +449,7 @@
 <script src="js/strava.js?v=202609290954"></script>
 <script src="js/thresholds.js?v=202609290954"></script>
 <script src="js/metrics.js?v=202609290954"></script>
+<script src="js/theme.js?v=202609290954"></script>
 <script src="js/activity-detail.js?v=202609290954"></script>
 <script src="js/workout-export.js?v=202609290954"></script>
 <script src="js/race-target.js?v=202609290954"></script>
