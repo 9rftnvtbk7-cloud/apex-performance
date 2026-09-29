@@ -328,7 +328,7 @@ test('Import: success applies the plan, saves it and shows the summary', async (
   assert.equal(await run(`applyImportedPlan(__text, 'plan_long.json')`), true);
   assert.equal(run('trainingPlan.weeks.length'), 10);
   assert.equal(run('__savedPlan === trainingPlan'), true);
-  assert.equal(el('planImportStatus').children[0].textContent, '✅ 10 weeks, 70 sessions imported');
+  assert.equal(el('planImportStatus').children[0].textContent, '10 weeks, 70 sessions imported');
   assert.equal(run('raceDates[0].date'), '2026-11-15');   // from ISO raceDate
 });
 

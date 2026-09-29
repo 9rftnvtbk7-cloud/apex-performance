@@ -40,7 +40,7 @@ function renderInsights(now = new Date()) {
   if (eftp) {
     const diff = ftpNow ? Math.round((eftp - ftpNow) / ftpNow * 100) : 0;
     eftpHtml = `<div class="insight-stat"><span class="insight-stat-value">${eftp} W</span><span class="insight-stat-label">estimated FTP (90 days) · current ${ftpNow} W${diff ? ` (${diff > 0 ? '+' : ''}${diff}%)` : ''}</span></div>`
-      + (Math.abs(diff) >= 3 ? `<button class="btn-base btn-ghost" style="padding:6px 12px;font-size:13px" onclick="useEstimatedFtp(${eftp})">Use ${eftp} W from today</button>` : '');
+      + (Math.abs(diff) >= 3 ? `<button class="btn btn--secondary btn--sm" onclick="useEstimatedFtp(${eftp})">Use ${eftp} W from today</button>` : '');
   }
   const coverage = stravaTotal
     ? `<div class="insight-muted">Detailed data for ${fetched} of ${stravaTotal} Strava activities${fetched < stravaTotal ? ' — the rest is fetched in the background (Strava allows ~100 requests / 15 min)' : ''}.</div>`
@@ -81,22 +81,22 @@ function renderBestEfforts() {
   const fmt = v => kind === 'power' ? `${v} W` : fmtPaceFromSpeed(1000 / (v * 60));
   const canvas = document.getElementById('bestEffortsCanvas');
   if (!canvas || typeof Chart === 'undefined') return;
+  const c = C();
   bestEffortsChart = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: {
       labels: durations.map(fmtMmDuration),
       datasets: [
-        { label: `Last ${days} days`, data: durations.map(d => toVal(period[d])), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)', fill: true, tension: 0.3, pointRadius: 3, spanGaps: true },
-        { label: 'All-time', data: durations.map(d => toVal(allTime[d])), borderColor: 'rgba(163,168,188,0.8)', borderDash: [6, 4], tension: 0.3, pointRadius: 2 },
+        { label: `Last ${days} days`, data: durations.map(d => toVal(period[d])), borderColor: c.ctl, backgroundColor: withAlpha(c.ctl, 0.08), fill: true, borderWidth: 2.5, tension: 0.3, pointRadius: 0, pointHoverRadius: 4, spanGaps: true },
+        { label: 'All-time', data: durations.map(d => toVal(allTime[d])), borderColor: withAlpha(c.dim, 0.7), borderDash: [4, 4], borderWidth: 1.5, tension: 0.3, pointRadius: 0, pointHoverRadius: 4 },
       ],
     },
     options: {
       responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { labels: { color: '#a3a8bc' } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw == null ? '—' : fmt(c.raw)}` } } },
+      plugins: { legend: { align: 'start', labels: { color: c.dim, usePointStyle: true, pointStyle: 'line' } }, tooltip: { ...chartTooltip(), callbacks: { label: x => `${x.dataset.label}: ${x.raw == null ? '—' : fmt(x.raw)}` } } },
       scales: {
-        x: { grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3' } },
-        y: { reverse: kind !== 'power', grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3', callback: v => kind === 'power' ? `${v} W` : fmtPaceFromSpeed(1000 / (v * 60)).replace('/km', '') },
-             title: { display: true, text: kind === 'power' ? 'Best average power' : 'Best pace (min/km)', color: '#858aa3' } },
+        x: chartScaleX(),
+        y: chartScaleY({ reverse: kind !== 'power', ticks: { color: c.muted, padding: 8, callback: v => kind === 'power' ? `${v} W` : fmtPaceFromSpeed(1000 / (v * 60)).replace('/km', '') } }),
       },
     },
   });

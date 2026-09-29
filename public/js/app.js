@@ -642,19 +642,25 @@ function renderComparison() {
   }
 }
 
+function compareDeltaHtml(delta) {
+  if (!delta || !isFinite(delta)) return '';
+  return `<span class="compare-delta ${delta > 0 ? 'pos' : 'neg'}">${delta > 0 ? '+' : '−'}${Math.abs(delta).toFixed(0)} %</span>`;
+}
+
 function renderCompareMetricsRange(sp, grouping) {
+  const avgOf = xs => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
   const metrics = [
-    { label: 'Total TSS', values: sp.map(p => p.tss), fmt: v => v.toLocaleString(), color: 'var(--color-amber)' },
-    { label: 'Total Time', values: sp.map(p => p.duration), fmt: v => fmtDuration(v), color: 'var(--color-blue)' },
-    { label: 'Total Distance', values: sp.map(p => p.distance), fmt: v => (v/1000).toFixed(1)+' km', color: 'var(--color-green)' },
-    { label: 'Activities', values: sp.map(p => p.count), fmt: v => v.toString(), color: 'var(--color-purple)' },
-    { label: 'Avg IF', values: sp.map(p => p.ifs.length ? +(p.ifs.reduce((a,b)=>a+b,0)/p.ifs.length).toFixed(2) : 0), fmt: v => v.toFixed(2), color: 'var(--color-cyan)' },
-    { label: 'Avg HR', values: sp.map(p => p.hrs.length ? Math.round(p.hrs.reduce((a,b)=>a+b,0)/p.hrs.length) : 0), fmt: v => v+' bpm', color: 'var(--color-red)' },
+    { label: 'Total TSS', values: sp.map(p => p.tss), fmt: v => Math.round(v).toLocaleString('en-GB'), tss: true },
+    { label: 'Total time', values: sp.map(p => p.duration), fmt: v => fmtDuration(Math.round(v)) },
+    { label: 'Total distance', values: sp.map(p => p.distance), fmt: v => (v / 1000).toFixed(1) + ' km' },
+    { label: 'Activities', values: sp.map(p => p.count), fmt: v => String(Math.round(v)) },
+    { label: 'Avg IF', values: sp.map(p => p.ifs.length ? +avgOf(p.ifs).toFixed(2) : 0), fmt: v => v.toFixed(2) },
+    { label: 'Avg HR', values: sp.map(p => p.hrs.length ? Math.round(avgOf(p.hrs)) : 0), fmt: v => Math.round(v) + ' bpm' },
   ];
   document.getElementById('compareMetrics').innerHTML = metrics.map(m => {
-    const vals = m.values, latest = vals.length ? vals[vals.length-1] : 0, prev = vals.length > 1 ? vals[vals.length-2] : 0;
-    const delta = prev > 0 ? ((latest-prev)/prev*100) : 0, avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
-    return `<div class="compare-metric-card"><div class="compare-metric-label">${m.label}</div><div class="compare-period-row"><span class="compare-period-label">Latest</span><span class="compare-period-value" style="color:${m.color}">${m.fmt(latest)}${delta!==0?`<span class="compare-delta ${delta>0?'pos':'neg'}">${delta>0?'+':''}${delta.toFixed(0)}%</span>`:''}</span></div><div class="compare-period-row"><span class="compare-period-label">Previous</span><span class="compare-period-value">${m.fmt(prev)}</span></div><div class="compare-period-row"><span class="compare-period-label">Average</span><span class="compare-period-value" style="color:var(--text-dim)">${m.fmt(Math.round(avg))}</span></div></div>`;
+    const vals = m.values, latest = vals.length ? vals[vals.length - 1] : 0, prev = vals.length > 1 ? vals[vals.length - 2] : 0;
+    const delta = prev > 0 ? ((latest - prev) / prev * 100) : 0, avg = avgOf(vals);
+    return `<div class="compare-metric-card"><div class="compare-metric-label">${m.label}</div><div class="compare-metric-value${m.tss ? ' is-tss' : ''}">${m.fmt(latest)}${compareDeltaHtml(delta)}</div><div class="compare-metric-sub"><span>Previous ${m.fmt(prev)}</span><span>Average ${m.fmt(avg)}</span></div></div>`;
   }).join('');
 }
 
@@ -662,27 +668,34 @@ function renderCompareChartRange(sp, grouping) {
   const labels = sp.map(p => formatPeriodLabel(p.label, grouping));
   destroyCompareCharts();
   document.getElementById('compareChartArea').innerHTML = '<canvas id="compareChart"></canvas>';
+  const c = C();
   compareChart = new Chart(document.getElementById('compareChart').getContext('2d'), {
     type: 'bar', data: { labels, datasets: [
-      { label: 'TSS', data: sp.map(p=>p.tss), backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 4, yAxisID: 'y' },
-      { label: 'Hours', data: sp.map(p=>+(p.duration/3600).toFixed(1)), backgroundColor: 'rgba(59,130,246,0.6)', borderRadius: 4, yAxisID: 'y1' },
-    ]}, options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:true,labels:{color:'#a3a8bc'}}, tooltip:{backgroundColor:'#1e2030',borderColor:'#2a2d3e',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#a3a8bc',padding:12,cornerRadius:8} }, scales: { x:{grid:{color:'rgba(42,45,62,0.4)'},ticks:{color:'#858aa3',maxRotation:45}}, y:{position:'left',grid:{color:'rgba(42,45,62,0.3)'},ticks:{color:'rgba(245,158,11,0.7)'},title:{display:true,text:'TSS',color:'rgba(245,158,11,0.7)'}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{color:'rgba(59,130,246,0.7)'},title:{display:true,text:'Hours',color:'rgba(59,130,246,0.7)'},min:0} } }
+      { label: 'TSS', data: sp.map(p=>p.tss), backgroundColor: withAlpha(c.tss, 0.75), borderRadius: 6, maxBarThickness: 36, yAxisID: 'y' },
+      { label: 'Hours', data: sp.map(p=>+(p.duration/3600).toFixed(1)), backgroundColor: withAlpha(c.ctl, 0.65), borderRadius: 6, maxBarThickness: 36, yAxisID: 'y1' },
+    ]}, options: { responsive:true, maintainAspectRatio:false, animation:false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: true, align: 'start', labels: { color: c.dim, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 8, boxHeight: 8 } }, tooltip: chartTooltip() },
+      scales: { x: chartScaleX(), y: chartScaleY({ position: 'left', beginAtZero: true, ticks: { color: c.tss, padding: 8 } }), y1: chartScaleY({ position: 'right', min: 0, grid: { drawOnChartArea: false }, ticks: { color: c.ctl, padding: 8 } }) } }
   });
 }
 
+// Period A = fitness blue, period B = TSS amber (same as the charts)
+function comparePeriodColors() { const c = C(); return [c.ctl, c.tss]; }
+
 function renderCompareMetricsSideBySide(datasets) {
   const defs = [
-    { label:'Total TSS', key:'tss', fmt:v=>v.toLocaleString(), color:'var(--color-amber)' },
-    { label:'Total Time', key:'duration', fmt:v=>fmtDuration(v), color:'var(--color-blue)' },
-    { label:'Total Distance', key:'distance', fmt:v=>(v/1000).toFixed(1)+' km', color:'var(--color-green)' },
-    { label:'Activities', key:'count', fmt:v=>v.toString(), color:'var(--color-purple)' },
-    { label:'Avg IF', key:'ifs', fmt:v=>v.toFixed(2), color:'var(--color-cyan)', avg:true },
-    { label:'Avg HR', key:'hrs', fmt:v=>Math.round(v)+' bpm', color:'var(--color-red)', avg:true },
+    { label: 'Total TSS', key: 'tss', fmt: v => Math.round(v).toLocaleString('en-GB') },
+    { label: 'Total time', key: 'duration', fmt: v => fmtDuration(v) },
+    { label: 'Total distance', key: 'distance', fmt: v => (v / 1000).toFixed(1) + ' km' },
+    { label: 'Activities', key: 'count', fmt: v => String(v) },
+    { label: 'Avg IF', key: 'ifs', fmt: v => v.toFixed(2), avg: true },
+    { label: 'Avg HR', key: 'hrs', fmt: v => Math.round(v) + ' bpm', avg: true },
   ];
+  const colors = comparePeriodColors();
   document.getElementById('compareMetrics').innerHTML = defs.map(m => {
-    const vals = datasets.map(ds => m.avg ? (ds[m.key].length ? ds[m.key].reduce((a,b)=>a+b,0)/ds[m.key].length : 0) : ds[m.key]);
-    const delta = vals[0] > 0 ? ((vals[1]-vals[0])/vals[0]*100) : 0;
-    return `<div class="compare-metric-card"><div class="compare-metric-label">${m.label}</div>${datasets.map((ds,i) => `<div class="compare-period-row"><span class="compare-period-label"><span class="compare-period-dot" style="background:${i===0?'var(--color-blue)':'var(--color-amber)'}"></span>${ds.label}</span><span class="compare-period-value" style="color:${m.color}">${m.fmt(vals[i])}${i===1&&delta!==0?`<span class="compare-delta ${delta>0?'pos':'neg'}">${delta>0?'+':''}${delta.toFixed(0)}%</span>`:''}</span></div>`).join('')}</div>`;
+    const vals = datasets.map(ds => m.avg ? (ds[m.key].length ? ds[m.key].reduce((a, b) => a + b, 0) / ds[m.key].length : 0) : ds[m.key]);
+    const delta = vals[0] > 0 ? ((vals[1] - vals[0]) / vals[0] * 100) : 0;
+    return `<div class="compare-metric-card"><div class="compare-metric-label">${m.label}</div>${datasets.map((ds, i) => `<div class="compare-period-row"><span class="compare-period-label"><span class="compare-period-dot" style="background:${safeColor(colors[i])}"></span>${escapeHtml(ds.label)}</span><span class="compare-period-value">${m.fmt(vals[i])}${i === 1 ? compareDeltaHtml(delta) : ''}</span></div>`).join('')}</div>`;
   }).join('');
 }
 
@@ -695,18 +708,19 @@ function renderCompareChartsSideBySide(datasets) {
     return;
   }
 
+  const c = C(), color = comparePeriodColors().map(x => withAlpha(x, 0.75));
   const chartDefs = [
-    { title:'TSS', data: datasets.map(ds=>ds.tss), color:['rgba(59,130,246,0.7)','rgba(245,158,11,0.7)'] },
-    { title:'Hours', data: datasets.map(ds=>+(ds.duration/3600).toFixed(1)), color:['rgba(59,130,246,0.7)','rgba(245,158,11,0.7)'] },
-    { title:'Distance (km)', data: datasets.map(ds=>+(ds.distance/1000).toFixed(1)), color:['rgba(59,130,246,0.7)','rgba(245,158,11,0.7)'] },
-    { title:'Activities', data: datasets.map(ds=>ds.count), color:['rgba(59,130,246,0.7)','rgba(245,158,11,0.7)'] },
+    { title:'TSS', data: datasets.map(ds=>ds.tss), color },
+    { title:'Hours', data: datasets.map(ds=>+(ds.duration/3600).toFixed(1)), color },
+    { title:'Distance (km)', data: datasets.map(ds=>+(ds.distance/1000).toFixed(1)), color },
+    { title:'Activities', data: datasets.map(ds=>ds.count), color },
   ];
   const area = document.getElementById('compareChartArea');
   area.innerHTML = '<div class="compare-charts-grid">' + chartDefs.map((_,i) => `<div class="compare-chart-cell"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
   chartDefs.forEach((cd, i) => {
     const c = new Chart(document.getElementById('cmpChart'+i).getContext('2d'), {
-      type: 'bar', data: { labels: datasets.map(ds=>ds.label), datasets: [{ data: cd.data, backgroundColor: cd.color, borderRadius: 6, barPercentage: 0.6 }] },
-      options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:false}, title:{display:true,text:cd.title,color:'#e8eaf0',font:{size:14,family:'DM Sans',weight:600},padding:{bottom:12}}, tooltip:{backgroundColor:'#1e2030',borderColor:'#2a2d3e',borderWidth:1,titleColor:'#e8eaf0',bodyColor:'#a3a8bc',padding:12,cornerRadius:8} }, scales: { x:{grid:{color:'rgba(42,45,62,0.4)'},ticks:{color:'#a3a8bc',font:{size:12}}}, y:{grid:{color:'rgba(42,45,62,0.3)'},ticks:{color:'#858aa3'},beginAtZero:true} } }
+      type: 'bar', data: { labels: datasets.map(ds=>ds.label), datasets: [{ data: cd.data, backgroundColor: cd.color, borderRadius: 6, barPercentage: 0.6, maxBarThickness: 56 }] },
+      options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:false}, title:{display:true,text:cd.title,align:'start',color:c.text,font:{size:15,weight:600},padding:{bottom:12}}, tooltip: chartTooltip() }, scales: { x: chartScaleX({ ticks: { color: c.dim } }), y: chartScaleY({ beginAtZero: true }) } }
     });
     compareCharts.push(c);
   });
@@ -714,7 +728,7 @@ function renderCompareChartsSideBySide(datasets) {
 
 function renderCumulativeCharts(datasets) {
   destroyCompareCharts();
-  const colors = ['#3b82f6', '#f59e0b'];
+  const c = C(), colors = comparePeriodColors();
   const metricDefs = [
     { title: 'Cumulative TSS', key: 'tss', extract: a => a.tss || 0 },
     { title: 'Cumulative Hours', key: 'duration', extract: a => (a.duration || 0) / 3600 },
@@ -743,7 +757,7 @@ function renderCumulativeCharts(datasets) {
         label: ds.label,
         data: points,
         borderColor: colors[di],
-        backgroundColor: colors[di] + '18',
+        backgroundColor: withAlpha(colors[di], 0.08),
         borderWidth: 2.5,
         pointRadius: 0,
         pointHitRadius: 6,
@@ -758,13 +772,13 @@ function renderCumulativeCharts(datasets) {
       options: {
         responsive: true, maintainAspectRatio: false, animation: false,
         plugins: {
-          legend: { display: true, labels: { color: '#a3a8bc', usePointStyle: true, pointStyle: 'line' } },
-          title: { display: true, text: md.title, color: '#e8eaf0', font: { size: 14, family: 'DM Sans', weight: 600 }, padding: { bottom: 12 } },
-          tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#a3a8bc', padding: 12, cornerRadius: 8 }
+          legend: { display: true, align: 'start', labels: { color: c.dim, usePointStyle: true, pointStyle: 'line' } },
+          title: { display: true, text: md.title, align: 'start', color: c.text, font: { size: 15, weight: 600 }, padding: { bottom: 8 } },
+          tooltip: chartTooltip()
         },
         scales: {
-          x: { type: 'linear', min: 0, max: maxDays, grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3', callback: v => 'Day ' + v }, title: { display: true, text: 'Days into period', color: '#858aa3' } },
-          y: { grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3' }, beginAtZero: true }
+          x: chartScaleX({ type: 'linear', min: 0, max: maxDays, ticks: { color: c.muted, maxRotation: 0, callback: v => 'Day ' + v } }),
+          y: chartScaleY({ beginAtZero: true })
         }
       }
     });
@@ -1406,8 +1420,8 @@ async function applyImportedPlan(text, fileName) {
   let saved = true;
   if (typeof saveTrainingPlan === 'function') saved = await saveTrainingPlan(trainingPlan);
   const lines = [...result.warnings];
-  if (!saved) lines.unshift('⚠️ The plan is shown but could not be saved to your account — it will be gone after a reload.');
-  showPlanImportStatus(saved ? 'success' : 'error', `✅ ${result.summary}`, lines);
+  if (!saved) lines.unshift('The plan is shown but could not be saved to your account — it will be gone after a reload.');
+  showPlanImportStatus(saved ? 'success' : 'error', result.summary, lines);
   showToast(result.summary, '✅');
   return true;
 }
