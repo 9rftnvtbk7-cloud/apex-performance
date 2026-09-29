@@ -87,7 +87,7 @@ function calculateRaceTarget() {
   });
   raceTargetResult = r.ok ? { ...r, weeks: weeklyFromDaily(r.loads, today) } : null;
   if (!r.ok) { out.innerHTML = `<div class="insight-muted">${escapeHtml(r.warnings[0])}</div>`; return; }
-  const rows = raceTargetResult.weeks.map(w => `<tr><td>${escapeHtml(parseIsoDate(w.monday).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}</td>${w.days < 7 ? ` <small>(${w.days} d)</small>` : ''}</td><td>${w.tss}</td><td>${Math.round(w.tss / w.days)}</td></tr>`).join('');
+  const rows = raceTargetResult.weeks.map(w => `<tr><td>${escapeHtml(parseIsoDate(w.monday).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}${w.days < 7 ? ` <small>(${w.days} d)</small>` : ''}</td><td>${w.tss}</td><td>${Math.round(w.tss / w.days)}</td></tr>`).join('');
   out.innerHTML = `
     <div class="race-target-summary">
       <div><span class="insight-stat-value">${Math.round(r.L * 7)}</span><span class="insight-stat-label">TSS / week during the build (${Math.round(r.L)}/day)</span></div>

@@ -858,3 +858,15 @@ test('FIT workout export: valid file (CRCs), steps with power targets and a repe
   assert.deepEqual([steps[3][1], steps[3][2], steps[3][4]], [6, 1, 3]);   // repeat from step 1, 3 times
   assert.equal(steps[4][7], 3);                                           // cooldown
 });
+
+test('Race target: result table keeps partial-week markers inside the date cell', () => {
+  const { run, el } = makeEnv();
+  run(`pmcResult = { lastCtl: 48, lastAtl: 55 }; raceDates = [];`);
+  const race = run(`localDateKey(addDays(new Date(), 47))`);
+  el('raceTargetRace').value = race; el('raceTargetCtl').value = '62'; el('raceTargetTsb').value = '10'; el('raceTargetTaper').value = '10';
+  run('calculateRaceTarget()');
+  const html = el('raceTargetResult').innerHTML;
+  const rows = html.match(/<tr>[\s\S]*?<\/tr>/g).slice(1); // skip the header row
+  for (const r of rows) assert.equal((r.match(/<td>/g) || []).length, 3, r);
+  assert.ok(!/<\/td>\s*<small>|<\/small><\/td><\/td>/.test(html));
+});
