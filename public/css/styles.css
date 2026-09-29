@@ -480,6 +480,10 @@ select[multiple].compare-select option:checked {
   .plan-steps th, .plan-steps td { padding: 5px 5px; }
 }
 
+/* ── Workout export ── */
+.workout-export { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.workout-export .plan-zwo-btn { margin-left: 0; padding: 4px 10px; font-size: 12px; }
+
 /* ── Race-day target ── */
 .race-target { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
 .race-target-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }

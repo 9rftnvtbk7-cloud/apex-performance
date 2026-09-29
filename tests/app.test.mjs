@@ -27,7 +27,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'race-target.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'workout-export.js', 'race-target.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -766,4 +766,95 @@ test('Race target: weekly totals are Monday-based and can be applied to the plan
        raceTargetResult = { weeks: [{ monday: '2026-10-05', tss: 420 }] }; applyRaceTargetToPlanner();`);
   assert.deepEqual([...run(`plannerData.map(p => p.tss)`)], [420, 300]);
   assert.equal(run('__saved'), 1);
+});
+
+// ── Workout export ──
+const TH = { ftp: 200, lthr: 165, pace: '5:00', swimPace: '2:00' };
+
+test('Step parsing: durations, targets, repeats with rest', () => {
+  const { run } = makeEnv();
+  const d = t => JSON.parse(JSON.stringify(run(`parseStepDuration(${JSON.stringify(t)})`)));
+  assert.deepEqual(d('10min'), { seconds: 600 });
+  assert.deepEqual(d('1h30'), { seconds: 5400 });
+  assert.deepEqual(d('30s'), { seconds: 30 });
+  assert.deepEqual(d('2km'), { meters: 2000 });
+  assert.deepEqual(d('400m'), { meters: 400 });
+  assert.equal(run(`parseStepDuration('easy')`), null);
+  const t = x => JSON.parse(JSON.stringify(run(`parseStepTarget(${JSON.stringify(x)}, ${JSON.stringify(TH)})`)));
+  assert.deepEqual(t('170W'), { power: 0.85 });
+  assert.deepEqual(t('85% FTP'), { power: 0.85 });
+  assert.deepEqual(t('Z1 <120W'), { power: 0.6 });          // explicit watts win over the zone
+  assert.deepEqual(t('Z2'), { power: 0.65, zone: true });
+  assert.deepEqual(t('≤135 bpm'), { hr: [122, 135] });
+  assert.deepEqual(t('4:00/km'), { pace: 1000 / 240 });
+  const steps = JSON.parse(JSON.stringify(run(`parseSessionSteps({ steps: [
+    { label: 'Échauffement', duration: '10min', target: 'Z1-Z2' },
+    { label: '3×8min', duration: '8min', target: '170W', rest: '2min Z1' },
+    { label: 'Retour au calme', duration: '10min', target: 'Z1 <120W' }] }, ${JSON.stringify(TH)})`)));
+  assert.equal(steps[0].kind, 'warmup');
+  assert.equal(steps[1].repeat, 3);
+  assert.deepEqual(steps[1].rest, { dur: { seconds: 120 }, target: { power: 0.5, zone: true } });
+  assert.equal(steps[2].kind, 'cooldown');
+});
+
+test('ZWO export: warmup, intervals, cooldown, text events, escaped XML', () => {
+  const { run } = makeEnv();
+  const xml = run(`buildZwo({ name: 'Tempo <3×8> & co', sport: 'bike', description: 'x', steps: [
+    { label: 'Échauffement', duration: '10min', target: 'Z1-Z2' },
+    { label: '3×8min', duration: '8min', target: '170W', rest: '2min Z1' },
+    { label: 'Retour au calme', duration: '10min', target: 'Z1 <120W' }] }, ${JSON.stringify(TH)})`);
+  assert.match(xml, /<name>Tempo &lt;3×8&gt; &amp; co<\/name>/);
+  assert.match(xml, /<sportType>bike<\/sportType>/);
+  assert.match(xml, /<Warmup Duration="600" PowerLow="0.5" PowerHigh="0.575">/);
+  assert.match(xml, /<IntervalsT Repeat="3" OnDuration="480" OffDuration="120" OnPower="0.85" OffPower="0.5">/);
+  assert.match(xml, /<Cooldown Duration="600" PowerLow="0.6" PowerHigh="0.5">/);
+  assert.match(xml, /<textevent timeoffset="0" message="3×8min — 170W · 2min Z1"\/>/);
+});
+
+// Independent FIT decoder for the test (definition + data messages, CRC checks)
+function decodeFit(bytes) {
+  const crc = b => { const T = [0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401, 0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400]; let c = 0;
+    for (const x of b) { let t = T[c & 0xF]; c = (c >> 4) & 0x0FFF; c = c ^ t ^ T[x & 0xF]; t = T[c & 0xF]; c = (c >> 4) & 0x0FFF; c = c ^ t ^ T[(x >> 4) & 0xF]; } return c; };
+  const hs = bytes[0], dataSize = bytes[4] | bytes[5] << 8 | bytes[6] << 16 | bytes[7] << 24;
+  assert.equal(String.fromCharCode(...bytes.slice(8, 12)), '.FIT');
+  assert.equal(crc(bytes.slice(0, 12)), bytes[12] | bytes[13] << 8, 'header CRC');
+  assert.equal(bytes.length, hs + dataSize + 2);
+  assert.equal(crc(bytes.slice(0, hs + dataSize)), bytes[hs + dataSize] | bytes[hs + dataSize + 1] << 8, 'file CRC');
+  const defs = {}, msgs = [];
+  let p = hs;
+  while (p < hs + dataSize) {
+    const h = bytes[p++];
+    if (h & 0x40) {
+      p++; const arch = bytes[p++]; assert.equal(arch, 0); const g = bytes[p] | bytes[p + 1] << 8; p += 2; const n = bytes[p++];
+      const f = []; for (let i = 0; i < n; i++) { f.push([bytes[p], bytes[p + 1], bytes[p + 2]]); p += 3; }
+      defs[h & 0xF] = { g, f };
+    } else {
+      const d = defs[h & 0xF], m = { global: d.g };
+      for (const [num, size, type] of d.f) {
+        const b = bytes.slice(p, p + size); p += size;
+        m[num] = type === 0x07 ? new TextDecoder().decode(Uint8Array.from(b.slice(0, b.indexOf(0) < 0 ? size : b.indexOf(0)))) : b.reduce((v, x, i) => v + x * 2 ** (8 * i), 0);
+      }
+      msgs.push(m);
+    }
+  }
+  return msgs;
+}
+
+test('FIT workout export: valid file (CRCs), steps with power targets and a repeat', () => {
+  const { run } = makeEnv();
+  const bytes = [...run(`buildFitWorkout({ name: 'W01 Tue – Vélo Tempo 3×8min', sport: 'bike', steps: [
+    { label: 'Échauffement', duration: '10min', target: 'Z1-Z2' },
+    { label: '3×8min', duration: '8min', target: '170W', rest: '2min Z1' },
+    { label: 'Retour au calme', duration: '10min', target: 'Z1 <120W' }] }, ${JSON.stringify(TH)}, new Date(Date.UTC(2026, 8, 29)))`)];
+  const msgs = decodeFit(bytes);
+  const [fileId, workout, ...steps] = msgs;
+  assert.equal(fileId.global, 0); assert.equal(fileId[0], 5);             // file type: workout
+  assert.equal(workout.global, 26); assert.equal(workout[4], 2);           // sport: cycling
+  assert.equal(workout[8], 'W01 Tue – Vélo Tempo 3×8min');
+  assert.equal(workout[6], 5); assert.equal(steps.length, 5);              // warmup, on, recovery, repeat, cooldown
+  assert.deepEqual([steps[0][1], steps[0][2], steps[0][7]], [0, 600000, 2]); // time 600 s, warmup
+  assert.deepEqual([steps[1][3], steps[1][5], steps[1][6]], [4, 1162, 1179]); // power 170 W ±5 % (+1000 offset)
+  assert.deepEqual([steps[2][2], steps[2][7]], [120000, 1]);              // recovery 2 min, rest
+  assert.deepEqual([steps[3][1], steps[3][2], steps[3][4]], [6, 1, 3]);   // repeat from step 1, 3 times
+  assert.equal(steps[4][7], 3);                                           // cooldown
 });

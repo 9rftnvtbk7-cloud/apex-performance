@@ -1581,6 +1581,7 @@ function sessionDetailsHtml(s) {
     parts.push(`<div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Step</th><th>Time</th><th>Target</th><th>Rest</th></tr></thead><tbody>${
       s.steps.map(st => `<tr><td>${escapeHtml(st.label)}</td><td>${escapeHtml(st.duration || '—')}</td><td>${escapeHtml(st.target || '—')}</td><td>${escapeHtml(st.rest || '—')}</td></tr>`).join('')
     }</tbody></table></div>`);
+    if (typeof workoutExportButtonsHtml === 'function') parts.push(workoutExportButtonsHtml(s));
   }
   return parts.length ? `<details class="plan-session-details"><summary>Details</summary>${parts.join('')}</details>` : '';
 }
