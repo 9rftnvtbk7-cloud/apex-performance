@@ -1,0 +1,86 @@
+/* Apex redesign — Graphite (dark, default) + Daylight (light). Drop into the existing stylesheet. */
+:root {
+  /* Surfaces */
+  --bg-base: #0C0D10;       /* page */
+  --bg-sidebar: #101114;    /* desktop sidebar */
+  --bg-card: #15171B;       /* level 1: cards, groups */
+  --bg-card-sub: #1A1C20;   /* cells inside a card (stat grids) */
+  --bg-raised: #1D2025;     /* level 2: secondary buttons, segmented track, chips */
+  --bg-selected: #2A2D33;   /* segmented selected, progress track */
+  --border-color: #2A2D33;  /* hairlines, inputs */
+  --border-subtle: #22252A; /* list row dividers */
+  --border-dashed: #3A3E45; /* planned-not-done */
+
+  /* Text */
+  --text-main: #EEEFF1;
+  --text-dim: #A9ADB5;
+  --text-muted: #858A93;    /* ≥ 4.5:1 on --bg-card */
+  --text-disabled: #5E626B;
+
+  /* Accent = ink. Primary buttons are light-on-dark, no hue. */
+  --accent: #EEEFF1;
+  --accent-contrast: #0C0D10;
+
+  /* Data semantics */
+  --color-ctl: #6AA8FF;     /* fitness */
+  --color-atl: #FF6B86;     /* fatigue */
+  --color-tsb: #3DDC97;     /* form */
+  --color-tss: #FFC247;     /* load */
+  --color-ok: #3DDC97;      /* compliance: on target  ✓ */
+  --color-partial: #FFC247; /* compliance: partly     ◐ */
+  --color-missed: #F87171;  /* compliance: missed     ✕ */
+  --tint-ok: rgba(61,220,151,.12);
+  --tint-partial: rgba(255,194,71,.12);
+  --tint-missed: rgba(248,113,113,.10);
+  --strava: #FC4C02;        /* Strava UI only */
+
+  /* Sports */
+  --sport-bike: #60B8FF;
+  --sport-run: #9BE15D;
+  --sport-swim: #3FD5D0;
+  --sport-strength: #B794FF;
+  --sport-rest: #858A93;
+  --sport-race: #FFC247;
+
+  /* Type — Geist everywhere, tabular numbers; Geist Mono only for JSON / file names / debug log */
+  --font-ui: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --fs-display: 34px; --lh-display: 36px;  /* 600, -0.03em — page titles */
+  --fs-title: 24px;   --lh-title: 28px;    /* 600, -0.02em — hero numbers, session title (desktop) */
+  --fs-headline: 17px;--lh-headline: 22px; /* 600 */
+  --fs-body: 15px;    --lh-body: 22px;     /* 400 */
+  --fs-caption: 13px; --lh-caption: 18px;  /* 400–500 */
+  --fs-micro: 12px;                         /* stat labels */
+  --fs-tab: 11px;                           /* tab bar labels, 500 */
+
+  /* Spacing (4 px scale) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+
+  /* Radii */
+  --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-pill: 999px;
+
+  /* Elevation — sheets, dialogs, toasts only. Cards have no border and no shadow. */
+  --shadow-sheet: 0 16px 48px rgba(0,0,0,.5);
+
+  /* Layout */
+  --sidebar-w: 232px;       /* ≥ 1024 px */
+  --tabbar-h: 56px;         /* + env(safe-area-inset-bottom) */
+  --content-max: 1400px;
+}
+
+body { font-family: var(--font-ui); font-feature-settings: "tnum" 1; -webkit-font-smoothing: antialiased; background: var(--bg-base); color: var(--text-main); }
+
+/* Daylight — light theme, follows iOS appearance unless user overrides */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg-base: #F4F3EF; --bg-sidebar: #EFEEEA; --bg-card: #FFFFFF; --bg-card-sub: #FAF9F7;
+    --bg-raised: #ECEAE5; --bg-selected: #E2E0DA; --border-color: #E2E0DA; --border-subtle: #EDEBE6; --border-dashed: #C9C6BF;
+    --text-main: #17181B; --text-dim: #55585F; --text-muted: #6B6E75; --text-disabled: #A3A5AA;
+    --accent: #17181B; --accent-contrast: #FFFFFF;
+    --color-ctl: #1F6FEB; --color-atl: #D6335A; --color-tsb: #0F9F6E; --color-tss: #B7791F;
+    --color-ok: #0F9F6E; --color-partial: #B7791F; --color-missed: #D14343;
+    --tint-ok: rgba(15,159,110,.10); --tint-partial: rgba(183,121,31,.12); --tint-missed: rgba(209,67,67,.09);
+    --sport-bike: #1C7ED6; --sport-run: #4C9A1A; --sport-swim: #0E9594; --sport-strength: #7B55D9;
+  }
+}
+:root[data-theme="light"] { /* same values as the media block above — duplicate for manual override */ }

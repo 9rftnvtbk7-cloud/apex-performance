@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#08090B;color:#EEEFF1;font-family:'Geist',system-ui,sans-serif;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased}
+a{color:#EEEFF1;text-decoration:underline;text-underline-offset:3px}
+a:hover{color:#6AA8FF}
+</style>
+</helmet>
+<section id="turn-1" style="padding:72px 80px 120px;display:flex;flex-direction:column;gap:88px;width:2900px">
+
+<header style="display:flex;flex-direction:column;gap:20px;max-width:1100px">
+<div style="display:flex;align-items:center;gap:12px;font-size:14px;color:#A9ADB5;letter-spacing:0.02em">
+<div style="width:28px;height:28px;border-radius:8px;background:#EEEFF1;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1.5 L12.8 12 H1.2 Z" fill="#0C0D10"></path></svg></div>
+<span>Apex · Redesign proposal · 29 Sept 2026</span>
+</div>
+<h1 style="margin:0;font-size:64px;line-height:1.02;font-weight:600;letter-spacing:-0.035em">Review and new design direction</h1>
+<p style="margin:0;font-size:20px;line-height:1.5;color:#A9ADB5;max-width:900px;text-wrap:pretty">Apex already does the right things. The redesign reorders them: the morning question gets the top of the screen, planning lives in one place, and the chart shows fitness first. Same features, same data, fewer boxes.</p>
+</header>
+
+<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:64px;max-width:2300px">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#858A93">01 · Review</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2A2D33;border-radius:20px;overflow:hidden">
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Overview</div><div style="font-size:19px;font-weight:600;line-height:1.35">Everything has the same weight</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Today, stats, chart, week and insights are all equal cards. New Today screen: verdict and session first, then one Form row, then the week. Insights move to Season.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">PMC chart</div><div style="font-size:19px;font-weight:600;line-height:1.35">Five data layers on one axis</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Default view: fitness line, forecast and race marker. Fatigue and form are toggles. TSS dots become thin bars in their own lane. The date inputs move into a "Custom" sheet.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Navigation</div><div style="font-size:19px;font-weight:600;line-height:1.35">Three overlapping planning tabs</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Calendar becomes the place to follow and move sessions. Plan is the library. Planner and Compare merge into Season. 6 tabs become 5.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Phone header</div><div style="font-size:19px;font-weight:600;line-height:1.35">Wraps onto two lines</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Logo, one sync status pill, avatar. Settings, Upload .FIT and Sign out live in the account sheet. Pull to refresh triggers a Strava sync.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Typography</div><div style="font-size:19px;font-weight:600;line-height:1.35">Numbers read as code</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">One family (Geist) with tabular figures for every number. Mono is kept only for JSON, file names and the debug log. Dates are plain text.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Tone</div><div style="font-size:19px;font-weight:600;line-height:1.35">"0 TSS" on Monday feels like failure</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Show progress against "planned so far" (the rule calendar.js already uses: 25 / 25 on Monday evening), with remaining sessions as ghost segments. Amber only appears when you fall behind.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Surfaces</div><div style="font-size:19px;font-weight:600;line-height:1.35">Card soup</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Two surface levels, hairline dividers inside groups, a 4 px spacing scale. Borders only on inputs and planned-but-not-done items.</div></div>
+<div style="background:#111316;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="font-size:14px;color:#858A93">Icons and mobile tables</div><div style="font-size:19px;font-weight:600;line-height:1.35">Emoji and sideways scrolling</div><div style="font-size:15px;line-height:1.55;color:#A9ADB5">Line icons only; Feel becomes a labelled 5-step scale. Log and Planner grid become lists on phones, tables from 900 px.</div></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#858A93">02 · Information architecture</div>
+<div style="background:#111316;border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:24px">
+<div style="display:grid;grid-template-columns:1fr 40px 1fr;gap:0;align-items:center;row-gap:12px;font-size:16px">
+<div style="color:#858A93;font-size:13px;letter-spacing:0.08em;text-transform:uppercase">Today (6 tabs)</div><div></div><div style="color:#858A93;font-size:13px;letter-spacing:0.08em;text-transform:uppercase">Proposed (5 tabs)</div>
+<div style="padding:12px 16px;background:#1D2025;border-radius:10px">Overview</div><div style="text-align:center;color:#858A93">→</div><div style="padding:12px 16px;background:#EEEFF1;color:#0C0D10;border-radius:10px;font-weight:600">Today</div>
+<div style="padding:12px 16px;background:#1D2025;border-radius:10px">Calendar</div><div style="text-align:center;color:#858A93">→</div><div style="padding:12px 16px;background:#EEEFF1;color:#0C0D10;border-radius:10px;font-weight:600">Calendar <span style="font-weight:400;color:#55585F">· follow and move sessions</span></div>
+<div style="padding:12px 16px;background:#1D2025;border-radius:10px">Plan</div><div style="text-align:center;color:#858A93">→</div><div style="padding:12px 16px;background:#EEEFF1;color:#0C0D10;border-radius:10px;font-weight:600">Plan <span style="font-weight:400;color:#55585F">· library, details, import, export</span></div>
+<div style="padding:12px 16px;background:#1D2025;border-radius:10px">Planner + Compare</div><div style="text-align:center;color:#858A93">→</div><div style="padding:12px 16px;background:#EEEFF1;color:#0C0D10;border-radius:10px;font-weight:600">Season <span style="font-weight:400;color:#55585F">· Forecast · Compare · Insights</span></div>
+<div style="padding:12px 16px;background:#1D2025;border-radius:10px">Log</div><div style="text-align:center;color:#858A93">→</div><div style="padding:12px 16px;background:#EEEFF1;color:#0C0D10;border-radius:10px;font-weight:600">Activities</div>
+</div>
+<div style="font-size:15px;line-height:1.6;color:#A9ADB5;text-wrap:pretty">Rule of thumb: <span style="color:#EEEFF1">Calendar answers "what and when"</span>, <span style="color:#EEEFF1">Plan answers "how"</span> (warm-up, sets, targets, .zwo / .fit), <span style="color:#EEEFF1">Season answers "where will I be on race day"</span>. Tapping a session anywhere opens the same session sheet. Settings, Upload .FIT, Disconnect Strava, debug log and Sign out move to the account sheet.</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:baseline;gap:20px"><div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#858A93">03 · Two directions</div><div style="font-size:15px;color:#A9ADB5">Recommendation: <a href="#1a">1a</a> as the default, with <a href="#1b">1b</a> shipped as the light theme that follows iOS appearance.</div></div>
+<div style="display:flex;gap:40px;flex-wrap:wrap">
+
+<div id="1a" style="width:980px;background:#0C0D10;border:1px solid #2A2D33;border-radius:24px;padding:40px;display:flex;flex-direction:column;gap:28px;position:relative">
+<div style="position:absolute;top:20px;right:20px;background:#EEEFF1;color:#0C0D10;font-weight:700;font-size:14px;padding:4px 10px;border-radius:999px">1a · Recommended</div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:36px;font-weight:600;letter-spacing:-0.03em">Graphite</div><div style="font-size:16px;line-height:1.5;color:#A9ADB5;max-width:640px">Quiet, near-black instrument panel. The interface itself is monochrome, so the only colours on screen are data: fitness, fatigue, form, load and sport. Dense where it helps (tables, calendar), roomy on Today.</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-size:13px;color:#858A93">Type · Geist, tabular figures</div>
+<div style="font-size:56px;font-weight:600;letter-spacing:-0.04em;line-height:1">51.7</div>
+<div style="font-size:22px;font-weight:600;letter-spacing:-0.02em">Vélo Tempo 3×8min</div>
+<div style="font-size:15px;color:#A9ADB5">Échauffement 10 min progressif Z1→Z2 · FC ≤ 135 bpm</div>
+<div style="font-family:'Geist Mono',monospace;font-size:13px;color:#858A93">saint-nolff-30k-v2.1.json</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;color:#858A93">Colour · neutrals + data only</div>
+<div style="display:flex;gap:6px"><div style="flex:1;height:48px;border-radius:8px;background:#0C0D10;border:1px solid #2A2D33"></div><div style="flex:1;height:48px;border-radius:8px;background:#15171B"></div><div style="flex:1;height:48px;border-radius:8px;background:#1D2025"></div><div style="flex:1;height:48px;border-radius:8px;background:#2A2D33"></div><div style="flex:1;height:48px;border-radius:8px;background:#EEEFF1"></div></div>
+<div style="display:flex;gap:6px"><div style="flex:1;height:48px;border-radius:8px;background:#6AA8FF"></div><div style="flex:1;height:48px;border-radius:8px;background:#FF6B86"></div><div style="flex:1;height:48px;border-radius:8px;background:#3DDC97"></div><div style="flex:1;height:48px;border-radius:8px;background:#FFC247"></div><div style="flex:1;height:48px;border-radius:8px;background:#FC4C02"></div></div>
+<div style="display:flex;gap:6px;font-size:12px;color:#858A93"><div style="flex:1">Fitness</div><div style="flex:1">Fatigue</div><div style="flex:1">Form</div><div style="flex:1">Load</div><div style="flex:1">Strava only</div></div>
+</div>
+</div>
+<div style="background:#15171B;border-radius:18px;padding:20px;display:flex;align-items:center;gap:16px">
+<div style="width:44px;height:44px;border-radius:12px;background:rgba(96,184,255,0.14);display:flex;align-items:center;justify-content:center"><div style="width:10px;height:10px;border-radius:50%;background:#60B8FF"></div></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px"><div style="font-size:17px;font-weight:600">W04 Tue – Vélo Tempo 3×8min</div><div style="font-size:14px;color:#A9ADB5">50 min · ≤160 bpm · 170 W · TSS 55</div></div>
+<div style="background:#EEEFF1;color:#0C0D10;font-weight:600;font-size:15px;padding:12px 18px;border-radius:12px">Mark done</div>
+</div>
+</div>
+
+<div id="1b" style="width:980px;background:#F4F3EF;color:#17181B;border-radius:24px;padding:40px;display:flex;flex-direction:column;gap:28px;position:relative;font-family:'Instrument Sans',sans-serif">
+<div style="position:absolute;top:20px;right:20px;background:#17181B;color:#F4F3EF;font-weight:700;font-size:14px;padding:4px 10px;border-radius:999px">1b</div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:36px;font-weight:600;letter-spacing:-0.03em">Daylight</div><div style="font-size:16px;line-height:1.5;color:#55585F;max-width:640px">Warm paper background, white cards, ink-black type and one indigo accent. Built for reading outdoors in sunlight. More editorial, a little more air between elements, slightly lower density.</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:28px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-size:13px;color:#6B6E75">Type · Instrument Sans</div>
+<div style="font-size:56px;font-weight:600;letter-spacing:-0.04em;line-height:1">51.7</div>
+<div style="font-size:22px;font-weight:600;letter-spacing:-0.02em">Vélo Tempo 3×8min</div>
+<div style="font-size:15px;color:#55585F">Échauffement 10 min progressif Z1→Z2 · FC ≤ 135 bpm</div>
+<div style="font-family:'Geist Mono',monospace;font-size:13px;color:#6B6E75">saint-nolff-30k-v2.1.json</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:13px;color:#6B6E75">Colour · paper, ink, indigo</div>
+<div style="display:flex;gap:6px"><div style="flex:1;height:48px;border-radius:8px;background:#F4F3EF;border:1px solid #E2E0DA"></div><div style="flex:1;height:48px;border-radius:8px;background:#FFFFFF;border:1px solid #E2E0DA"></div><div style="flex:1;height:48px;border-radius:8px;background:#E2E0DA"></div><div style="flex:1;height:48px;border-radius:8px;background:#17181B"></div><div style="flex:1;height:48px;border-radius:8px;background:#4B4FE0"></div></div>
+<div style="display:flex;gap:6px"><div style="flex:1;height:48px;border-radius:8px;background:#1F6FEB"></div><div style="flex:1;height:48px;border-radius:8px;background:#D6335A"></div><div style="flex:1;height:48px;border-radius:8px;background:#0F9F6E"></div><div style="flex:1;height:48px;border-radius:8px;background:#B7791F"></div><div style="flex:1;height:48px;border-radius:8px;background:#FC4C02"></div></div>
+<div style="display:flex;gap:6px;font-size:12px;color:#6B6E75"><div style="flex:1">Fitness</div><div style="flex:1">Fatigue</div><div style="flex:1">Form</div><div style="flex:1">Load</div><div style="flex:1">Strava only</div></div>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2E0DA;border-radius:18px;padding:20px;display:flex;align-items:center;gap:16px">
+<div style="width:44px;height:44px;border-radius:12px;background:#E6F1FD;display:flex;align-items:center;justify-content:center"><div style="width:10px;height:10px;border-radius:50%;background:#1F6FEB"></div></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px"><div style="font-size:17px;font-weight:600">W04 Tue – Vélo Tempo 3×8min</div><div style="font-size:14px;color:#55585F">50 min · ≤160 bpm · 170 W · TSS 55</div></div>
+<div style="background:#4B4FE0;color:#FFFFFF;font-weight:600;font-size:15px;padding:12px 18px;border-radius:12px">Mark done</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#858A93">04 · System (Graphite)</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;max-width:2300px">
+<div style="background:#111316;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:16px;font-weight:600">Type scale</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #2A2D33;padding-bottom:10px"><span style="font-size:34px;font-weight:600;letter-spacing:-0.03em">Display</span><span style="font-size:13px;color:#858A93">34/36 · 600</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #2A2D33;padding-bottom:10px"><span style="font-size:24px;font-weight:600;letter-spacing:-0.02em">Title</span><span style="font-size:13px;color:#858A93">24/28 · 600</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #2A2D33;padding-bottom:10px"><span style="font-size:17px;font-weight:600">Headline</span><span style="font-size:13px;color:#858A93">17/22 · 600</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #2A2D33;padding-bottom:10px"><span style="font-size:15px">Body</span><span style="font-size:13px;color:#858A93">15/22 · 400</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;color:#A9ADB5">Caption</span><span style="font-size:13px;color:#858A93">13/18 · 400–500</span></div>
+</div>
+<div style="background:#111316;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:16px;font-weight:600">Spacing, radii, elevation</div>
+<div style="display:flex;align-items:flex-end;gap:10px"><div style="width:4px;height:4px;background:#6AA8FF"></div><div style="width:8px;height:8px;background:#6AA8FF"></div><div style="width:12px;height:12px;background:#6AA8FF"></div><div style="width:16px;height:16px;background:#6AA8FF"></div><div style="width:24px;height:24px;background:#6AA8FF"></div><div style="width:32px;height:32px;background:#6AA8FF"></div><div style="width:48px;height:48px;background:#6AA8FF"></div></div>
+<div style="font-size:13px;color:#858A93">--sp-1…7: 4 · 8 · 12 · 16 · 24 · 32 · 48</div>
+<div style="display:flex;gap:10px"><div style="width:48px;height:48px;border-radius:8px;background:#1D2025"></div><div style="width:48px;height:48px;border-radius:12px;background:#1D2025"></div><div style="width:48px;height:48px;border-radius:18px;background:#1D2025"></div><div style="width:48px;height:48px;border-radius:999px;background:#1D2025"></div></div>
+<div style="font-size:13px;color:#858A93">--r-sm 8 · --r-md 12 · --r-lg 18 · --r-pill. Elevation only for sheets and toasts: 0 16px 48px rgba(0,0,0,.5). Cards: no border, surface change only.</div>
+</div>
+<div style="background:#111316;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:16px;font-weight:600">Compliance (colour + glyph)</div>
+<div style="display:flex;align-items:center;gap:10px;background:rgba(61,220,151,0.12);border-radius:8px;padding:8px 10px;font-size:14px"><span style="color:#3DDC97;font-weight:700;width:14px">✓</span><span style="flex:1">On target</span><span style="color:#A9ADB5">40→48</span></div>
+<div style="display:flex;align-items:center;gap:10px;background:rgba(255,194,71,0.12);border-radius:8px;padding:8px 10px;font-size:14px"><span style="color:#FFC247;font-weight:700;width:14px">◐</span><span style="flex:1">Partly</span><span style="color:#A9ADB5">90→122</span></div>
+<div style="display:flex;align-items:center;gap:10px;background:rgba(248,113,113,0.10);border-radius:8px;padding:8px 10px;font-size:14px"><span style="color:#F87171;font-weight:700;width:14px">✕</span><span style="flex:1;color:#A9ADB5;text-decoration:line-through">Missed</span><span style="color:#A9ADB5">60</span></div>
+<div style="display:flex;align-items:center;gap:10px;border:1px dashed #3A3E45;border-radius:8px;padding:7px 9px;font-size:14px"><span style="color:#858A93;font-weight:700;width:14px">○</span><span style="flex:1">Planned</span><span style="color:#A9ADB5">55</span></div>
+<div style="display:flex;align-items:center;gap:10px;background:#1D2025;border-radius:8px;padding:8px 10px;font-size:14px"><span style="color:#858A93;font-weight:700;width:14px">+</span><span style="flex:1">Unplanned</span><span style="color:#A9ADB5">44</span></div>
+</div>
+<div style="background:#111316;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:16px;font-weight:600">Chart.js rules</div>
+<div style="font-size:14px;line-height:1.6;color:#A9ADB5">CTL 2.5 px solid, fill 8 % below · ATL 1.5 px, 60 % opacity · TSB as area from zero, off by default · TSS bars 3 px, own lane (bottom 18 %) · forecast: same colour, dash [4,4] · race: 1 px vertical rule + label chip on top · gridlines: horizontal only, #FFFFFF0F, no ticks · tooltip: #1D2025, radius 10, Geist 13, index mode · no points except on hover (radius 4).</div>
+<div style="font-size:14px;line-height:1.6;color:#A9ADB5">Sports: <span style="color:#60B8FF">● Bike</span> · <span style="color:#9BE15D">● Run</span> · <span style="color:#3FD5D0">● Swim</span> · <span style="color:#B794FF">● Strength</span> · <span style="color:#858A93">● Rest</span></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:baseline;gap:20px"><div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#858A93">05 · iPhone 17 · full scroll</div><div style="font-size:15px;color:#A9ADB5">402 pt wide, also checked at 375. Safe areas respected top and bottom.</div></div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+<div data-screen-label="Phone · Today" style="width:402px;background:#0C0D10;border-radius:48px;outline:1px solid #2A2D33;overflow:hidden;position:relative;display:flex;flex-direction:column">
+<div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;font-size:16px;font-weight:600;position:relative"><span>9:41</span><div style="position:absolute;left:139px;top:11px;width:124px;height:36px;border-radius:20px;background:#000"></div><div style="display:flex;gap:5px;align-items:center"><div style="width:17px;height:11px;border-radius:2px;background:#EEEFF1"></div><div style="width:24px;height:12px;border-radius:4px;border:1.5px solid #EEEFF1"></div></div></div>
+<div style="padding:8px 20px 0;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:17px"><div style="width:26px;height:26px;border-radius:8px;background:#EEEFF1;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M7 1.5 L12.8 12 H1.2 Z" fill="#0C0D10"></path></svg></div>Apex</div>
+<div style="display:flex;align-items:center;gap:8px"><div style="display:flex;align-items:center;gap:6px;background:#15171B;border-radius:999px;padding:7px 12px;font-size:13px;color:#A9ADB5"><div style="width:7px;height:7px;border-radius:50%;background:#3DDC97"></div>Synced 07:02</div><div style="width:34px;height:34px;border-radius:50%;background:#1D2025;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">TG</div></div>
+</div>
+<div style="padding:24px 20px 0;display:flex;flex-direction:column;gap:6px"><div style="font-size:34px;font-weight:600;letter-spacing:-0.03em;line-height:1.05">Tuesday 29 Sept</div><div style="font-size:15px;color:#A9ADB5">W04 · Build · 47 days to Saint-Nolff Trail</div></div>
+
+<div style="margin:20px 16px 0;background:#15171B;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:48px;height:48px;border-radius:14px;background:rgba(255,194,71,0.14);display:flex;align-items:center;justify-content:center;color:#FFC247;font-size:22px;font-weight:700">!</div>
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:13px;color:#858A93">Readiness</div><div style="font-size:21px;font-weight:600;letter-spacing:-0.01em;color:#FFC247">Train, but with care</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2A2D33;border-radius:14px;overflow:hidden">
+<div style="background:#1A1C20;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93">Form</div><div style="font-size:18px;font-weight:600">+13.5 <span style="font-size:13px;font-weight:500;color:#3DDC97">fresh</span></div></div>
+<div style="background:#1A1C20;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93">Resting HR</div><div style="font-size:18px;font-weight:600">52 bpm <span style="font-size:13px;font-weight:500;color:#FFC247">+4</span></div></div>
+<div style="background:#1A1C20;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93">HRV</div><div style="font-size:18px;font-weight:600">61 ms <span style="font-size:13px;font-weight:500;color:#FFC247">−13 %</span></div></div>
+<div style="background:#1A1C20;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93">Sleep</div><div style="font-size:18px;font-weight:600">6.5 h</div></div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:14px;color:#A9ADB5"><span>Edit today’s wellness ›</span><span>Last 7 days ›</span></div>
+</div>
+
+<div style="margin:12px 16px 0;background:#15171B;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#858A93"><div style="width:8px;height:8px;border-radius:50%;background:#60B8FF"></div>Today · Bike</div><div style="font-size:13px;color:#FFC247;font-weight:600">TSS 55</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:22px;font-weight:600;letter-spacing:-0.02em;line-height:1.2">W04 Tue – Vélo Tempo 3×8min</div><div style="font-size:15px;color:#A9ADB5;line-height:1.45">Tempo 3×8min @ 170W, FC ≤ 160 bpm.</div></div>
+<div style="display:flex;gap:1px;background:#2A2D33;border-radius:12px;overflow:hidden">
+<div style="flex:1;background:#1A1C20;padding:10px 12px"><div style="font-size:12px;color:#858A93">Duration</div><div style="font-size:16px;font-weight:600">50 min</div></div>
+<div style="flex:1;background:#1A1C20;padding:10px 12px"><div style="font-size:12px;color:#858A93">HR cap</div><div style="font-size:16px;font-weight:600">≤160 bpm</div></div>
+<div style="flex:1.2;background:#1A1C20;padding:10px 12px"><div style="font-size:12px;color:#858A93">Power</div><div style="font-size:16px;font-weight:600">170 W <span style="font-size:12px;font-weight:500;color:#858A93">85 %</span></div></div>
+</div>
+<div style="display:flex;gap:8px"><div style="flex:1;height:48px;border-radius:14px;background:#EEEFF1;color:#0C0D10;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center">Mark done</div><div style="height:48px;padding:0 18px;border-radius:14px;background:#1D2025;font-weight:500;font-size:16px;display:flex;align-items:center;justify-content:center">Details</div></div>
+</div>
+
+<div style="margin:12px 16px 0;background:#15171B;border-radius:20px;padding:16px 20px;display:flex;align-items:center;gap:14px">
+<div style="width:8px;height:8px;border-radius:50%;background:#9BE15D"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font-size:13px;color:#858A93">Tomorrow · Wed 30</div><div style="font-size:16px;font-weight:600">W04 Wed – Footing Z2</div><div style="font-size:14px;color:#A9ADB5">1 h · ≤150 bpm · TSS 40</div></div>
+<div style="color:#858A93;font-size:20px">›</div>
+</div>
+
+<div style="margin:28px 20px 10px;display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:20px;font-weight:600;letter-spacing:-0.01em">This week</div><div style="font-size:14px;color:#A9ADB5">W04 · Build</div></div>
+<div style="margin:0 16px;background:#15171B;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">25 <span style="font-size:16px;font-weight:500;color:#858A93">/ 300 TSS</span></div><div style="font-size:14px;color:#3DDC97">✓ On track</div></div>
+<div style="display:flex;gap:3px;height:10px">
+<div style="flex:25;border-radius:5px;background:#3DDC97"></div><div style="flex:55;border-radius:5px;border:1.5px solid #EEEFF1;box-sizing:border-box"></div><div style="flex:40;border-radius:5px;background:#2A2D33"></div><div style="flex:30;border-radius:5px;background:#2A2D33"></div><div style="flex:60;border-radius:5px;background:#2A2D33"></div><div style="flex:90;border-radius:5px;background:#2A2D33"></div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#858A93"><span>Mon</span><span>Today</span><span>Wed</span><span>Fri</span><span>Sat</span><span style="padding-right:24px">Sun</span></div>
+<div style="font-size:14px;color:#A9ADB5;line-height:1.45">1 of 6 sessions done. Last week 322 TSS across 5 activities.</div>
+</div>
+
+<div style="margin:28px 20px 10px;display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:20px;font-weight:600;letter-spacing:-0.01em">Fitness</div><div style="font-size:14px;color:#A9ADB5">Season ›</div></div>
+<div style="margin:0 16px;background:#15171B;border-radius:24px;padding:20px 0 16px;display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:repeat(3,1fr);padding:0 20px">
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:10px;height:3px;border-radius:2px;background:#6AA8FF"></div>Fitness</div><div style="font-size:26px;font-weight:600;letter-spacing:-0.02em">51.7</div><div style="font-size:12px;color:#A9ADB5">−3.1 / wk</div></div>
+<div style="display:flex;flex-direction:column;gap:2px;padding-left:14px;border-left:1px solid #2A2D33"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:10px;height:3px;border-radius:2px;background:#FF6B86"></div>Fatigue</div><div style="font-size:26px;font-weight:600;letter-spacing:-0.02em">38.3</div><div style="font-size:12px;color:#A9ADB5">7-day avg</div></div>
+<div style="display:flex;flex-direction:column;gap:2px;padding-left:14px;border-left:1px solid #2A2D33"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:10px;height:3px;border-radius:2px;background:#3DDC97"></div>Form</div><div style="font-size:26px;font-weight:600;letter-spacing:-0.02em">+13.5</div><div style="font-size:12px;color:#A9ADB5">Race ready</div></div>
+</div>
+<div style="padding:0 20px;display:flex;gap:4px;background:transparent"><div style="display:flex;gap:2px;background:#1D2025;border-radius:10px;padding:3px;font-size:13px;width:100%"><div style="flex:1;text-align:center;padding:6px 0;color:#A9ADB5">6W</div><div style="flex:1;text-align:center;padding:6px 0;color:#A9ADB5">3M</div><div style="flex:1;text-align:center;padding:6px 0;background:#2A2D33;border-radius:8px;font-weight:600">6M</div><div style="flex:1;text-align:center;padding:6px 0;color:#A9ADB5">1Y</div><div style="flex:1.4;text-align:center;padding:6px 0;color:#A9ADB5">Custom</div></div></div>
+<div style="padding:0 24px;display:flex;justify-content:space-between;font-size:12px;color:#858A93"><span>Apr</span><span style="color:#FFC247">Race 15 Nov ▾</span></div>
+<svg width="330" height="150" viewBox="0 0 354 150" preserveAspectRatio="none" style="display:block;margin:0 20px">
+<path d="M0 20H354M0 60H354M0 100H354" stroke="#FFFFFF" stroke-opacity="0.06"></path>
+<path d="{{ pc.bars }}" stroke="#FFC247" stroke-opacity="0.55" stroke-width="1.2"></path>
+<path d="{{ pc.atl }}" fill="none" stroke="#FF6B86" stroke-opacity="0.6" stroke-width="1.4"></path>
+<path d="{{ pc.ctl }}" fill="none" stroke="#6AA8FF" stroke-width="2.5" stroke-linejoin="round"></path>
+<path d="{{ pc.ctlF }}" fill="none" stroke="#6AA8FF" stroke-width="2" stroke-dasharray="4 4"></path>
+<line x1="{{ pc.today }}" x2="{{ pc.today }}" y1="0" y2="150" stroke="#EEEFF1" stroke-opacity="0.35"></line>
+<line x1="{{ pc.race }}" x2="{{ pc.race }}" y1="0" y2="150" stroke="#FFC247" stroke-width="1.5"></line>
+</svg>
+<div style="padding:0 20px;display:flex;gap:6px;flex-wrap:wrap;font-size:13px">
+<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#1D2025"><div style="width:8px;height:8px;border-radius:50%;background:#6AA8FF"></div>Fitness</div>
+<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#1D2025"><div style="width:8px;height:8px;border-radius:50%;background:#FF6B86"></div>Fatigue</div>
+<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid #2A2D33;color:#858A93"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #3DDC97;box-sizing:border-box"></div>Form</div>
+<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#1D2025"><div style="width:8px;height:8px;border-radius:2px;background:#FFC247"></div>TSS</div>
+<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#1D2025;color:#A9ADB5">All sports ▾</div>
+</div>
+</div>
+<div style="height:24px"></div>
+<div style="background:rgba(21,23,27,0.94);border-top:1px solid #2A2D33;padding:8px 6px 30px;display:flex;justify-content:space-around;font-size:11px;font-weight:500">
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#EEEFF1;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>Today</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16"></path></svg>Calendar</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>Plan</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path></svg>Season</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.5M4.5 12h.5M4.5 17h.5"></path></svg>Activities</div>
+</div>
+</div>
+
+<div data-screen-label="Phone · Calendar week" style="width:402px;background:#0C0D10;border-radius:48px;outline:1px solid #2A2D33;overflow:hidden;display:flex;flex-direction:column">
+<div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;font-size:16px;font-weight:600;position:relative"><span>9:41</span><div style="position:absolute;left:139px;top:11px;width:124px;height:36px;border-radius:20px;background:#000"></div><div style="display:flex;gap:5px;align-items:center"><div style="width:17px;height:11px;border-radius:2px;background:#EEEFF1"></div><div style="width:24px;height:12px;border-radius:4px;border:1.5px solid #EEEFF1"></div></div></div>
+<div style="padding:8px 20px 0;display:flex;align-items:center;justify-content:space-between"><div style="font-size:34px;font-weight:600;letter-spacing:-0.03em">Calendar</div><div style="display:flex;gap:2px;background:#1D2025;border-radius:10px;padding:3px;font-size:14px"><div style="padding:6px 12px;background:#2A2D33;border-radius:8px;font-weight:600">Week</div><div style="padding:6px 12px;color:#A9ADB5">Month</div></div></div>
+<div style="padding:16px 20px 0;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:#15171B;display:flex;align-items:center;justify-content:center;color:#A9ADB5">‹</div><div style="flex:1;text-align:center;display:flex;flex-direction:column;gap:1px"><div style="font-size:16px;font-weight:600">W04 · 28 Sept – 4 Oct</div><div style="font-size:13px;color:#858A93">Build phase</div></div><div style="width:36px;height:36px;border-radius:10px;background:#15171B;display:flex;align-items:center;justify-content:center;color:#A9ADB5">›</div></div>
+<div style="margin:16px 16px 0;background:#15171B;border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;font-size:14px"><span><span style="font-size:20px;font-weight:600">25</span> <span style="color:#858A93">/ 25 TSS so far</span></span><span style="color:#3DDC97">✓ 100 %</span></div>
+<div style="height:8px;border-radius:4px;background:#2A2D33;display:flex;overflow:hidden"><div style="width:8.3%;background:#3DDC97"></div></div>
+<div style="font-size:13px;color:#858A93">Plan for the week 300 · today not counted until done</div>
+</div>
+<div style="padding:16px 16px 0;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+<div style="display:flex;gap:12px;align-items:flex-start">
+<div style="width:44px;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:6px"><div style="font-size:12px;color:#858A93">{{ d.d }}</div><div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;background:{{ d.dbg }};color:{{ d.dc }}">{{ d.n }}</div></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ d.it }}" as="c" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:{{ c.bg }};border:{{ c.bd }}">
+<div style="width:18px;text-align:center;font-weight:700;color:{{ c.gc }}">{{ c.g }}</div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><div style="display:flex;align-items:center;gap:6px;font-size:15px;font-weight:600;color:{{ c.nc }}"><div style="width:7px;height:7px;flex:none;border-radius:50%;background:{{ c.sc }}"></div><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span></div><div style="font-size:13px;color:#A9ADB5">{{ c.meta }}</div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px"><div style="font-size:15px;font-weight:600">{{ c.tss }}</div><div style="font-size:11px;color:#858A93">{{ c.label }}</div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="padding:14px 20px 0;font-size:13px;color:#858A93;text-align:center">Tap a session to tick it or move it · long-press to drag</div>
+<div style="height:24px"></div>
+<div style="background:rgba(21,23,27,0.94);border-top:1px solid #2A2D33;padding:8px 6px 30px;display:flex;justify-content:space-around;font-size:11px;font-weight:500">
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>Today</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#EEEFF1;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16"></path></svg>Calendar</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>Plan</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path></svg>Season</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.5M4.5 12h.5M4.5 17h.5"></path></svg>Activities</div>
+</div>
+</div>
+
+<div data-screen-label="Phone · Plan" style="width:402px;background:#0C0D10;border-radius:48px;outline:1px solid #2A2D33;overflow:hidden;display:flex;flex-direction:column">
+<div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;font-size:16px;font-weight:600;position:relative"><span>9:41</span><div style="position:absolute;left:139px;top:11px;width:124px;height:36px;border-radius:20px;background:#000"></div><div style="display:flex;gap:5px;align-items:center"><div style="width:17px;height:11px;border-radius:2px;background:#EEEFF1"></div><div style="width:24px;height:12px;border-radius:4px;border:1.5px solid #EEEFF1"></div></div></div>
+<div style="padding:8px 20px 0;display:flex;align-items:center;justify-content:space-between"><div style="font-size:34px;font-weight:600;letter-spacing:-0.03em">Plan</div><div style="padding:9px 14px;border-radius:12px;background:#1D2025;font-size:14px;font-weight:500">Import</div></div>
+<div style="margin:16px 16px 0;background:#15171B;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:8px;align-items:flex-start"><div style="flex:1;font-size:20px;font-weight:600;letter-spacing:-0.01em;line-height:1.25">Saint-Nolff Trail 30K — 10-week plan</div><div style="font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;background:#1D2025;color:#A9ADB5">v2.1</div></div><div style="font-size:14px;color:#A9ADB5;line-height:1.45">Race 15 Nov 2026 · 30 km / D+ 600 m · 70 sessions · FTP 200 W</div></div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;gap:3px;height:28px;font-size:11px;font-weight:600;letter-spacing:0.04em">
+<div style="flex:3;border-radius:6px;background:#2A2D33;display:flex;align-items:center;padding-left:8px;color:#A9ADB5">BASE</div>
+<div style="flex:3;border-radius:6px;background:#EEEFF1;color:#0C0D10;display:flex;align-items:center;padding-left:8px;position:relative">BUILD</div>
+<div style="flex:2;border-radius:6px;background:#1D2025;display:flex;align-items:center;padding-left:8px;color:#858A93">PEAK</div>
+<div style="flex:2;border-radius:6px;background:#1D2025;display:flex;align-items:center;padding-left:8px;color:#858A93">TAPER</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#858A93"><span>7 Sept</span><span style="color:#EEEFF1">You are in W04</span><span>15 Nov</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:14px;color:#A9ADB5;border-top:1px solid #2A2D33;padding-top:12px"><span>Zones ›</span><span>Plan status: no errors</span></div>
+</div>
+<div style="padding:16px 16px 0;display:flex;gap:6px;overflow:hidden;font-size:14px;font-weight:500">
+<div style="padding:8px 12px;border-radius:10px;background:#15171B;color:#858A93">W01</div><div style="padding:8px 12px;border-radius:10px;background:#15171B;color:#858A93">W02</div><div style="padding:8px 12px;border-radius:10px;background:#15171B;color:#858A93">W03</div><div style="padding:8px 12px;border-radius:10px;background:#EEEFF1;color:#0C0D10;font-weight:600">W04</div><div style="padding:8px 12px;border-radius:10px;background:#15171B;color:#A9ADB5">W05</div><div style="padding:8px 12px;border-radius:10px;background:#15171B;color:#A9ADB5">W06</div>
+</div>
+<div style="padding:18px 20px 8px;display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:17px;font-weight:600">W04 · Build</div><div style="font-size:14px;color:#A9ADB5">25 / 300 TSS</div></div>
+<div style="margin:0 16px;background:#15171B;border-radius:24px;overflow:hidden;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #2A2D33">
+<div style="width:26px;height:26px;border-radius:8px;background:#3DDC97;color:#0C0D10;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px">✓</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93">Mon · Strength</div><div style="font-size:15px;font-weight:600;color:#A9ADB5">W04 Mon – Renfo A</div></div>
+<div style="font-size:13px;color:#3DDC97">25 → 25</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:16px;background:#181A1F;border-bottom:1px solid #2A2D33">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:26px;height:26px;border-radius:8px;border:1.5px solid #5E626B;box-sizing:border-box"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#60B8FF"></div>Tue · Bike · Today</div><div style="font-size:15px;font-weight:600">W04 Tue – Vélo Tempo 3×8min</div></div>
+<div style="font-size:13px;color:#FFC247;font-weight:600">TSS 55</div>
+</div>
+<div style="font-size:13px;color:#A9ADB5">50 min · ≤160 bpm · 170 W (85 % FTP)</div>
+<div style="display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.5">
+<div style="font-weight:600">Échauffement</div>
+<div style="color:#A9ADB5">10 min progressif <span style="color:#EEEFF1;font-weight:600">Z1→Z2</span> (FC ≤ 135 bpm), 3×30 s cadence élevée</div>
+<div style="font-weight:600;margin-top:4px">Corps de séance</div>
+<div style="color:#A9ADB5">3×8 min à 170 W (85 % FTP), récupération 4 min en Z1 → rester ≤ 160 bpm</div>
+<div style="font-weight:600;margin-top:4px">Retour au calme</div>
+<div style="color:#A9ADB5">8 min souple en Z1</div>
+</div>
+<div style="border-radius:12px;overflow:hidden;display:flex;flex-direction:column;gap:1px;background:#2A2D33;font-size:13px">
+<div style="display:grid;grid-template-columns:1.4fr 0.8fr 1fr;background:#1D2025;padding:8px 12px;color:#858A93"><span>Step</span><span>Time</span><span style="text-align:right">Target</span></div>
+<div style="display:grid;grid-template-columns:1.4fr 0.8fr 1fr;background:#15171B;padding:8px 12px"><span>Warm-up</span><span>10:00</span><span style="text-align:right">Z1→Z2</span></div>
+<div style="display:grid;grid-template-columns:1.4fr 0.8fr 1fr;background:#15171B;padding:8px 12px"><span>3× Tempo</span><span>8:00</span><span style="text-align:right">170 W</span></div>
+<div style="display:grid;grid-template-columns:1.4fr 0.8fr 1fr;background:#15171B;padding:8px 12px"><span>3× Recovery</span><span>4:00</span><span style="text-align:right">110 W</span></div>
+<div style="display:grid;grid-template-columns:1.4fr 0.8fr 1fr;background:#15171B;padding:8px 12px"><span>Cool-down</span><span>8:00</span><span style="text-align:right">Z1</span></div>
+</div>
+<div style="display:flex;gap:8px"><div style="flex:1;height:44px;border-radius:12px;background:#1D2025;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">↓ .zwo · Zwift</div><div style="flex:1;height:44px;border-radius:12px;background:#1D2025;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500">↓ .fit · Garmin</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #2A2D33">
+<div style="width:26px;height:26px;border-radius:8px;border:1.5px solid #5E626B;box-sizing:border-box"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#9BE15D"></div>Wed · Run</div><div style="font-size:15px;font-weight:600">W04 Wed – Footing Z2</div></div>
+<div style="font-size:13px;color:#A9ADB5">TSS 40</div>
+</div>
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px">
+<div style="width:26px;height:26px;border-radius:8px;border:1.5px solid #5E626B;box-sizing:border-box"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#858A93"></div>Thu · Rest</div><div style="font-size:15px;font-weight:600;color:#A9ADB5">W04 Thu – Repos</div></div>
+<div style="font-size:13px;color:#858A93">—</div>
+</div>
+</div>
+<div style="height:24px"></div>
+<div style="background:rgba(21,23,27,0.94);border-top:1px solid #2A2D33;padding:8px 6px 30px;display:flex;justify-content:space-around;font-size:11px;font-weight:500">
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>Today</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16"></path></svg>Calendar</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#EEEFF1;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>Plan</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path></svg>Season</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.5M4.5 12h.5M4.5 17h.5"></path></svg>Activities</div>
+</div>
+</div>
+
+<div data-screen-label="Phone · Activity detail" style="width:402px;background:#0C0D10;border-radius:48px;outline:1px solid #2A2D33;overflow:hidden;display:flex;flex-direction:column">
+<div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;font-size:16px;font-weight:600;position:relative"><span>9:41</span><div style="position:absolute;left:139px;top:11px;width:124px;height:36px;border-radius:20px;background:#000"></div><div style="display:flex;gap:5px;align-items:center"><div style="width:17px;height:11px;border-radius:2px;background:#EEEFF1"></div><div style="width:24px;height:12px;border-radius:4px;border:1.5px solid #EEEFF1"></div></div></div>
+<div style="padding:4px 20px 0;display:flex;justify-content:space-between;align-items:center;font-size:16px"><span style="color:#A9ADB5">‹ Activities</span><span style="color:#FC4C02;font-weight:600;font-size:15px">View on Strava</span></div>
+<div style="padding:16px 20px 0;display:flex;flex-direction:column;gap:6px"><div style="font-size:30px;font-weight:600;letter-spacing:-0.03em">Fractionné côtes</div><div style="font-size:14px;color:#A9ADB5;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#9BE15D"></div>Run · Sun 27 Sept · 07:00</div></div>
+<div style="padding:20px 20px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div><div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">16.8<span style="font-size:15px;color:#858A93;font-weight:500"> km</span></div><div style="font-size:12px;color:#858A93">Distance</div></div>
+<div><div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">1:36<span style="font-size:15px;color:#858A93;font-weight:500"> h</span></div><div style="font-size:12px;color:#858A93">Moving time</div></div>
+<div><div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">483<span style="font-size:15px;color:#858A93;font-weight:500"> m</span></div><div style="font-size:12px;color:#858A93">Elevation</div></div>
+</div>
+<div style="margin:18px 16px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#2A2D33;border-radius:18px;overflow:hidden">
+<div style="background:#15171B;padding:12px 14px"><div style="font-size:12px;color:#858A93">Avg pace</div><div style="font-size:17px;font-weight:600">5:45 /km</div></div>
+<div style="background:#15171B;padding:12px 14px"><div style="font-size:12px;color:#858A93">Avg HR</div><div style="font-size:17px;font-weight:600">142 bpm</div></div>
+<div style="background:#15171B;padding:12px 14px"><div style="font-size:12px;color:#858A93">Max HR</div><div style="font-size:17px;font-weight:600">167 bpm</div></div>
+<div style="background:#15171B;padding:12px 14px"><div style="font-size:12px;color:#858A93">TSS</div><div style="font-size:17px;font-weight:600;color:#FFC247">102</div></div>
+<div style="background:#15171B;padding:12px 14px"><div style="font-size:12px;color:#858A93">IF</div><div style="font-size:17px;font-weight:600">0.80</div></div>
+<div style="background:#15171B;padding:12px 14px"><div style="font-size:12px;color:#858A93">Decoupling</div><div style="font-size:17px;font-weight:600">6 %</div></div>
+</div>
+<div style="margin:12px 16px 0;height:190px;border-radius:18px;background:repeating-linear-gradient(135deg,#15171B 0 10px,#191B20 10px 20px);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:12px;color:#858A93">route map · Leaflet + OSM, dark tiles</div>
+<div style="margin:12px 16px 0;background:#15171B;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:2px;background:#1D2025;border-radius:10px;padding:3px;font-size:13px"><div style="flex:1;text-align:center;padding:6px 0;background:#2A2D33;border-radius:8px;font-weight:600">Heart rate</div><div style="flex:1;text-align:center;padding:6px 0;color:#A9ADB5">Pace</div><div style="flex:1;text-align:center;padding:6px 0;color:#A9ADB5">Elevation</div></div>
+<svg width="322" height="90" viewBox="0 0 354 90" preserveAspectRatio="none" style="display:block"><path d="M0 30H354M0 60H354" stroke="#FFFFFF" stroke-opacity="0.06"></path><path d="{{ hr }}" fill="none" stroke="#FF6B86" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+<div style="display:flex;justify-content:space-between;font-size:11px;color:#858A93"><span>0:00</span><span>0:32</span><span>1:04</span><span>1:36</span></div>
+<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;margin-top:4px"><div style="flex:25;background:#5E626B"></div><div style="flex:65;background:#6AA8FF"></div><div style="flex:10;background:#FFC247"></div></div>
+<div style="display:flex;gap:12px;font-size:12px;color:#A9ADB5"><span>Z1 24 min · 25 %</span><span>Z2 1 h 02 · 65 %</span><span>Z4 10 min · 10 %</span></div>
+</div>
+<div style="margin:12px 16px 0;background:#15171B;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:17px;font-weight:600">How did it feel?</div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;color:#858A93">RPE</div><div style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;font-size:13px;font-weight:600"><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">1</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">2</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">3</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">4</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">5</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">6</div><div style="height:34px;border-radius:8px;background:#EEEFF1;color:#0C0D10;display:flex;align-items:center;justify-content:center">7</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">8</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">9</div><div style="height:34px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">10</div></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;color:#858A93">Feel</div><div style="display:flex;gap:3px;font-size:13px"><div style="flex:1;height:36px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">Awful</div><div style="flex:1;height:36px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">Poor</div><div style="flex:1;height:36px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">OK</div><div style="flex:1;height:36px;border-radius:8px;background:#EEEFF1;color:#0C0D10;font-weight:600;display:flex;align-items:center;justify-content:center">Good</div><div style="flex:1;height:36px;border-radius:8px;background:#1D2025;display:flex;align-items:center;justify-content:center;color:#A9ADB5">Great</div></div></div>
+<div style="min-height:72px;border-radius:12px;border:1px solid #2A2D33;background:#111316;padding:12px;font-size:14px;color:#858A93;box-sizing:border-box">How did it go? Conditions, sensations, nutrition…</div>
+</div>
+<div style="margin:12px 16px 32px;background:#15171B;border-radius:18px;overflow:hidden;font-size:14px">
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:12px 16px;color:#858A93;font-size:12px"><span>Lap</span><span>Dist</span><span>Pace</span><span style="text-align:right">HR</span></div>
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:10px 16px;border-top:1px solid #2A2D33"><span style="color:#858A93">1</span><span>2.8 km</span><span>5:42</span><span style="text-align:right">138</span></div>
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:10px 16px;border-top:1px solid #2A2D33"><span style="color:#858A93">2</span><span>2.8 km</span><span>6:08</span><span style="text-align:right">141</span></div>
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:10px 16px;border-top:1px solid #2A2D33"><span style="color:#858A93">3</span><span>2.8 km</span><span>5:42</span><span style="text-align:right">144</span></div>
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:10px 16px;border-top:1px solid #2A2D33"><span style="color:#858A93">4</span><span>2.9 km</span><span>6:08</span><span style="text-align:right">147</span></div>
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:10px 16px;border-top:1px solid #2A2D33"><span style="color:#858A93">5</span><span>2.9 km</span><span>5:42</span><span style="text-align:right">150</span></div>
+<div style="display:grid;grid-template-columns:28px 1fr 1fr 1fr;padding:10px 16px;border-top:1px solid #2A2D33"><span style="color:#858A93">6</span><span>2.9 km</span><span>6:08</span><span style="text-align:right">153</span></div>
+</div>
+</div>
+
+<div data-screen-label="Phone · Activities" style="width:402px;background:#0C0D10;border-radius:48px;outline:1px solid #2A2D33;overflow:hidden;display:flex;flex-direction:column">
+<div style="height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;font-size:16px;font-weight:600;position:relative"><span>9:41</span><div style="position:absolute;left:139px;top:11px;width:124px;height:36px;border-radius:20px;background:#000"></div><div style="display:flex;gap:5px;align-items:center"><div style="width:17px;height:11px;border-radius:2px;background:#EEEFF1"></div><div style="width:24px;height:12px;border-radius:4px;border:1.5px solid #EEEFF1"></div></div></div>
+<div style="padding:8px 20px 0;display:flex;align-items:center;justify-content:space-between"><div style="font-size:34px;font-weight:600;letter-spacing:-0.03em">Activities</div><div style="font-size:16px;color:#A9ADB5">Select</div></div>
+<div style="margin:16px 16px 0;height:42px;border-radius:12px;background:#15171B;display:flex;align-items:center;padding:0 14px;font-size:15px;color:#858A93">Search activities</div>
+<div style="padding:12px 16px 0;display:flex;gap:6px;font-size:14px;font-weight:500">
+<div style="padding:7px 14px;border-radius:999px;background:#EEEFF1;color:#0C0D10">All</div>
+<div style="padding:7px 12px;border-radius:999px;background:#15171B;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#9BE15D"></div>Run</div>
+<div style="padding:7px 12px;border-radius:999px;background:#15171B;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#60B8FF"></div>Bike</div>
+<div style="padding:7px 12px;border-radius:999px;background:#15171B;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#3FD5D0"></div>Swim</div>
+<div style="padding:7px 12px;border-radius:999px;background:#15171B;color:#A9ADB5">Sort ▾</div>
+</div>
+<div style="padding:4px 16px 0;display:flex;flex-direction:column">
+<sc-for list="{{ acts }}" as="g" hint-placeholder-count="2">
+<div style="padding:20px 4px 8px;display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:15px;font-weight:600">{{ g.g }}</div><div style="font-size:13px;color:#858A93">{{ g.sum }}</div></div>
+<div style="background:#15171B;border-radius:20px;overflow:hidden;display:flex;flex-direction:column">
+<sc-for list="{{ g.rows }}" as="a" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #22252A">
+<div style="width:36px;height:36px;border-radius:10px;background:#1D2025;display:flex;align-items:center;justify-content:center"><div style="width:9px;height:9px;border-radius:50%;background:{{ a.sc }}"></div></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><div style="font-size:15px;font-weight:600">{{ a.name }}</div><div style="font-size:13px;color:#858A93">{{ a.date }}</div></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div style="font-size:15px;font-weight:600">{{ a.a }}</div><div style="font-size:13px;color:#A9ADB5">{{ a.b }} · <span style="color:#FFC247">{{ a.tss }}</span></div></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="padding:16px 20px 0;font-size:13px;color:#858A93;text-align:center">Table view with all columns (IF, HR, power, energy) from 900 px</div>
+<div style="height:24px"></div>
+<div style="background:rgba(21,23,27,0.94);border-top:1px solid #2A2D33;padding:8px 6px 30px;display:flex;justify-content:space-around;font-size:11px;font-weight:500">
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>Today</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16"></path></svg>Calendar</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>Plan</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#858A93;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path></svg>Season</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:3px;color:#EEEFF1;width:64px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.5M4.5 12h.5M4.5 17h.5"></path></svg>Activities</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:baseline;gap:20px"><div style="font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:#858A93">06 · Desktop · 1280</div><div style="font-size:15px;color:#A9ADB5">Sidebar replaces the tab bar from 1024 px. Same components, wider grid.</div></div>
+<div style="display:flex;gap:48px;align-items:flex-start">
+
+<div data-screen-label="Desktop · Today" style="width:1280px;background:#0C0D10;border-radius:16px;outline:1px solid #2A2D33;overflow:hidden;display:flex">
+<div style="width:232px;flex:none;background:#101114;border-right:1px solid #1D2025;padding:24px 16px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;padding:0 8px"><div style="width:28px;height:28px;border-radius:8px;background:#EEEFF1;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1.5 L12.8 12 H1.2 Z" fill="#0C0D10"></path></svg></div>Apex</div>
+<div style="display:flex;flex-direction:column;gap:2px;font-size:15px">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:#1D2025;font-weight:600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>Today</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16"></path></svg>Calendar</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>Plan</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path></svg>Season</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.5M4.5 12h.5M4.5 17h.5"></path></svg>Activities</div>
+</div>
+<div style="flex:1"></div>
+<div style="display:flex;flex-direction:column;gap:10px;padding:0 8px">
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#A9ADB5"><div style="width:7px;height:7px;border-radius:50%;background:#3DDC97"></div>Strava synced 07:02</div>
+<div style="display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #1D2025"><div style="width:32px;height:32px;border-radius:50%;background:#1D2025;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">TG</div><div style="flex:1;font-size:14px">Tristan Guilbot</div><div style="color:#858A93">⋯</div></div>
+</div>
+</div>
+<div style="flex:1;padding:36px 40px 48px;display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;justify-content:space-between;align-items:flex-end"><div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:34px;font-weight:600;letter-spacing:-0.03em">Tuesday 29 Sept</div><div style="font-size:15px;color:#A9ADB5">W04 · Build · 47 days to Saint-Nolff Trail</div></div><div style="padding:10px 16px;border-radius:12px;background:#1D2025;font-size:14px;font-weight:500">Sync now</div></div>
+
+<div style="display:grid;grid-template-columns:1fr 1.35fr 1fr;gap:16px">
+<div style="background:#15171B;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:13px;background:rgba(255,194,71,0.14);display:flex;align-items:center;justify-content:center;color:#FFC247;font-size:20px;font-weight:700">!</div><div><div style="font-size:12px;color:#858A93">Readiness</div><div style="font-size:19px;font-weight:600;color:#FFC247">Train, but with care</div></div></div>
+<div style="display:flex;flex-direction:column;font-size:14px">
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #22252A"><span style="color:#A9ADB5">Form</span><span>+13.5 <span style="color:#3DDC97">fresh</span></span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #22252A"><span style="color:#A9ADB5">Resting HR</span><span>52 bpm <span style="color:#FFC247">+4</span></span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #22252A"><span style="color:#A9ADB5">HRV</span><span>61 ms <span style="color:#FFC247">−13 %</span></span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:#A9ADB5">Sleep</span><span>6.5 h</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#A9ADB5"><span>Edit wellness ›</span><span>Last 7 days ›</span></div>
+</div>
+<div style="background:#15171B;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#858A93"><div style="width:8px;height:8px;border-radius:50%;background:#60B8FF"></div>Today · Bike</div><div style="font-size:13px;color:#FFC247;font-weight:600">TSS 55</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:24px;font-weight:600;letter-spacing:-0.02em">W04 Tue – Vélo Tempo 3×8min</div><div style="font-size:15px;color:#A9ADB5">Tempo 3×8min @ 170W, FC ≤ 160 bpm.</div></div>
+<div style="display:flex;gap:1px;background:#2A2D33;border-radius:12px;overflow:hidden">
+<div style="flex:1;background:#1A1C20;padding:10px 14px"><div style="font-size:12px;color:#858A93">Duration</div><div style="font-size:16px;font-weight:600">50 min</div></div>
+<div style="flex:1;background:#1A1C20;padding:10px 14px"><div style="font-size:12px;color:#858A93">HR cap</div><div style="font-size:16px;font-weight:600">≤160 bpm</div></div>
+<div style="flex:1;background:#1A1C20;padding:10px 14px"><div style="font-size:12px;color:#858A93">Power</div><div style="font-size:16px;font-weight:600">170 W <span style="font-size:12px;color:#858A93;font-weight:500">85 % FTP</span></div></div>
+</div>
+<div style="flex:1"></div>
+<div style="display:flex;gap:8px"><div style="padding:0 20px;height:44px;border-radius:12px;background:#EEEFF1;color:#0C0D10;font-weight:600;font-size:15px;display:flex;align-items:center">Mark done</div><div style="padding:0 16px;height:44px;border-radius:12px;background:#1D2025;font-size:15px;display:flex;align-items:center">Details</div><div style="padding:0 16px;height:44px;border-radius:12px;background:#1D2025;font-size:15px;display:flex;align-items:center">↓ .zwo</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#15171B;border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px"><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:50%;background:#9BE15D"></div>Tomorrow · Wed 30</div><div style="font-size:16px;font-weight:600">W04 Wed – Footing Z2</div><div style="font-size:14px;color:#A9ADB5">1 h · ≤150 bpm · TSS 40</div></div>
+<div style="flex:1;background:#15171B;border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:13px;color:#858A93">This week</div><div style="font-size:13px;color:#3DDC97">✓ On track</div></div>
+<div style="font-size:26px;font-weight:600;letter-spacing:-0.02em">25 <span style="font-size:15px;color:#858A93;font-weight:500">/ 300 TSS</span></div>
+<div style="display:flex;gap:3px;height:8px"><div style="flex:25;border-radius:4px;background:#3DDC97"></div><div style="flex:55;border-radius:4px;border:1.5px solid #EEEFF1;box-sizing:border-box"></div><div style="flex:40;border-radius:4px;background:#2A2D33"></div><div style="flex:30;border-radius:4px;background:#2A2D33"></div><div style="flex:60;border-radius:4px;background:#2A2D33"></div><div style="flex:90;border-radius:4px;background:#2A2D33"></div></div>
+<div style="font-size:13px;color:#A9ADB5">1 of 6 sessions · last week 322</div>
+</div>
+</div>
+</div>
+
+<div style="background:#15171B;border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column-reverse;gap:18px;white-space:nowrap">
+<div style="display:flex;gap:32px">
+<div><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:12px;height:3px;border-radius:2px;background:#6AA8FF"></div>Fitness · CTL</div><div style="font-size:30px;font-weight:600;letter-spacing:-0.02em">51.7 <span style="font-size:14px;font-weight:500;color:#A9ADB5">−3.1 / wk</span></div></div>
+<div><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:12px;height:3px;border-radius:2px;background:#FF6B86"></div>Fatigue · ATL</div><div style="font-size:30px;font-weight:600;letter-spacing:-0.02em">38.3</div></div>
+<div><div style="font-size:12px;color:#858A93;display:flex;align-items:center;gap:6px"><div style="width:12px;height:3px;border-radius:2px;background:#3DDC97"></div>Form · TSB</div><div style="font-size:30px;font-weight:600;letter-spacing:-0.02em">+13.5 <span style="font-size:14px;font-weight:500;color:#3DDC97">Fresh</span></div></div>
+<div style="padding-left:40px;border-left:1px solid #2A2D33"><div style="font-size:12px;color:#858A93">By sport</div><div style="display:flex;gap:14px;font-size:15px;padding-top:8px"><span><span style="color:#60B8FF">●</span> Bike 14</span><span><span style="color:#9BE15D">●</span> Run 32</span><span><span style="color:#3FD5D0">●</span> Swim 6</span></div></div>
+</div>
+<div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><div style="font-size:17px;font-weight:600">Fitness</div><div style="display:flex;gap:8px;align-items:center">
+<div style="display:flex;gap:2px;background:#1D2025;border-radius:10px;padding:3px;font-size:13px"><div style="padding:6px 12px;color:#A9ADB5">6W</div><div style="padding:6px 12px;color:#A9ADB5">3M</div><div style="padding:6px 12px;background:#2A2D33;border-radius:8px;font-weight:600">6M</div><div style="padding:6px 12px;color:#A9ADB5">1Y</div><div style="padding:6px 12px;color:#A9ADB5">Custom</div></div>
+<div style="padding:8px 12px;border-radius:10px;background:#1D2025;font-size:13px;color:#A9ADB5">All sports ▾</div>
+</div></div>
+</div>
+<div style="position:relative">
+<svg width="100%" height="250" viewBox="0 0 820 250" preserveAspectRatio="none" style="display:block">
+<path d="M0 30H820M0 80H820M0 130H820M0 180H820" stroke="#FFFFFF" stroke-opacity="0.06" vector-effect="non-scaling-stroke"></path>
+<path d="{{ dc.bars }}" stroke="#FFC247" stroke-opacity="0.55" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+<path d="{{ dc.atl }}" fill="none" stroke="#FF6B86" stroke-opacity="0.6" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+<path d="{{ dc.ctl }}" fill="none" stroke="#6AA8FF" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<path d="{{ dc.ctlF }}" fill="none" stroke="#6AA8FF" stroke-width="2" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"></path>
+<line x1="{{ dc.today }}" x2="{{ dc.today }}" y1="0" y2="250" stroke="#EEEFF1" stroke-opacity="0.35" vector-effect="non-scaling-stroke"></line>
+<line x1="{{ dc.race }}" x2="{{ dc.race }}" y1="0" y2="250" stroke="#FFC247" stroke-width="1.5" vector-effect="non-scaling-stroke"></line>
+</svg>
+<div style="position:absolute;top:-4px;right:0;font-size:12px;font-weight:600;color:#0C0D10;background:#FFC247;padding:3px 8px;border-radius:6px">Saint-Nolff · 15 Nov</div>
+<div style="position:absolute;top:-4px;left:77%;font-size:12px;color:#A9ADB5;background:#1D2025;padding:3px 8px;border-radius:6px">Today</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#858A93"><div style="display:flex;justify-content:space-between;flex:1;padding-right:24px"><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sept</span><span>Oct</span><span>Nov</span></div>
+<div style="display:flex;gap:6px;font-size:13px;color:#EEEFF1"><div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#1D2025"><div style="width:8px;height:8px;border-radius:50%;background:#6AA8FF"></div>Fitness</div><div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#1D2025"><div style="width:8px;height:8px;border-radius:50%;background:#FF6B86"></div>Fatigue</div><div style="display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;border:1px solid #2A2D33;color:#858A93"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #3DDC97;box-sizing:border-box"></div>Form</div><div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#1D2025"><div style="width:8px;height:8px;border-radius:2px;background:#FFC247"></div>TSS</div><div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#1D2025;color:#A9ADB5">Forecast 14 d · 52 / day</div></div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div style="background:#15171B;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:17px;font-weight:600">Estimated FTP</div><div style="font-size:13px;color:#858A93">90 days</div></div>
+<div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:30px;font-weight:600;letter-spacing:-0.02em">241 W <span style="font-size:14px;font-weight:500;color:#A9ADB5">current 235 W · +3 %</span></div><div style="padding:9px 14px;border-radius:12px;background:#1D2025;font-size:14px;font-weight:500">Use 241 W from today</div></div>
+</div>
+<div style="background:#15171B;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:17px;font-weight:600">Time in zones</div><div style="font-size:13px;color:#858A93">HR · last 28 days · 17 h 30</div></div>
+<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px"><div style="flex:25;background:#5E626B"></div><div style="flex:65;background:#6AA8FF"></div><div style="flex:10;background:#FFC247"></div></div>
+<div style="display:flex;gap:16px;font-size:13px;color:#A9ADB5"><span>Z1 25 %</span><span>Z2 65 %</span><span>Z3 0 %</span><span>Z4 10 %</span><span>Z5 0 %</span><span style="margin-left:auto">Power zones ›</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div data-screen-label="Desktop · Calendar month" style="width:1280px;background:#0C0D10;border-radius:16px;outline:1px solid #2A2D33;overflow:hidden;display:flex">
+<div style="width:232px;flex:none;background:#101114;border-right:1px solid #1D2025;padding:24px 16px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;padding:0 8px"><div style="width:28px;height:28px;border-radius:8px;background:#EEEFF1;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 14 14"><path d="M7 1.5 L12.8 12 H1.2 Z" fill="#0C0D10"></path></svg></div>Apex</div>
+<div style="display:flex;flex-direction:column;gap:2px;font-size:15px">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="2.5" fill="currentColor"></circle></svg>Today</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:#1D2025;font-weight:600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16"></path></svg>Calendar</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 7h12M6 12h12M6 17h8"></path></svg>Plan</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path></svg>Season</div>
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:#A9ADB5"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.5 7h.5M4.5 12h.5M4.5 17h.5"></path></svg>Activities</div>
+</div>
+<div style="flex:1"></div>
+<div style="display:flex;flex-direction:column;gap:10px;padding:0 8px">
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#A9ADB5"><div style="width:7px;height:7px;border-radius:50%;background:#3DDC97"></div>Strava synced 07:02</div>
+<div style="display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #1D2025"><div style="width:32px;height:32px;border-radius:50%;background:#1D2025;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">TG</div><div style="flex:1;font-size:14px">Tristan Guilbot</div><div style="color:#858A93">⋯</div></div>
+</div>
+</div>
+<div style="flex:1;padding:36px 40px 48px;display:flex;flex-direction:column;gap:18px;min-width:0">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="display:flex;align-items:center;gap:12px"><div style="font-size:34px;font-weight:600;letter-spacing:-0.03em">September 2026</div><div style="display:flex;gap:4px;margin-left:8px"><div style="width:34px;height:34px;border-radius:10px;background:#15171B;display:flex;align-items:center;justify-content:center;color:#A9ADB5">‹</div><div style="width:34px;height:34px;border-radius:10px;background:#15171B;display:flex;align-items:center;justify-content:center;color:#A9ADB5">›</div></div><div style="padding:8px 12px;border-radius:10px;background:#15171B;font-size:14px;color:#A9ADB5">Today</div></div>
+<div style="display:flex;gap:2px;background:#1D2025;border-radius:10px;padding:3px;font-size:14px"><div style="padding:6px 14px;color:#A9ADB5">Week</div><div style="padding:6px 14px;background:#2A2D33;border-radius:8px;font-weight:600">Month</div></div>
+</div>
+<div style="display:flex;gap:16px;font-size:13px;color:#A9ADB5;align-items:center">
+<span><span style="color:#3DDC97;font-weight:700">✓</span> On target</span><span><span style="color:#FFC247;font-weight:700">◐</span> Partly</span><span><span style="color:#F87171;font-weight:700">✕</span> Missed</span><span><span style="font-weight:700">○</span> Planned</span><span><span style="font-weight:700">+</span> Unplanned</span><span style="margin-left:auto;color:#858A93">Drag a session to another day, or tap it to move it</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 88px;gap:6px;font-size:12px;color:#858A93;letter-spacing:0.06em">
+<div style="padding:0 8px">MON</div><div style="padding:0 8px">TUE</div><div style="padding:0 8px">WED</div><div style="padding:0 8px">THU</div><div style="padding:0 8px">FRI</div><div style="padding:0 8px">SAT</div><div style="padding:0 8px">SUN</div><div style="padding:0 8px">WEEK</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ month }}" as="w" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 88px;gap:6px">
+<sc-for list="{{ w.days }}" as="d" hint-placeholder-count="7">
+<div style="min-height:108px;border-radius:14px;background:{{ d.cellBg }};padding:8px;display:flex;flex-direction:column;gap:4px;opacity:{{ d.op }}">
+<div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;background:{{ d.nbg }};color:{{ d.nc }}">{{ d.n }}</div>
+<sc-for list="{{ d.it }}" as="c" hint-placeholder-count="1">
+<div style="display:flex;flex-direction:column;gap:2px;padding:5px 7px;border-radius:8px;font-size:12px;line-height:1.3;background:{{ c.bg }};border:{{ c.bd }};border-left:3px solid {{ c.sc }}">
+<span style="color:{{ c.nc }};text-decoration:{{ c.td }};font-weight:500;text-wrap:pretty">{{ c.name }}</span>
+<span style="display:flex;gap:6px;color:#A9ADB5;font-size:11px"><span style="font-weight:700;color:{{ c.gc }}">{{ c.g }}</span><span>{{ c.tss }}</span></span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<div style="border-radius:14px;background:#15171B;padding:10px 12px;display:flex;flex-direction:column;gap:4px;justify-content:center">
+<div style="font-size:18px;font-weight:600">{{ w.wk }}</div>
+<div style="font-size:12px;color:#858A93">of {{ w.pl }} TSS</div>
+<div style="font-size:12px;font-weight:600;color:{{ w.pc }}">{{ w.pct }}</div>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  chart(w, h) {
+    let s = 11; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const N = 180, F = 47, T = N + F;
+    const tss = [];
+    for (let i = 0; i < T; i++) {
+      const dow = i % 7;
+      if (i < N) {
+        const base = [25, 60, 45, 35, 50, 70, 100][dow] * (0.55 + 0.5 * Math.min(1, i / 70));
+        tss.push(dow === 3 ? 0 : base * (0.7 + 0.6 * r()));
+      } else {
+        const k = i - N;
+        const f = k < 30 ? 1.25 : k < 37 ? 0.95 : 0.45;
+        tss.push([25, 55, 40, 0, 30, 60, 90][dow] * f * 1.25);
+      }
+    }
+    let c = 18, a = 18; const C = [], A = [], B = [];
+    tss.forEach(t => { B.push(c - a); c += (t - c) / 42; a += (t - a) / 7; C.push(c); A.push(a); });
+    const lo = -35, hi = 90, lane = h * 0.16, ph = h - lane - 6;
+    const X = i => (i / (T - 1) * w).toFixed(1);
+    const Y = v => (ph - (v - lo) / (hi - lo) * ph).toFixed(1);
+    const line = (arr, a0, a1) => arr.slice(a0, a1).map((v, j) => (j ? 'L' : 'M') + X(a0 + j) + ' ' + Y(v)).join(' ');
+    const z = Y(0);
+    const tsbPts = B.slice(0, N).map((v, j) => 'L' + X(j) + ' ' + Y(v)).join(' ');
+    const bars = tss.slice(0, N).map((t, i) => t ? 'M' + X(i) + ' ' + h + ' V' + (h - Math.min(1, t / 140) * lane).toFixed(1) : '').join(' ');
+    return {
+      ctl: line(C, 0, N), ctlF: line(C, N - 1, T), atl: line(A, 0, N),
+      tsb: 'M0 ' + z + ' ' + tsbPts + ' L' + X(N - 1) + ' ' + z + ' Z', tsbLine: line(B, 0, N),
+      bars, zero: z, today: X(N - 1), race: X(T - 1), top: 0, laneTop: (h - lane).toFixed(1), h, w
+    };
+  }
+  hr(w, h) {
+    const pts = [];
+    for (let i = 0; i <= 96; i++) {
+      const lap = Math.floor(i / 16), p = (i % 16) / 16;
+      let v = 128 + lap * 2.5 + (p < 0.55 ? p * 48 : (1 - p) * 30) + Math.sin(i * 1.7) * 2;
+      if (i < 6) v = 118 + i * 4;
+      pts.push((i / 96 * w).toFixed(1) + ' ' + (h - (v - 110) / 60 * h).toFixed(1));
+    }
+    return 'M' + pts.join(' L');
+  }
+  chip(it) {
+    const S = { bike: '#60B8FF', run: '#9BE15D', swim: '#3FD5D0', str: '#B794FF', rest: '#858A93' };
+    const st = {
+      d: { g: '✓', gc: '#3DDC97', bg: 'rgba(61,220,151,0.12)', bd: '1px solid transparent', nc: '#EEEFF1', td: 'none', label: 'Done' },
+      p: { g: '◐', gc: '#FFC247', bg: 'rgba(255,194,71,0.12)', bd: '1px solid transparent', nc: '#EEEFF1', td: 'none', label: 'Partly' },
+      m: { g: '✕', gc: '#F87171', bg: 'rgba(248,113,113,0.10)', bd: '1px solid transparent', nc: '#A9ADB5', td: 'line-through', label: 'Missed' },
+      u: { g: '+', gc: '#858A93', bg: '#1D2025', bd: '1px solid transparent', nc: '#EEEFF1', td: 'none', label: 'Unplanned' },
+      n: { g: '○', gc: '#858A93', bg: 'transparent', bd: '1px dashed #3A3E45', nc: '#EEEFF1', td: 'none', label: 'Planned' },
+      r: { g: '', gc: '#858A93', bg: 'transparent', bd: '1px solid transparent', nc: '#858A93', td: 'none', label: 'Rest' }
+    }[it.st];
+    return { ...it, ...st, sc: S[it.sp] };
+  }
+  renderVals() {
+    const P = (sp, name, tss, st) => this.chip({ sp, name, tss, st });
+    const month = [
+      { days: [{ n: '31', out: true, it: [] }, { n: '1', it: [P('bike', 'Tempo 3×8min', '59', 'u')] }, { n: '2', it: [P('run', 'Footing récup', '53', 'u')] }, { n: '3', it: [P('swim', 'Natation 10×100', '44', 'u')] }, { n: '4', it: [P('run', 'Sortie longue trail', '62', 'u')] }, { n: '5', it: [P('bike', 'Tempo 3×8min', '112', 'u')] }, { n: '6', it: [P('run', 'Footing récup', '114', 'u')] }], wk: '444', pl: '—', pct: '', pc: '#858A93' },
+      { days: [{ n: '7', it: [P('str', 'Renfo A', '25', 'm')] }, { n: '8', it: [P('bike', 'Vélo Tempo 3×8min', '55→80', 'p')] }, { n: '9', it: [P('run', 'Footing Z2', '40→54', 'p')] }, { n: '10', it: [P('rest', 'Repos', '', 'r'), P('swim', 'Natation 10×100', '44', 'u')] }, { n: '11', it: [P('swim', 'Natation technique', '30', 'm'), P('run', 'Footing Z2', '59', 'u')] }, { n: '12', it: [P('run', 'Fractionné côtes', '60', 'm')] }, { n: '13', it: [P('run', 'Sortie longue', '90→116', 'p')] }], wk: '353', pl: '300', pct: '118 %', pc: '#FFC247' },
+      { days: [{ n: '14', it: [P('str', 'Renfo A', '25', 'm')] }, { n: '15', it: [P('bike', 'Vélo Tempo 3×8min', '55→64', 'd')] }, { n: '16', it: [P('run', 'Footing Z2', '40→48', 'd')] }, { n: '17', it: [P('rest', 'Repos', '', 'r'), P('swim', 'Natation technique', '44', 'u')] }, { n: '18', it: [P('swim', 'Natation technique', '30', 'm'), P('run', 'Fractionné côtes', '67', 'u')] }, { n: '19', it: [P('run', 'Fractionné côtes', '60', 'm')] }, { n: '20', it: [P('run', 'Sortie longue', '90→122', 'p')] }], wk: '345', pl: '300', pct: '115 %', pc: '#3DDC97' },
+      { days: [{ n: '21', it: [P('str', 'Renfo A', '25', 'm')] }, { n: '22', it: [P('bike', 'Vélo Tempo 3×8min', '55→70', 'p')] }, { n: '23', it: [P('run', 'Footing Z2', '40→48', 'd')] }, { n: '24', it: [P('rest', 'Repos', '', 'r'), P('swim', 'Natation 10×100', '44', 'u')] }, { n: '25', it: [P('swim', 'Natation technique', '30', 'm'), P('run', 'Footing récup', '58', 'u')] }, { n: '26', it: [P('run', 'Fractionné côtes', '60', 'm')] }, { n: '27', it: [P('run', 'Sortie longue', '90→102', 'd')] }], wk: '322', pl: '300', pct: '107 %', pc: '#3DDC97' },
+      { days: [{ n: '28', it: [P('str', 'Renfo A', '25', 'd')] }, { n: '29', today: true, it: [P('bike', 'Vélo Tempo 3×8min', '55', 'n')] }, { n: '30', it: [P('run', 'Footing Z2', '40', 'n')] }, { n: '1', out: true, it: [P('rest', 'Repos', '', 'r')] }, { n: '2', out: true, it: [P('swim', 'Natation technique', '30', 'n')] }, { n: '3', out: true, it: [P('run', 'Fractionné côtes', '60', 'n')] }, { n: '4', out: true, it: [P('run', 'Sortie longue trail', '90', 'n')] }], wk: '25', pl: '300', pct: 'on track', pc: '#A9ADB5' }
+    ].map(w => ({ ...w, days: w.days.map(d => ({ ...d, nc: d.today ? '#0C0D10' : d.out ? '#5E626B' : '#A9ADB5', nbg: d.today ? '#EEEFF1' : 'transparent', cellBg: d.today ? '#181B20' : '#111316', op: d.out ? 0.55 : 1 })) }));
+    const week = [
+      { d: 'Mon', n: '28', it: [{ ...P('str', 'W04 Mon – Renfo A', '25', 'd'), meta: '35 min · synced 18:40' }] },
+      { d: 'Tue', n: '29', today: true, it: [{ ...P('bike', 'W04 Tue – Vélo Tempo 3×8min', '55', 'n'), meta: '50 min · ≤160 bpm · 170 W' }] },
+      { d: 'Wed', n: '30', it: [{ ...P('run', 'W04 Wed – Footing Z2', '40', 'n'), meta: '1 h · ≤150 bpm' }] },
+      { d: 'Thu', n: '1', it: [{ ...P('rest', 'W04 Thu – Repos', '0', 'r'), meta: 'Repos complet' }] },
+      { d: 'Fri', n: '2', it: [{ ...P('swim', 'W04 Fri – Natation technique', '30', 'n'), meta: '45 min · éducatifs + 8×50' }] },
+      { d: 'Sat', n: '3', it: [{ ...P('run', 'W04 Sat – Fractionné côtes', '60', 'n'), meta: '1 h 10 · 6×3 min en côte' }] },
+      { d: 'Sun', n: '4', it: [{ ...P('run', 'W04 Sun – Sortie longue trail', '90', 'n'), meta: '1 h 45 · ≤150 bpm · D+ 400 m' }] }
+    ].map(d => ({ ...d, dc: d.today ? '#0C0D10' : '#EEEFF1', dbg: d.today ? '#EEEFF1' : '#1D2025' }));
+    const S = { bike: '#60B8FF', run: '#9BE15D', swim: '#3FD5D0', str: '#B794FF' };
+    const A = (sp, name, date, a, b, tss) => ({ sc: S[sp], name, date, a, b, tss });
+    const acts = [
+      { g: 'This week', sum: '1 activity · 35 min · TSS 25', rows: [A('str', 'Renfo A', 'Mon 28 Sept', '35 min', '—', '25')] },
+      { g: 'W03 · 21–27 Sept', sum: '5 activities · 6 h 12 · TSS 322', rows: [A('run', 'Fractionné côtes', 'Sun 27 Sept', '16.8 km', '1 h 36', '102'), A('run', 'Footing récup', 'Fri 25 Sept', '9.1 km', '52 min', '58'), A('swim', 'Natation 10×100', 'Thu 24 Sept', '2.2 km', '50 min', '44'), A('run', 'Footing Z2', 'Wed 23 Sept', '10.2 km', '58 min', '48'), A('bike', 'Vélo Tempo 3×8min', 'Tue 22 Sept', '31.4 km', '1 h 05', '70')] }
+    ];
+    return { pc: this.chart(354, 150), dc: this.chart(820, 250), hr: this.hr(354, 90), month, week, acts };
+  }
+}
+
+</script>
+</body>
+</html>

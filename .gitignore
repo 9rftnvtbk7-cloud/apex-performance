@@ -16,3 +16,6 @@ node_modules/
 
 # Shareable bundle (regenerate from design-brief/)
 design-brief/*.zip
+
+# macOS
+.DS_Store
