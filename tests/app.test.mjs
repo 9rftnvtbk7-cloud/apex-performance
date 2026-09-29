@@ -366,34 +366,36 @@ test('Markdown is rendered safely: markup only from known syntax, raw HTML shown
   assert.match(html, /<blockquote>fatigue &gt; 7\/10 : 40min Z1<\/blockquote>/);
 });
 
-test('Plan tab renders name, version, meta, details and steps; plain plans render as before', () => {
+test('Plan tab: header with version and phase bar, week picker, session rows with details and steps', () => {
   const { run, ctx, el } = makeEnv();
   run(`zwoFiles = {}; planCompletions = {}; allActivities = [];`);
   ctx.__text = fixture('plan_detailed.json');
   run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
   const header = el('planHeader').innerHTML, weeks = el('planWeeks').innerHTML;
-  assert.match(header, /Saint-Nolff Trail 30K — 10-week plan <span class="plan-version">v2\.1<\/span>/);
-  assert.match(header, /🏁 15 Nov 2026/);
-  assert.match(header, /10 weeks · 70 sessions/);
-  assert.match(weeks, /⏱ 50 min/);
-  assert.match(weeks, /❤️ ≤160 bpm/);
-  assert.match(weeks, /⚡ 170W \(85% FTP\)/);
+  assert.match(header, /<h2 class="plan-title">Saint-Nolff Trail 30K — 10-week plan<\/h2><span class="plan-version">v2\.1<\/span>/);
+  assert.match(header, /Race 15 Nov 2026 · Trail de Saint-Nolff \(30km \/ D\+600m\) · 10 weeks · 70 sessions · FTP 200 W/);
+  // Phase bar: BASE (3 weeks) BUILD (4) PEAK (2) TAPER (1)
+  assert.match(header, /<div class="phase-bar__seg[^"]*" style="flex:3">BASE<\/div><div class="phase-bar__seg[^"]*" style="flex:4">BUILD<\/div><div class="phase-bar__seg[^"]*" style="flex:2">PEAK<\/div><div class="phase-bar__seg[^"]*" style="flex:1">TAPER<\/div>/);
+  assert.equal((el('planWeekPicker').innerHTML.match(/class="chip/g) || []).length, 10);
+  // Rows: caption, title, targets line and steps inside the expandable details, export buttons
+  assert.match(weeks, /Tue · Bike[\s\S]*?<div class="plan-session-name">W01 Tue – Vélo Tempo 3×8min<\/div>/);
+  assert.match(weeks, /<div class="plan-session-meta">50 min · ≤160 bpm · 170W \(85% FTP\)<\/div>/);
   assert.match(weeks, /<details class="plan-session-details"><summary>Details<\/summary>/);
   assert.match(weeks, /<td>3×8min<\/td><td>8min<\/td><td>170W<\/td><td>2min Z1<\/td>/);
+  assert.match(weeks, /\.zwo · Zwift<\/button>[\s\S]*?\.fit · Garmin<\/button>/);
   // Each session has its own tickable id
   assert.match(weeks, /data-session-id="w1-2-tue"/);
-  // Long descriptions are clamped on the card and shown in full in the details
+  // Long descriptions are shown in full, escaped, in the details
   ctx.__text = fixture('plan_long.json');
   run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
   const long = el('planWeeks').innerHTML;
-  assert.match(long, /class="plan-session-desc is-clamped"/);
   assert.match(long, /<p class="plan-md-pre">50min au total/);
   assert.ok(!/<Ne pas>/.test(long)); // escaped
-  // Old v5 plan: no details element, header keeps its version
+  // Old v5 plan: header keeps its version; sessions still render
   ctx.__text = fs.readFileSync(new URL('../training-plan/training_plan_v5.json', import.meta.url), 'utf8');
   run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`);
-  assert.ok(!/plan-session-details/.test(el('planWeeks').innerHTML));
   assert.match(el('planHeader').innerHTML, /<span class="plan-version">v5/);
+  assert.equal((el('planWeeks').innerHTML.match(/class="plan-session[ "]/g) || []).length, 62);
 });
 
 // ── Storage (block D) ──

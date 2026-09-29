@@ -224,6 +224,6 @@ function openSessionDialog(sessionId) {
       <button class="btn btn--secondary" data-session-id="${id}" onclick="moveSession(this.dataset.sessionId, document.getElementById('sessionMoveDate').value); document.getElementById('sessionDialog').close();">Move</button>
       ${planOverrides[s.id] && original ? `<button class="btn btn--secondary" data-session-id="${id}" data-date="${localDateKey(original)}" onclick="moveSession(this.dataset.sessionId, this.dataset.date); document.getElementById('sessionDialog').close();">Back to ${escapeHtml(original.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }))}</button>` : ''}
     </div>
-    ${sessionDetailsHtml(s).replace('<details class="plan-session-details">', '<details class="plan-session-details" open>')}`;
+    ${sessionDetailsHtml(s, { summary: false }).replace('<details class="plan-session-details">', '<details class="plan-session-details" open>')}`;
   if (!dlg.open) dlg.showModal();
 }

@@ -209,5 +209,6 @@ function exportSessionWorkout(sessionId, kind) {
 function workoutExportButtonsHtml(s) {
   if (!s.steps || !s.steps.length || !['bike', 'run'].includes(s.sport)) return '';
   const id = escapeHtml(s.id);
-  return `<div class="workout-export"><button class="plan-zwo-btn" data-session-id="${id}" onclick="exportSessionWorkout(this.dataset.sessionId, 'zwo')">⬇ .zwo</button><button class="plan-zwo-btn" data-session-id="${id}" onclick="exportSessionWorkout(this.dataset.sessionId, 'fit')">⬇ .fit</button><span class="insight-muted" style="margin:0">Zwift · Garmin/Wahoo (copy to the device)</span></div>`;
+  const icon = '<svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>';
+  return `<div class="workout-export"><button class="plan-zwo-btn" data-session-id="${id}" onclick="exportSessionWorkout(this.dataset.sessionId, 'zwo')">${icon}.zwo · Zwift</button><button class="plan-zwo-btn" data-session-id="${id}" onclick="exportSessionWorkout(this.dataset.sessionId, 'fit')">${icon}.fit · Garmin</button></div>`;
 }

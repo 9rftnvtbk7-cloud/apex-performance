@@ -1499,11 +1499,14 @@ function plannedTssForWeek(monday) {
 }
 
 function scrollToCurrentWeek() {
-  // Wait for the tab fade-in (150ms in switchTab) so the element is visible
+  // Wait for the tab to be visible, then jump to the current week and bring its chip into view
   setTimeout(() => {
     const el = document.querySelector('.plan-week-current');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 250);
+    if (!el) return;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80 });
+    const chip = document.querySelector('#planWeekPicker .chip.is-active');
+    if (chip) chip.parentElement.scrollLeft = chip.offsetLeft - 16;
+  }, 60);
 }
 
 function renderTrainingPlan() {
@@ -1511,123 +1514,118 @@ function renderTrainingPlan() {
   const p = trainingPlan;
   document.getElementById('planEmpty').style.display = 'none';
   document.getElementById('planContent').style.display = 'block';
+  const now = new Date();
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const weeks = p.weeks || [];
+  const currentIdx = weeks.findIndex(w => isWeekCurrent(w, p, now));
 
-  // Header: plan name + version, then race, date and athlete
+  // ── Header card: name + version, meta line, phase bar, zones / status ──
   const cal = p.calibration || {};
   const planName = p.name || p.planName || p.race || 'Training Plan';
   const planVersion = p.version || p.plan_version || p.planVersion || '';
   const raceIso = parseIsoDate(p.raceDate);
   const raceDateText = raceIso ? raceIso.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (p.raceDate || '');
-  const subtitle = [p.name && p.race ? p.race : '', raceDateText ? `🏁 ${raceDateText}` : '', p.athlete || '',
-    `${(p.weeks || []).length} weeks · ${(p.weeks || []).reduce((n, w) => n + (w.sessions || []).length, 0)} sessions`,
-    p.generated ? `generated ${p.generated}` : ''].filter(Boolean).map(escapeHtml).join(' · ');
   const ftp = cal.ftp_watts || p.ftpWatts;
+  const sessionCount = weeks.reduce((n, w) => n + (w.sessions || []).length, 0);
+  const meta = [raceDateText ? `Race ${raceDateText}` : '', p.name && p.race ? p.race : '', p.athlete || '', `${weeks.length} weeks · ${sessionCount} sessions`, ftp ? `FTP ${ftp} W` : ''].filter(Boolean);
+  const targets = [cal.run_race_target_pace ? `Run ${cal.run_race_target_pace}` : '', cal.bike_race_target_np ? `Bike ${cal.bike_race_target_np}` : '', cal.swim_target ? `Swim ${cal.swim_target}` : ''].filter(Boolean);
+  // Phase bar: consecutive weeks with the same phase form one segment
+  const phases = [];
+  weeks.forEach((w, i) => { const ph = String(w.phase || '—'); if (phases.length && phases[phases.length - 1].name === ph) phases[phases.length - 1].to = i; else phases.push({ name: ph, from: i, to: i }); });
+  const firstStart = weeks.length ? planWeekStart(weeks[0], p) : null;
+  const lastStart = weeks.length ? planWeekStart(weeks[weeks.length - 1], p) : null;
+  const shortDate = d => d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+  const where = currentIdx >= 0 ? `You are in <b>W${String(weeks[currentIdx].week).padStart(2, '0')}</b>`
+    : firstStart && firstStart > today ? `Starts in ${Math.round((firstStart - today) / 86400000)} days` : 'Plan finished';
   document.getElementById('planHeader').innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
-      <div style="min-width:0">
-        <div class="plan-title">${escapeHtml(planName)}${planVersion ? ` <span class="plan-version">${escapeHtml(planVersion)}</span>` : ''}</div>
-        <div class="plan-subtitle">${subtitle}</div>
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        ${ftp ? `<div class="plan-cal-chip">FTP <strong>${escapeHtml(ftp)}W</strong></div>` : ''}
-        ${cal.run_race_target_pace ? `<div class="plan-cal-chip">Run Target <strong>${escapeHtml(cal.run_race_target_pace)}</strong></div>` : ''}
-        ${cal.bike_race_target_np ? `<div class="plan-cal-chip">Bike Target <strong>${escapeHtml(cal.bike_race_target_np)}</strong></div>` : ''}
-        ${cal.swim_target ? `<div class="plan-cal-chip">Swim Target <strong>${escapeHtml(cal.swim_target)}</strong></div>` : ''}
-      </div>
-    </div>
-    ${(p.structure_corrections || []).length ? `<div style="margin-top:12px;font-size:13px;color:var(--text-dim)">${p.structure_corrections.map(c => '• ' + escapeHtml(c)).join('<br>')}</div>` : ''}
-  `;
+    <div class="plan-header__top"><h2 class="plan-title">${escapeHtml(planName)}</h2>${planVersion ? `<span class="plan-version">${escapeHtml(planVersion)}</span>` : ''}</div>
+    <p class="plan-meta">${meta.map(escapeHtml).join(' · ')}</p>
+    ${targets.length ? `<p class="plan-meta">Targets: ${targets.map(escapeHtml).join(' · ')}</p>` : ''}
+    ${phases.length > 1 || phases[0]?.name !== '—' ? `<div class="phase-bar">${phases.map(ph => {
+      const state = currentIdx >= ph.from && currentIdx <= ph.to ? ' is-current' : currentIdx > ph.to ? ' is-past' : '';
+      return `<div class="phase-bar__seg${state}" style="flex:${ph.to - ph.from + 1}">${escapeHtml(ph.name)}</div>`;
+    }).join('')}</div>
+    <div class="phase-bar__caption"><span>${escapeHtml(shortDate(firstStart))}</span><span>${where}</span><span>${escapeHtml(raceIso ? shortDate(raceIso) : shortDate(lastStart ? addDays(lastStart, 6) : null))}</span></div>` : ''}
+    ${(p.structure_corrections || []).length ? `<div class="plan-corrections">${p.structure_corrections.map(c => '• ' + escapeHtml(c)).join('<br>')}</div>` : ''}
+    <div class="plan-header__foot">${p.zones ? `<button class="btn-reset link-muted" onclick="togglePlanZones()">Zones ›</button>` : '<span></span>'}<span>Plan status: no errors</span></div>`;
 
-  // Zones
+  // Zones (toggled from the header)
   if (p.zones) {
-    let zh = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+    let zh = '<div class="compare-grid">';
     if (p.zones.bike) {
-      zh += '<div><div style="font-weight:600;margin-bottom:8px;color:var(--color-blue)">' + sportIcon('bike') + ' Bike Zones (FTP: ' + escapeHtml(p.zones.bike.ftp) + 'W)</div>';
-      zh += '<table class="zone-table"><tr><th>Zone</th><th>Name</th><th>Power</th><th>%FTP</th></tr>';
-      for (const [zk, zv] of Object.entries(p.zones.bike)) {
-        if (zk === 'ftp') continue;
-        zh += `<tr><td>${escapeHtml(zk)}</td><td>${escapeHtml(zv.name)}</td><td>${escapeHtml(zv.power)}</td><td>${escapeHtml(zv.ratio)}</td></tr>`;
-      }
+      zh += `<div><div class="card-title" style="margin-bottom:8px">Bike zones <span class="plan-meta">FTP ${escapeHtml(p.zones.bike.ftp)} W</span></div><table class="zone-table"><tr><th>Zone</th><th>Name</th><th>Power</th><th>%FTP</th></tr>`;
+      for (const [zk, zv] of Object.entries(p.zones.bike)) if (zk !== 'ftp') zh += `<tr><td>${escapeHtml(zk)}</td><td>${escapeHtml(zv.name)}</td><td>${escapeHtml(zv.power)}</td><td>${escapeHtml(zv.ratio)}</td></tr>`;
       zh += '</table></div>';
     }
     if (p.zones.run) {
-      zh += '<div><div style="font-weight:600;margin-bottom:8px;color:var(--color-green)">' + sportIcon('run') + ' Run Zones</div>';
-      zh += '<table class="zone-table"><tr><th>Zone</th><th>Name</th><th>Pace</th><th>HR</th></tr>';
-      for (const [zk, zv] of Object.entries(p.zones.run)) {
-        zh += `<tr><td>${escapeHtml(zk)}</td><td>${escapeHtml(zv.name)}</td><td>${escapeHtml(zv.pace)}</td><td>${escapeHtml(zv.hr)}</td></tr>`;
-      }
+      zh += '<div><div class="card-title" style="margin-bottom:8px">Run zones</div><table class="zone-table"><tr><th>Zone</th><th>Name</th><th>Pace</th><th>HR</th></tr>';
+      for (const [zk, zv] of Object.entries(p.zones.run)) zh += `<tr><td>${escapeHtml(zk)}</td><td>${escapeHtml(zv.name)}</td><td>${escapeHtml(zv.pace)}</td><td>${escapeHtml(zv.hr)}</td></tr>`;
       zh += '</table></div>';
     }
-    zh += '</div>';
-    document.getElementById('planZones').innerHTML = zh;
+    document.getElementById('planZones').innerHTML = zh + '</div>';
   }
 
-  // Weeks
-  const hasZwo = Object.keys(zwoFiles).length > 0;
-  const sportColors = { bike: '#3b82f6', run: '#10b981', swim: '#06b6d4', strength: '#a855f7', 'strength+swim': '#8b5cf6' };
+  // Week picker
+  document.getElementById('planWeekPicker').innerHTML = weeks.map((w, i) =>
+    `<button class="chip${i === currentIdx ? ' is-active' : ''}" onclick="jumpToPlanWeek(${i})">W${escapeHtml(String(w.week).padStart(2, '0'))}</button>`).join('');
 
-  let wh = '';
-  const now = new Date();
-  const today = new Date(now); today.setHours(0, 0, 0, 0);
-  // Plan vs actual: sessions matched to Strava activities on the same day and sport
+  // ── Weeks: one card of session rows each ──
+  const hasZwo = Object.keys(zwoFiles).length > 0;
   const matches = matchPlanToActivities(p);
-  for (let wi = 0; wi < (p.weeks || []).length; wi++) {
-    const week = p.weeks[wi];
-    // Phase colour from the plan; readable neutral text when the plan has none
-    const phaseBg = safeColor(week.color, 'var(--text-dim)');
-    const isCurrentWeek = isWeekCurrent(week, p, now);
+  let wh = '';
+  weeks.forEach((week, wi) => {
     const weekStart = planWeekStart(week, p);
-    // Actual TSS for weeks that have started (all activities in the week, planned or not)
-    let actualHtml = '';
+    let tssText = `${escapeHtml(week.tss)} TSS`;
     if (weekStart && weekStart <= today) {
       const end = addDays(weekStart, 7);
       const actual = allActivities.reduce((sum, a) => sum + (a.startDate >= weekStart && a.startDate < end ? (a.tss || 0) : 0), 0);
-      actualHtml = `<span class="plan-week-actual">actual <strong>${actual}</strong> /</span>`;
+      tssText = `<strong>${actual}</strong> / ${escapeHtml(week.tss)} TSS`;
     }
-    wh += `<div class="plan-week-card${isCurrentWeek ? ' plan-week-current' : ''}" data-plan-week="${wi}" id="plan-week-${wi}">`;
-    wh += `<div class="plan-week-header" style="border-left:4px solid ${isCurrentWeek ? 'var(--color-blue)' : phaseBg}">`;
-    wh += `<div><span class="plan-week-num">W${escapeHtml(week.week)}</span> <span class="plan-week-phase" style="color:${phaseBg}">${escapeHtml(week.phase)}</span></div>`;
-    wh += `<div class="plan-week-meta"><span style="font-size:13px;color:var(--text-dim)">${escapeHtml(week.dates)}</span>${actualHtml}<span class="plan-week-tss">TSS ${escapeHtml(week.tss)}</span></div>`;
-    wh += `</div>`;
-    if (week.note) wh += `<div class="plan-week-note">${escapeHtml(week.note)}</div>`;
-    wh += `<div class="plan-sessions">`;
+    const phase = week.phase ? String(week.phase)[0] + String(week.phase).slice(1).toLowerCase() : '';
+    wh += `<section class="plan-week${wi === currentIdx ? ' plan-week-current' : ''}" data-plan-week="${wi}" id="plan-week-${wi}">
+      <div class="plan-week-head"><h3 class="plan-week-title">W${escapeHtml(String(week.week).padStart(2, '0'))}${phase ? ` · <span class="plan-week-phase" style="color:${safeColor(week.color, 'var(--text-dim)')}">${escapeHtml(phase)}</span>` : ''}</h3>
+      <span class="plan-week-meta">${tssText}</span></div>
+      ${week.note ? `<p class="plan-week-note">${escapeHtml(week.note)}</p>` : ''}
+      <div class="plan-sessions">`;
     for (const s of (week.sessions || [])) {
-      const sc = sportColors[s.sport] || '#6b7280';
-      const se = sportIcon(s.sport);
-      const hasFile = s.zwo_file && (hasZwo ? zwoFiles[s.zwo_file] : true);
       const matched = matches.get(s.id);
       const isDone = !!(isSessionTicked(s) || matched);
       const sessionDate = sessionDateFor(s, weekStart);
+      const isToday = sessionDate && localDateKey(sessionDate) === localDateKey(today);
       const isMissed = !isDone && s.sport !== 'rest' && sessionDate && sessionDate < today;
-      wh += `<div class="plan-session${isDone ? ' plan-session-done' : ''}">`;
-      wh += matched
-        ? `<div class="plan-session-check"><input type="checkbox" checked disabled aria-label="Completed on Strava" title="Completed — matched a Strava activity" style="width:16px;height:16px;accent-color:var(--color-green)"></div>`
-        : `<div class="plan-session-check"><input type="checkbox" ${isDone ? 'checked' : ''} aria-label="Mark ${escapeHtml(s.name)} as done" data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-green)"></div>`;
       const movedTo = planOverrides[s.id] && sessionDate ? sessionDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) : '';
-      wh += `<div class="plan-session-day">${escapeHtml(String(s.day || '').slice(0, 3))}${movedTo ? `<div class="plan-moved" title="Moved in the Calendar">↪ ${escapeHtml(movedTo)}</div>` : ''}</div>`;
-      wh += `<div class="plan-session-body">`;
-      wh += `<div class="plan-session-top"><span class="plan-session-sport" style="background:${sc}22;color:${sc}">${se} ${escapeHtml(s.sport)}</span>`;
-      wh += `<span class="plan-session-name">${escapeHtml(s.name)}</span>`;
-      wh += `<span class="plan-session-tss">TSS ${escapeHtml(s.tss)}</span>`;
-      if (matched) wh += `<span class="plan-session-actual" title="${escapeHtml(fmtSportName(matched.sport))} · ${escapeHtml(fmtDuration(matched.duration))}">✓ ${escapeHtml(matched.tss)} TSS actual</span>`;
-      else if (isMissed) wh += `<span class="plan-session-missed">missed</span>`;
-      if (s.zwo_file && hasZwo && zwoFiles[s.zwo_file]) {
-        wh += `<button class="plan-zwo-btn" data-zwo="${escapeHtml(s.zwo_file)}" onclick="downloadZwo(this.dataset.zwo)">⬇ .zwo</button>`;
-      } else if (s.zwo_file && !hasZwo) {
-        wh += `<span class="plan-zwo-pending" title="Import ZWO files to enable download">📄 .zwo</span>`;
-      }
-      wh += `</div>`;
-      if (s.description) wh += `<div class="plan-session-desc${s.description.length > 200 ? ' is-clamped' : ''}">${escapeHtml(s.description)}</div>`;
-      wh += sessionMetaHtml(s);
-      wh += sessionDetailsHtml(s);
-      wh += `</div></div>`;
+      const check = s.sport === 'rest' ? '<span style="width:26px;display:inline-block"></span>'
+        : matched ? `<label class="check" title="Completed — matched a Strava activity"><input type="checkbox" checked disabled aria-label="${escapeHtml(s.name)}: completed on Strava"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label>`
+        : `<label class="check"><input type="checkbox" ${isDone ? 'checked' : ''} aria-label="Mark ${escapeHtml(s.name)} as done" data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)"><span class="check__box"><svg class="icon"><use href="#i-check"/></svg></span></label>`;
+      const right = s.sport === 'rest' ? '<span class="plan-session-tss">—</span>'
+        : matched ? `<span class="plan-session-actual" title="${escapeHtml(fmtSportName(matched.sport))} · ${escapeHtml(fmtDuration(matched.duration))}">${escapeHtml(s.tss)} → ${escapeHtml(matched.tss)}</span>`
+        : `<span class="plan-session-tss">TSS ${escapeHtml(s.tss)}</span>${isMissed ? '<div class="plan-session-missed">✕ missed</div>' : ''}`;
+      const zwo = s.zwo_file && hasZwo && zwoFiles[s.zwo_file] ? `<button class="btn-reset link-muted" data-zwo="${escapeHtml(s.zwo_file)}" onclick="downloadZwo(this.dataset.zwo)">↓ .zwo</button>` : '';
+      const details = sessionDetailsHtml(s);
+      wh += `<div class="plan-session${isDone ? ' plan-session-done' : ''}${isToday ? ' plan-session-today' : ''}">
+        <div class="plan-session-check">${check}</div>
+        <div class="plan-session-body">
+          <div class="plan-session-top">
+            <div style="min-width:0"><div class="plan-session-caption">${sportDot(s.sport)}${escapeHtml(String(s.day || '').slice(0, 3))} · ${escapeHtml(sportLabel(s.sport))}${isToday ? ' · Today' : ''}${movedTo ? ` · <span class="plan-moved" title="Moved in the Calendar">↪ ${escapeHtml(movedTo)}</span>` : ''}</div>
+              <div class="plan-session-name">${escapeHtml(s.name)}</div></div>
+            <div class="plan-session-right">${right}${zwo ? `<div>${zwo}</div>` : ''}</div>
+          </div>
+          ${details || `${s.description ? `<div class="plan-session-desc${s.description.length > 200 ? ' is-clamped' : ''}">${escapeHtml(s.description)}</div>` : ''}${sessionMetaHtml(s)}`}
+        </div></div>`;
     }
-    wh += `</div></div>`;
-  }
+    wh += `</div></section>`;
+  });
   document.getElementById('planWeeks').innerHTML = wh;
   renderUpcomingSessions();
   renderTodayHead();
   if (typeof renderCalendar === 'function' && document.getElementById('tab-calendar')?.classList.contains('is-active')) renderCalendar();
+}
+
+// Week picker: scroll the page to a plan week (never scrollIntoView: it also scrolls the tab bar on iOS)
+function jumpToPlanWeek(i) {
+  document.querySelectorAll('#planWeekPicker .chip').forEach((c, j) => c.classList.toggle('is-active', j === i));
+  const el = document.getElementById(`plan-week-${i}`);
+  if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
 }
 
 // ── Overview: today's and tomorrow's planned sessions ──
@@ -1735,9 +1733,14 @@ function sessionMetaHtml(s) { const t = sessionMetaText(s); return t ? `<div cla
 function fmtMinutes(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h${m ? ' ' + String(m).padStart(2, '0') : ''}` : `${m} min`; }
 
 // Expandable details: Markdown text, steps table, and the full description when it was clamped
-function sessionDetailsHtml(s) {
+function sessionDetailsHtml(s, { summary = true } = {}) {
   const parts = [];
-  if (s.description && s.description.length > 200 && !s.details) parts.push(`<div class="plan-md"><p class="plan-md-pre">${escapeHtml(s.description)}</p></div>`);
+  if (s.details || (s.steps && s.steps.length) || s.description || sessionMetaText(s)) {
+    if (summary) {
+      parts.push(sessionMetaHtml(s));
+      if (s.description) parts.push(`<div class="plan-md"><p class="plan-md-pre">${escapeHtml(s.description)}</p></div>`);
+    }
+  } else return '';
   if (s.details) parts.push(`<div class="plan-md">${renderMarkdownSafe(s.details)}</div>`);
   if (s.steps && s.steps.length) {
     parts.push(`<div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Step</th><th>Time</th><th>Target</th><th>Rest</th></tr></thead><tbody>${
@@ -1745,7 +1748,7 @@ function sessionDetailsHtml(s) {
     }</tbody></table></div>`);
     if (typeof workoutExportButtonsHtml === 'function') parts.push(workoutExportButtonsHtml(s));
   }
-  return parts.length ? `<details class="plan-session-details"><summary>Details</summary>${parts.join('')}</details>` : '';
+  return `<details class="plan-session-details"><summary>Details</summary>${parts.join('')}</details>`;
 }
 
 // Minimal, safe Markdown → HTML. Every piece of text is escaped first; only these constructs
