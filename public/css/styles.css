@@ -314,11 +314,12 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .week-card__value { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
 .week-card__of { font-size: 16px; color: var(--text-dim); margin-left: 4px; }
 .week-card__status { font-size: 14px; font-weight: 500; }
+.week-card__status.is-neutral { color: var(--text-dim); }
 .week-progress { display: flex; gap: 4px; margin-top: 14px; height: 8px; }
 .week-progress__seg { flex: 1; min-width: 30px; border-radius: 4px; background: var(--bg-selected); }
 .week-progress__seg--done { background: var(--color-ok); }
 .week-progress__seg--partial { background: var(--color-partial); }
-.week-progress__seg--missed { background: var(--tint-missed); box-shadow: inset 0 0 0 1px var(--color-missed); }
+.week-progress__seg--missed { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong, var(--text-muted)); opacity: .6; }
 .week-progress__seg--today { background: transparent; box-shadow: inset 0 0 0 1.5px var(--text-main); }
 .week-progress__days { display: flex; gap: 4px; margin-top: 8px; font-size: 13px; color: var(--text-muted); }
 .week-progress__days span { flex: 1; min-width: 30px; overflow: hidden; white-space: nowrap; }

@@ -473,6 +473,20 @@ test('Storage: a missing part is reported, not silently ignored', async () => {
 });
 
 // ── Overview: next 2 days ──
+test('Week card: encouraging status — never "behind", says what is ahead', () => {
+  const { run, ctx, el } = makeEnv();
+  ctx.__text = fixture('plan_detailed.json');
+  run(`planCompletions = {}; allActivities = [{ id: 'x', sport: 'running', startDate: new Date(2026, 8, 20), tss: 10 }]; trainingPlan = normalizePlan(__text).plan;`);
+  const mon = 'new Date(2026, 8, 28)';
+  run(`renderWeekSummary(${mon}, new Date(2026, 8, 28, 9), 0, 0)`); // Monday, nothing skipped yet
+  assert.equal(el('weekProgressLabel').textContent, '✓ On track');
+  run(`renderWeekSummary(${mon}, new Date(2026, 8, 29, 9), 0, 0)`); // Tuesday, Monday's session not done
+  assert.doesNotMatch(el('weekProgressLabel').textContent, /behind/i);
+  assert.match(el('weekProgressLabel').textContent, /^\d+ sessions ahead$/);
+  assert.match(el('weekProgressLabel').className, /is-neutral/);
+  assert.match(el('subWeekTss').textContent, /^0 of \d+ sessions done · \d+ TSS still planned this week\.$/);
+});
+
 test('Today: session card with Mark done, tomorrow rows, rest days, done state', () => {
   const { run, ctx, el } = makeEnv();
   ctx.__text = fixture('plan_detailed.json');

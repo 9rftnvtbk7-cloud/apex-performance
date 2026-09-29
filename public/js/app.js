@@ -200,11 +200,15 @@ function renderWeekSummary(thisMonday, now, thisWeekTss, lastWeekTss) {
     }).join('');
     days.innerHTML = sessions.map(x => `<span style="flex:${Math.max(1, x.s.tss || 1)}">${localDateKey(x.d) === localDateKey(today) ? 'Today' : escapeHtml(x.d.toLocaleDateString('en-GB', { weekday: 'short' }))}</span>`).join('');
     bar.setAttribute('aria-label', `${doneCount} of ${sessions.length} planned sessions done`);
-    // Status vs what was planned before today (today's session may still be ahead)
-    const behind = plannedSoFar > 0 && thisWeekTss < plannedSoFar * 0.8;
-    status.textContent = behind ? `Behind plan · ${Math.round(thisWeekTss / plannedSoFar * 100)} %` : '✓ On track';
-    status.className = `week-card__status ${behind ? 'is-caution' : 'is-ok'}`;
-    document.getElementById('subWeekTss').textContent = `${doneCount} of ${sessions.length} sessions done.`;
+    // Encouraging status: what's still ahead, never a "behind" score (skipped days are simply not counted as done)
+    const ahead = sessions.filter(x => x.d >= today && !(x.matched || isSessionTicked(x.s)));
+    const skipped = sessions.filter(x => x.d < today && !(x.matched || isSessionTicked(x.s))).length;
+    const aheadTss = ahead.reduce((n, x) => n + (x.s.tss || 0), 0);
+    status.textContent = doneCount === sessions.length ? '✓ Week complete'
+      : !skipped ? '✓ On track'
+      : ahead.length ? `${ahead.length} session${ahead.length > 1 ? 's' : ''} ahead` : 'Fresh start Monday';
+    status.className = `week-card__status ${!skipped || doneCount === sessions.length ? 'is-ok' : 'is-neutral'}`;
+    document.getElementById('subWeekTss').textContent = `${doneCount} of ${sessions.length} sessions done${ahead.length ? ` · ${aheadTss} TSS still planned this week` : ''}.`;
   } else {
     // No plan: compare with last week
     const goal = planned ? planned.tss : lastWeekTss || 0;
