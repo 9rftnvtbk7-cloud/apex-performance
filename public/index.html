@@ -352,6 +352,7 @@
             <table class="training-table"><thead><tr>
               <th style="width:40px;cursor:default"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"></th>
               <th onclick="sortColumn('date')" data-col="date" class="is-sorted">Date <span class="sort-indicator">▼</span></th>
+              <th onclick="sortColumn('name')" data-col="name">Activity <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('sport')" data-col="sport">Sport <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('duration')" data-col="duration">Duration <span class="sort-indicator">▼</span></th>
               <th onclick="sortColumn('distance')" data-col="distance">Distance <span class="sort-indicator">▼</span></th>
@@ -368,6 +369,11 @@
   </main>
 </div>
 
+<!-- Activity detail (opened from the Log) -->
+<dialog id="activityDialog" class="activity-dialog" aria-label="Activity details" onclose="destroyDetailVisuals()">
+  <div id="activityDialogBody"></div>
+</dialog>
+
 <!-- App Scripts (order matters) -->
 <script src="js/firebase-config.js?v=202609290909"></script>
 <script src="js/auth.js?v=202609290909"></script>
@@ -376,6 +382,7 @@
 <script src="js/strava.js?v=202609290909"></script>
 <script src="js/thresholds.js?v=202609290909"></script>
 <script src="js/metrics.js?v=202609290909"></script>
+<script src="js/activity-detail.js?v=1"></script>
 <script src="js/insights.js?v=202609290909"></script>
 <script src="js/plan-import.js?v=202609290909"></script>
 <script src="js/app.js?v=202609290909"></script>

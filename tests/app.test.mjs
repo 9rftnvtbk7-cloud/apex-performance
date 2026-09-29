@@ -11,7 +11,8 @@ function makeEnv() {
   const els = {};
   const el = id => (els[id] ??= { id, value: '', style: {}, textContent: '', innerHTML: '', classList: { add() {}, remove() {}, toggle() {} },
     getContext: () => ({}), appendChild() {}, querySelector: () => null, scrollIntoView() {},
-    append(...c) { (this.children ??= []).push(...c); }, replaceChildren() { this.children = []; }, setAttribute() {}, hidden: true });
+    append(...c) { (this.children ??= []).push(...c); }, replaceChildren() { this.children = []; }, setAttribute() {}, hidden: true,
+    showModal() { this.open = true; }, close() { this.open = false; } });
   const toasts = [];
   const ctx = {
     console: { log() {}, info() {}, warn() {}, error() {} },
@@ -26,7 +27,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -588,4 +589,48 @@ test('Auto-sync waits for activities to load and runs at most every 15 minutes',
   assert.equal(run('__syncs'), 1);           // second call within 15 min is skipped
   run('lastAutoSync = Date.now() - 16 * 60 * 1000; maybeAutoSync();');
   assert.equal(run('__syncs'), 2);
+});
+
+
+// ── Activity detail ──
+test('Polyline decoding and downsampling', () => {
+  const { run } = makeEnv();
+  // Google's reference example
+  const pts = run(`decodePolyline('_p~iF~ps|U_ulLnnqC_mqNvxq\`@')`);
+  assert.deepEqual(JSON.parse(JSON.stringify(pts)), [[38.5, -120.2], [40.7, -120.95], [43.252, -126.453]]);
+  assert.equal(run(`downsample(Array.from({ length: 5000 }, (_, i) => i), 600).length`), 600);
+  assert.equal(run(`downsample([1, 2, 3], 600).length`), 3);
+});
+
+test('Activity detail: stats, journal saved on the activity, Strava detail backfills the name', async () => {
+  const { run, ctx, el } = makeEnv();
+  const calls = [];
+  ctx.fetch = async url => {
+    calls.push(url);
+    if (url.endsWith('/streams?keys=time,heartrate,watts,velocity_smooth,altitude,latlng&key_by_type=true'))
+      return { ok: true, status: 200, json: async () => ({ time: { data: [0, 1, 2] }, heartrate: { data: [120, 130, 140] } }) };
+    return { ok: true, status: 200, json: async () => ({ name: 'Morning Run <b>', map: {}, laps: [] }) };
+  };
+  run(`thresholdHistory = normalizeThresholdHistory([{ from: '2000-01-01', ftp: 200, lthr: 160, pace: '5:00', swimPace: '2:00' }]);
+       currentUser = { uid: 'u' }; stravaTokens = { access_token: 'a', expires_at: 9e12 };
+       allActivities = [{ id: 'x1', stravaId: '42', sport: 'running', startDate: new Date(2026, 8, 1, 7), duration: 3600, distance: 10000,
+         avgSpeed: 2.78, avgHr: 145, tss: 70, intensityFactor: 0.85 }];
+       var __upd = []; updateActivityFields = async (id, f) => { __upd.push([id, f]); return true; };`);
+  await run(`openActivityDetail('x1')`);
+  const body = el('activityDialogBody').innerHTML;
+  assert.equal(el('activityDialog').open, true);
+  assert.match(body, /Avg pace<\/div><div class="detail-stat-value">6:00\/km/);
+  assert.match(body, /href="https:\/\/www\.strava\.com\/activities\/42"/);
+  await new Promise(r => setImmediate(r)); await new Promise(r => setImmediate(r));
+  assert.equal(calls.length, 2);
+  assert.equal(run(`allActivities[0].name`), 'Morning Run <b>');
+  assert.ok(run(`__upd.some(([id, f]) => f.name === 'Morning Run <b>')`));
+  // Journal
+  el('detailNotes').value = 'Windy, felt strong';
+  el('detailRpe').value = '6';
+  await run(`setActivityFeel('4')`);
+  const last = run(`__upd[__upd.length - 1][1]`);
+  assert.deepEqual({ ...last }, { notes: 'Windy, felt strong', rpe: 6, feel: '4' });
+  run(`closeActivityDetail()`);
+  assert.equal(el('activityDialog').open, false);
 });
