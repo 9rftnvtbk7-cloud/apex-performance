@@ -417,8 +417,9 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .cal-chip--planned { background: transparent; outline: 1px dashed var(--border-dashed); outline-offset: -1px; }
 .cal-chip--unplanned { background: var(--bg-raised); }
 .cal-chip--rest { background: transparent; color: var(--text-muted); }
-.cal-week { background: var(--bg-card); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; font-size: 13px; color: var(--text-dim); }
+.cal-week { background: var(--bg-card); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 2px; font-size: 13px; color: var(--text-dim); }
 .cal-week b { font-size: 18px; font-weight: 600; color: var(--text-main); }
+.cal-week span { font-size: 12px; white-space: nowrap; }
 .cal-week em { font-style: normal; font-weight: 600; }
 .cal-week--green em { color: var(--color-ok); } .cal-week--amber em { color: var(--color-partial); } .cal-week--red em { color: var(--color-missed); }
 .cal-week-plan { font-size: 12px; color: var(--text-muted); }
@@ -457,9 +458,13 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
   .cal-grid--month .cal-chip--red, .cal-grid--month .cal-chip--planned { opacity: .4; }
 }
 @media (min-width: 1024px) {
-  #tab-calendar { position: relative; }
+  /* Title row: month + arrows + Today on the left, Week/Month on the right */
+  #tab-calendar.is-active { display: grid; grid-template-columns: 1fr auto; column-gap: 16px; }
+  #tab-calendar > * { grid-column: 1 / -1; }
+  #tab-calendar > .cal-nav { grid-column: 1; grid-row: 1; margin: 0 0 14px; }
+  #tab-calendar > .page-head--calendar { grid-column: 2; grid-row: 1; margin: 0 0 14px; padding: 0; align-self: center; }
   .page-head--calendar .page-title { display: none; }
-  .page-head--calendar { position: absolute; right: 0; top: 64px; margin: 0; padding: 0; }
+  .app-body:has(#tab-calendar.is-active) .app-main { padding-top: 96px; }
   .cal-nav { justify-content: flex-start; }
   .cal-nav__title { flex: none; text-align: left; order: -1; margin-right: 8px; }
   #calendarTitle { font-size: 34px; line-height: 40px; font-weight: 600; letter-spacing: -0.03em; }

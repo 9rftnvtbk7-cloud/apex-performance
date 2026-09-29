@@ -736,12 +736,21 @@ test('Calendar renders planned, matched and unplanned chips with a weekly total'
        calendarView = 'week'; calendarCursor = new Date(2026, 8, 9);
        renderCalendar(new Date(2026, 8, 13, 20));`);
   const html = el('calendarGrid').innerHTML;
-  assert.match(el('calendarTitle').textContent, /Week of 7 Sept? 2026/);
-  assert.match(html, /cal-chip--green" draggable="true" data-session-id="w1-2-tue"/);   // 55 planned → 54
-  assert.match(html, /cal-chip--red" draggable="true" data-session-id="w1-1-mon"/);     // missed
-  assert.match(html, /cal-chip--unplanned" data-id="extra"/);
-  // Week in progress (today = Sun 13): compared with what was planned before today
-  assert.match(html, /Week so far<\/div><div>64 \/ 210 TSS<\/div><div><strong>30%<\/strong><\/div><div class="cal-week-plan">plan 300<\/div>/);
+  assert.equal(el('calendarTitle').textContent, 'W01 · 7 – 13 Sept');
+  assert.equal(el('calendarSub').textContent, 'Base phase');
+  // Week rows: glyph + status word; sport colour as a CSS variable
+  assert.match(html, /cal-chip--row cal-chip--green" draggable="true"[^>]*data-session-id="w1-2-tue" style="--sport:var\(--sport-bike\)"[\s\S]*?<b>54<\/b><small>Done<\/small>/); // 55 planned → 54
+  assert.match(html, /cal-chip--row cal-chip--red"[^>]*data-session-id="w1-1-mon"[\s\S]*?<small>Missed<\/small>/);
+  assert.match(html, /cal-chip--unplanned" data-id="extra"[\s\S]*?<small>Unplanned<\/small>/);
+  // Summary: week in progress (today = Sun 13) compared with what was planned before today
+  assert.match(html, /<span class="cal-summary__value">64<\/span><span class="cal-summary__of">\/ 210 TSS so far<\/span><\/div><span class="is-missed">30 %<\/span>/);
+  assert.match(html, /Plan for the week 300 · today not counted until done/);
+  // Month view: week column with actual, "of N TSS" and status
+  run(`calendarView = 'month'; renderCalendar(new Date(2026, 8, 13, 20));`);
+  const month = el('calendarGrid').innerHTML;
+  assert.equal(el('calendarTitle').textContent, 'September 2026');
+  assert.match(month, /cal-chip cal-chip--green"[^>]*data-session-id="w1-2-tue"[\s\S]*?<span class="cal-chip-glyph" aria-hidden="true">✓<\/span><small>55→54<\/small>/);
+  assert.match(month, /<b>64<\/b><span>of 300 TSS<\/span><em>30 % so far<\/em>/);
 });
 
 // ── Race-day target ──
