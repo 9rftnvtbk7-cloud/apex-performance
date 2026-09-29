@@ -13,3 +13,6 @@ node_modules/
 # Cloudflare Worker local state
 .wrangler/
 .dev.vars
+
+# Shareable bundle (regenerate from design-brief/)
+design-brief/*.zip
