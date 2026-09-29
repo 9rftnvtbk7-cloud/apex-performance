@@ -134,6 +134,8 @@
           <div class="stat-card stat-card--lastweek"><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
         </div>
 
+        <div class="sport-fitness" id="sportFitness"></div>
+
         <!-- Next 2 days from the training plan -->
         <div class="card upcoming" id="upcomingCard" style="display:none">
           <div class="card-top-bar" style="margin-bottom:12px">
@@ -190,6 +192,9 @@
         <div class="card">
           <div class="card-top-bar">
             <div class="card-title">Performance Management Chart</div>
+            <select class="compare-select" id="pmcSportSelect" aria-label="Sport shown on the chart" onchange="setPmcSport(this.value); renderSportFitness();" style="padding:6px 10px;font-size:13px">
+              <option value="all">All sports</option><option value="bike">Bike</option><option value="run">Run</option><option value="swim">Swim</option>
+            </select>
             <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" role="group" aria-label="Chart date range">
               <button class="range-btn is-active" onclick="setChartRange('all',this)">All</button>
               <button class="range-btn" onclick="setChartRange(90,this)">90d</button>

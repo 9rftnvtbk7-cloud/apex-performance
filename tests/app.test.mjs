@@ -634,3 +634,24 @@ test('Activity detail: stats, journal saved on the activity, Strava detail backf
   run(`closeActivityDetail()`);
   assert.equal(el('activityDialog').open, false);
 });
+
+// ── Fitness per sport ──
+test('loadSeries: CTL/ATL maths and per-sport series aligned on the same dates', () => {
+  const { run } = makeEnv();
+  run(`allActivities = [
+         { sport: 'cycling', startDate: new Date(2026, 8, 1, 7), tss: 100 },
+         { sport: 'running', startDate: new Date(2026, 8, 1, 18), tss: 50 },
+         { sport: 'swimming', startDate: new Date(2026, 8, 3, 7), tss: 42 }];`);
+  const s = run(`loadSeries(allActivities, new Date(2026, 8, 1), new Date(2026, 8, 3))`);
+  assert.deepEqual([...s.labels], ['2026-09-01', '2026-09-02', '2026-09-03']);
+  assert.deepEqual([...s.tssVals], [150, null, 42]);
+  // Day 1: CTL = 150/42 = 3.57, ATL = 150/7 = 21.43
+  assert.equal(s.ctlVals[0], 3.6);
+  assert.equal(s.atlVals[0], 21.4);
+  assert.equal(s.tsbVals[0], -17.9);
+  run(`pmcResult = loadSeries(allActivities, pmcStartDate());`);
+  const bike = run(`pmcSeriesFor('bike')`), run_ = run(`pmcSeriesFor('run')`), all = run(`pmcSeriesFor('all')`);
+  assert.equal(bike.labels.length, all.labels.length);
+  assert.equal(bike.labels[0], '2026-09-01');
+  assert.ok(Math.abs(bike.lastCtl + run_.lastCtl + run(`pmcSeriesFor('swim').lastCtl`) - all.lastCtl) < 1e-9); // EWMA is linear
+});

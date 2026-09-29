@@ -13,6 +13,7 @@ let plannerInited = false;
 let currentRange = 'all';
 let sessionDataLoaded = false;
 let forecastTssEdited = false;
+let pmcSport = 'all';
 
 // ══════════════════════════════════════════════
 // Safety & Date Helpers
@@ -115,22 +116,10 @@ function recomputeAllTss() {
 // ══════════════════════════════════════════════
 function computePMC() {
   if (!allActivities.length) return;
-  const sorted = [...allActivities].sort((a, b) => a.startDate - b.startDate);
-  const f0 = new Date(sorted[0].startDate); f0.setHours(0, 0, 0, 0);
-  const td = new Date(); td.setHours(0, 0, 0, 0);
-  const nDays = Math.round((td - f0) / 86400000) + 1;
-  const dTss = new Array(nDays).fill(0);
-  for (const a of sorted) { const d = new Date(a.startDate); d.setHours(0, 0, 0, 0); const i = Math.round((d - f0) / 86400000); if (i >= 0 && i < nDays) dTss[i] += (a.tss || 0); }
-  let ctl = 0, atl = 0;
-  const labels = [], ctlV = [], atlV = [], tsbV = [];
-  for (let i = 0; i < nDays; i++) {
-    ctl += (dTss[i] - ctl) / 42; atl += (dTss[i] - atl) / 7;
-    labels.push(localDateKey(addDays(f0, i)));
-    ctlV.push(+ctl.toFixed(1)); atlV.push(+atl.toFixed(1)); tsbV.push(+(ctl - atl).toFixed(1));
-  }
-  const tssMap = {};
-  for (const a of sorted) { const k = localDateKey(a.startDate); tssMap[k] = (tssMap[k] || 0) + (a.tss || 0); }
-  const tssV = labels.map(l => tssMap[l] !== undefined ? tssMap[l] : null);
+  const series = loadSeries(allActivities, pmcStartDate());
+  const { labels, ctlVals: ctlV, atlVals: atlV, tsbVals: tsbV, tssVals: tssV } = series;
+  const nDays = labels.length;
+  const ctl = series.lastCtl, atl = series.lastAtl;
   pmcResult = { labels, ctlVals: ctlV, atlVals: atlV, tsbVals: tsbV, tssVals: tssV, lastCtl: ctl, lastAtl: atl };
   document.getElementById('valCtl').textContent = ctl.toFixed(1);
   document.getElementById('valAtl').textContent = atl.toFixed(1);
@@ -239,11 +228,69 @@ function rampInfo(ramp) {
   return { label: 'detraining / taper', color: 'var(--color-amber)' };
 }
 
-function computeSmallForecast() {
+// First day of the fitness history (all sports), so per-sport series share the same dates
+function pmcStartDate() {
+  let min = null;
+  for (const a of allActivities) if (!min || a.startDate < min) min = a.startDate;
+  const d = new Date(min || new Date()); d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+// CTL (42-day) / ATL (7-day) / TSB series from `f0` to today for a set of activities
+function loadSeries(acts, f0, today = new Date()) {
+  const td = new Date(today); td.setHours(0, 0, 0, 0);
+  const nDays = Math.max(1, Math.round((td - f0) / 86400000) + 1);
+  const dTss = new Array(nDays).fill(0);
+  const tssMap = {};
+  for (const a of acts) {
+    const d = new Date(a.startDate); d.setHours(0, 0, 0, 0);
+    const i = Math.round((d - f0) / 86400000);
+    if (i >= 0 && i < nDays) dTss[i] += (a.tss || 0);
+    const k = localDateKey(a.startDate); tssMap[k] = (tssMap[k] || 0) + (a.tss || 0);
+  }
+  let ctl = 0, atl = 0;
+  const labels = [], ctlVals = [], atlVals = [], tsbVals = [];
+  for (let i = 0; i < nDays; i++) {
+    ctl += (dTss[i] - ctl) / 42; atl += (dTss[i] - atl) / 7;
+    labels.push(localDateKey(addDays(f0, i)));
+    ctlVals.push(+ctl.toFixed(1)); atlVals.push(+atl.toFixed(1)); tsbVals.push(+(ctl - atl).toFixed(1));
+  }
+  const tssVals = labels.map(l => tssMap[l] !== undefined ? tssMap[l] : null);
+  return { labels, ctlVals, atlVals, tsbVals, tssVals, lastCtl: ctl, lastAtl: atl };
+}
+
+// ── Fitness per sport ──
+const PMC_SPORTS = { bike: { label: 'Bike', emoji: '🚴', test: s => isCyc(s) }, run: { label: 'Run', emoji: '🏃', test: s => isRun(s) }, swim: { label: 'Swim', emoji: '🏊', test: s => s === 'swimming' } };
+
+function pmcSeriesFor(key) {
+  if (key === 'all' || !PMC_SPORTS[key]) return pmcResult;
+  return loadSeries(allActivities.filter(a => PMC_SPORTS[key].test(a.sport)), pmcStartDate());
+}
+
+function setPmcSport(key) {
+  pmcSport = key;
+  if (pmcChart) buildPMCChart();
+}
+
+// Chips under the stat cards: CTL and 7-day ramp per sport
+function renderSportFitness() {
+  const el = document.getElementById('sportFitness');
+  if (!el) return;
+  const chips = Object.entries(PMC_SPORTS).map(([key, sp]) => {
+    if (!allActivities.some(a => sp.test(a.sport))) return '';
+    const s = pmcSeriesFor(key), n = s.ctlVals.length;
+    const ramp = n > 7 ? s.ctlVals[n - 1] - s.ctlVals[n - 8] : 0;
+    return `<button class="btn-reset sport-fitness-chip${pmcSport === key ? ' is-active' : ''}" aria-pressed="${pmcSport === key}" onclick="setPmcSport(pmcSport === '${key}' ? 'all' : '${key}'); renderSportFitness(); document.getElementById('pmcSportSelect').value = pmcSport;">
+      ${sp.emoji} ${sp.label} <strong>${s.lastCtl.toFixed(0)}</strong> <small style="color:${rampInfo(ramp).color}">${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)}/wk</small></button>`;
+  }).join('');
+  el.innerHTML = chips ? `<span class="sport-fitness-label">Fitness by sport</span>${chips}` : '';
+}
+
+function computeSmallForecast(src = pmcResult) {
   const days = +document.getElementById('sliderForecastDays').value || 0;
   const avg = +document.getElementById('inputForecastTss').value || 0;
-  if (!days || pmcResult.lastCtl == null) return { labels: [], ctl: [], atl: [], tsb: [] };
-  let c = pmcResult.lastCtl, a = pmcResult.lastAtl;
+  if (!days || src.lastCtl == null) return { labels: [], ctl: [], atl: [], tsb: [] };
+  let c = src.lastCtl, a = src.lastAtl;
   const now = new Date(); now.setHours(0, 0, 0, 0);
   const fl = [], fc = [], fa = [], ft = [];
   fl.push(localDateKey(now)); fc.push(+c.toFixed(1)); fa.push(+a.toFixed(1)); ft.push(+(c - a).toFixed(1));
@@ -256,19 +303,20 @@ function computeSmallForecast() {
 // ══════════════════════════════════════════════
 function buildPMCChart() {
   const ctx = document.getElementById('chartCanvas').getContext('2d');
-  const fc = computeSmallForecast();
+  const src = pmcSeriesFor(pmcSport);
+  const fc = computeSmallForecast(src);
   if (pmcChart) pmcChart.destroy();
 
-  const mL = pmcResult.labels || [], fL = fc.labels || [];
+  const mL = src.labels || [], fL = fc.labels || [];
   const fullLabels = [...mL]; for (const l of fL) if (!fullLabels.includes(l)) fullLabels.push(l);
   const pad = a => { const o = [...a]; while (o.length < fullLabels.length) o.push(null); return o; };
   const padF = a => { const si = fullLabels.indexOf(fL[0]); const o = new Array(fullLabels.length).fill(null); for (let i = 0; i < a.length; i++) if (si + i < o.length) o[si + i] = a[i]; return o; };
 
   let labels = fullLabels;
-  let ctlData = pad(pmcResult.ctlVals || []);
-  let atlData = pad(pmcResult.atlVals || []);
-  let tsbData = pad(pmcResult.tsbVals || []);
-  let tssData = pad(pmcResult.tssVals || []);
+  let ctlData = pad(src.ctlVals || []);
+  let atlData = pad(src.atlVals || []);
+  let tsbData = pad(src.tsbVals || []);
+  let tssData = pad(src.tssVals || []);
   let fcCtlData = padF(fc.ctl || []);
   let fcAtlData = padF(fc.atl || []);
   let fcTsbData = padF(fc.tsb || []);
@@ -310,6 +358,7 @@ function buildPMCChart() {
 
   pmcChart = new Chart(ctx, {
     type: 'line',
+    plugins: [pmcOverlayPlugin(labels)],
     data: { labels, datasets: [
       { label: 'CTL (Fitness)', data: ctlData, borderColor: '#3b82f6', borderWidth: 2.5, pointRadius: 0, pointHitRadius: 6, tension: 0.3, fill: false, order: 2, spanGaps: true },
       { label: 'ATL (Fatigue)', data: atlData, borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, pointHitRadius: 6, tension: 0.3, fill: false, order: 3, spanGaps: true },
@@ -329,6 +378,47 @@ function buildPMCChart() {
       }
     }
   });
+}
+
+// PMC overlays: shaded form (TSB) zones behind the lines, and dashed race-day markers
+// (No band above +25: it would shade the CTL/ATL lines, which share the axis.)
+const TSB_BANDS = [
+  { from: 5, to: 25, color: 'rgba(16,185,129,0.07)' },          // fresh
+  { from: -30, to: -10, color: 'rgba(59,130,246,0.07)' },       // optimal training
+  { from: -Infinity, to: -30, color: 'rgba(244,63,94,0.08)' },  // high risk
+];
+function pmcOverlayPlugin(labels) {
+  const races = (raceDates || []).filter(r => r.date).map(r => ({ idx: labels.indexOf(r.date), name: r.name || 'Race' })).filter(r => r.idx >= 0);
+  return {
+    id: 'pmcOverlay',
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea: a, scales: { y } } = chart;
+      if (!a || !y) return;
+      ctx.save();
+      for (const b of TSB_BANDS) {
+        const top = y.getPixelForValue(Math.min(b.to, y.max)), bottom = y.getPixelForValue(Math.max(b.from, y.min));
+        if (bottom <= a.top || top >= a.bottom || bottom <= top) continue;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(a.left, Math.max(top, a.top), a.right - a.left, Math.min(bottom, a.bottom) - Math.max(top, a.top));
+      }
+      ctx.restore();
+    },
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea: a, scales: { x } } = chart;
+      if (!a || !x) return;
+      for (const r of races) {
+        const px = x.getPixelForValue(r.idx);
+        if (px < a.left || px > a.right) continue;
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = '#f59e0b'; ctx.font = '600 11px DM Sans, sans-serif';
+        ctx.textAlign = px > a.right - 80 ? 'right' : 'left';
+        ctx.fillText('🏁 ' + r.name, px + (ctx.textAlign === 'right' ? -4 : 4), a.top + 12);
+        ctx.restore();
+      }
+    },
+  };
 }
 
 function updateForecast() { document.getElementById('displayForecastDays').textContent = `${document.getElementById('sliderForecastDays').value} days`; if (pmcChart) buildPMCChart(); }
@@ -990,7 +1080,7 @@ function refreshDashboard() {
   const has = allActivities.length > 0;
   setDashboardVisibility(has);
   renderTrainingTable();
-  if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); }
+  if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); renderSportFitness(); }
   if (typeof renderInsights === 'function') renderInsights();
   // Plan vs actual depends on activities
   if (trainingPlan) renderTrainingPlan();

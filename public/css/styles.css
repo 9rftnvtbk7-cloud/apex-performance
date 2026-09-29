@@ -480,6 +480,14 @@ select[multiple].compare-select option:checked {
   .plan-steps th, .plan-steps td { padding: 5px 5px; }
 }
 
+/* ── Fitness by sport ── */
+.sport-fitness { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -8px 0 24px; }
+.sport-fitness:empty { display: none; }
+.sport-fitness-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; margin-right: 4px; }
+.sport-fitness-chip { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 6px 12px; font-size: 13px; color: var(--text-dim); }
+.sport-fitness-chip strong { font-family: 'JetBrains Mono'; color: var(--color-blue); margin: 0 2px; }
+.sport-fitness-chip.is-active { border-color: var(--color-blue); background: rgba(59,130,246,0.1); color: var(--text-main); }
+
 /* ── Training insights ── */
 .insight-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .insight-stat { display: flex; flex-direction: column; }
