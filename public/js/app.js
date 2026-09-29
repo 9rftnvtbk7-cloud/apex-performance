@@ -1082,6 +1082,7 @@ function refreshDashboard() {
   renderTrainingTable();
   if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); renderSportFitness(); }
   if (typeof renderInsights === 'function') renderInsights();
+  if (typeof renderReadiness === 'function' && activitiesLoaded) renderReadiness();
   // Plan vs actual depends on activities
   if (trainingPlan) renderTrainingPlan();
   // Plan, ZWO files, race dates and Strava tokens only need loading once per session

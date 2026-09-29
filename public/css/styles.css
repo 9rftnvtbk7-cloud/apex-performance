@@ -480,6 +480,23 @@ select[multiple].compare-select option:checked {
   .plan-steps th, .plan-steps td { padding: 5px 5px; }
 }
 
+/* ── Readiness & wellness ── */
+.readiness-head { display: flex; align-items: center; gap: 10px; }
+.readiness-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.readiness-label { font-size: 18px; font-weight: 700; }
+.readiness-reasons { margin: 8px 0 4px 20px; font-size: 13px; color: var(--text-dim); }
+.readiness-reasons li.is-rest::marker { color: var(--color-red); }
+.readiness-reasons li.is-caution::marker { color: var(--color-amber); }
+.readiness-reasons li.is-ready::marker { color: var(--color-green); }
+.readiness-reasons li.is-info::marker { color: var(--text-muted); }
+.wellness-form-wrap, .wellness-history { margin-top: 12px; }
+.wellness-form-wrap > summary, .wellness-history > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--color-blue); }
+.wellness-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+.wellness-field { display: flex; flex-direction: column; margin-top: 8px; }
+.wellness-field .settings-label { margin-bottom: 4px; }
+.wellness-field small { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.wellness-grid .compare-select, .wellness-grid .settings-input { width: 100%; }
+
 /* ── Fitness by sport ── */
 .sport-fitness { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: -8px 0 24px; }
 .sport-fitness:empty { display: none; }

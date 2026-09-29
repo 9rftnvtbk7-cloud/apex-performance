@@ -27,9 +27,14 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
-    // Training plan data
+    // Training plan data (plan/current, plan/current_part_N, completions, raceDates, zwo_files)
     match /users/{userId}/plan/{docId} {
       allow read, write: if isOwner(userId);
+    }
+
+    // Daily wellness log, one document per date (YYYY-MM-DD)
+    match /users/{userId}/wellness/{dateId} {
+      allow read, write: if isOwner(userId) && dateId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
     }
   }
 }

@@ -27,7 +27,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -654,4 +654,31 @@ test('loadSeries: CTL/ATL maths and per-sport series aligned on the same dates',
   assert.equal(bike.labels.length, all.labels.length);
   assert.equal(bike.labels[0], '2026-09-01');
   assert.ok(Math.abs(bike.lastCtl + run_.lastCtl + run(`pmcSeriesFor('swim').lastCtl`) - all.lastCtl) < 1e-9); // EWMA is linear
+});
+
+// ── Wellness & readiness ──
+test('Wellness: invalid or out-of-range values are dropped', () => {
+  const { run } = makeEnv();
+  const e = run(`cleanWellness({ restingHr: '48', hrv: 'abc', sleepHours: '7.5', sleepQuality: 9, soreness: '2', weight: '', notes: '  tired legs ' })`);
+  assert.deepEqual({ ...e }, { restingHr: 48, sleepHours: 7.5, soreness: 2, notes: 'tired legs' });
+});
+
+test('Readiness: baseline comparisons, sleep, soreness and form drive a transparent verdict', () => {
+  const { run, ctx } = makeEnv();
+  // 7 days of baseline: RHR 48, HRV 70
+  ctx.__entries = Object.fromEntries(Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(2026, 8, 22 + i); const k = `2026-09-${String(22 + i).padStart(2, '0')}`;
+    return [k, { restingHr: 48, hrv: 70, sleepHours: 7.5 }];
+  }));
+  const r = (entry, tsb) => { ctx.__e = entry; ctx.__tsb = tsb; return run(`computeReadiness('2026-09-29', __tsb, { ...__entries, '2026-09-29': __e })`); };
+  assert.equal(r({ restingHr: 49, hrv: 72, sleepHours: 8 }, -5).level, 'ready');
+  const caution = r({ restingHr: 53, hrv: 70, sleepHours: 8 }, -5);   // +5 bpm
+  assert.equal(caution.level, 'caution');
+  assert.match(caution.reasons[0].text, /Resting HR 53 bpm, \+5 vs 7-day average/);
+  assert.equal(r({ restingHr: 49, hrv: 52, sleepHours: 8 }, -5).level, 'rest');   // HRV −26%
+  assert.equal(r({ sleepHours: 4.5 }, 0).level, 'rest');
+  assert.equal(r({}, -35).level, 'rest');                                      // form alone
+  assert.equal(r({ sleepHours: 6, sleepQuality: 2, stress: 4 }, -5).level, 'rest'); // three cautions
+  // No baseline yet (fewer than 3 days) → RHR isn't judged
+  assert.equal(run(`computeReadiness('2026-09-29', 0, { '2026-09-29': { restingHr: 60 } }).level`), 'ready');
 });

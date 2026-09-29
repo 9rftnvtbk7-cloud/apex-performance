@@ -82,6 +82,7 @@ async function loadUserData() {
     }
 
     activitiesLoaded = true;
+    loadWellness(); // readiness card (not awaited: the dashboard doesn't depend on it)
     log(`[DB] Loaded ${allActivities.length} activities`, 'ok');
     showToast(`Loaded ${allActivities.length} activities`, '✅');
     refreshDashboard();
@@ -192,6 +193,33 @@ async function updateActivitiesTss(activities) {
   } catch (err) {
     console.error('TSS update error:', err);
     showToast('Error saving recalculated TSS', '❌');
+  }
+}
+
+// ── Wellness (users/{uid}/wellness/{YYYY-MM-DD}) ──
+async function loadWellness(days = 60) {
+  if (!currentUser) return;
+  try {
+    const since = localDateKey(addDays(new Date(), -days));
+    const snap = await db.collection('users').doc(currentUser.uid).collection('wellness').where('date', '>=', since).get();
+    wellnessEntries = {};
+    snap.forEach(doc => { const d = doc.data(); if (d.date) wellnessEntries[d.date] = d; });
+  } catch (err) {
+    console.error('Wellness load error:', err);
+  }
+  if (typeof renderReadiness === 'function') renderReadiness();
+}
+
+async function saveWellnessEntry(dateKey, entry) {
+  if (!currentUser) return false;
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('wellness').doc(dateKey).set({
+      ...entry, date: dateKey, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    return true;
+  } catch (err) {
+    console.error('Wellness save error:', err);
+    return false;
   }
 }
 

@@ -126,15 +126,11 @@
         </div>
 
         <div id="overviewContent">
-        <div class="stat-cards">
-          <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub" id="subCtl">42-day exponential avg</div></div>
-          <div class="stat-card stat-card--atl"><div class="stat-card-label">ATL — Fatigue</div><div class="stat-card-value" id="valAtl">0</div><div class="stat-card-sub">7-day exponential avg</div></div>
-          <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
-          <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
-          <div class="stat-card stat-card--lastweek"><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
+        <!-- Today: readiness from form + wellness -->
+        <div class="card" id="readinessCard" style="display:none">
+          <div class="card-top-bar" style="margin-bottom:10px"><div class="card-title">Today</div></div>
+          <div id="readinessBody"></div>
         </div>
-
-        <div class="sport-fitness" id="sportFitness"></div>
 
         <!-- Next 2 days from the training plan -->
         <div class="card upcoming" id="upcomingCard" style="display:none">
@@ -145,6 +141,47 @@
           <div class="upcoming-grid" id="upcomingDays"></div>
         </div>
 
+        <div class="stat-cards">
+          <div class="stat-card stat-card--ctl"><div class="stat-card-label">CTL — Fitness</div><div class="stat-card-value" id="valCtl">0</div><div class="stat-card-sub" id="subCtl">42-day exponential avg</div></div>
+          <div class="stat-card stat-card--atl"><div class="stat-card-label">ATL — Fatigue</div><div class="stat-card-value" id="valAtl">0</div><div class="stat-card-sub">7-day exponential avg</div></div>
+          <div class="stat-card stat-card--tsb"><div class="stat-card-label">TSB — Form</div><div class="stat-card-value" id="valTsb">0</div><div class="stat-card-sub" id="subTsb">CTL minus ATL</div></div>
+          <div class="stat-card stat-card--tss"><div class="stat-card-label">This Week TSS</div><div class="stat-card-value" id="valWeekTss">0</div><div class="stat-card-sub" id="subWeekTss">Current week</div></div>
+          <div class="stat-card stat-card--lastweek"><div class="stat-card-label">Last Week TSS</div><div class="stat-card-value" id="valLastWeekTss">0</div><div class="stat-card-sub" id="subLastWeekTss">Previous week</div></div>
+        </div>
+
+        <div class="sport-fitness" id="sportFitness"></div>
+
+        <div class="card">
+          <div class="card-top-bar">
+            <div class="card-title">Performance Management Chart</div>
+            <select class="compare-select" id="pmcSportSelect" aria-label="Sport shown on the chart" onchange="setPmcSport(this.value); renderSportFitness();" style="padding:6px 10px;font-size:13px">
+              <option value="all">All sports</option><option value="bike">Bike</option><option value="run">Run</option><option value="swim">Swim</option>
+            </select>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" role="group" aria-label="Chart date range">
+              <button class="range-btn is-active" onclick="setChartRange('all',this)">All</button>
+              <button class="range-btn" onclick="setChartRange(90,this)">90d</button>
+              <button class="range-btn" onclick="setChartRange(60,this)">60d</button>
+              <button class="range-btn" onclick="setChartRange(30,this)">30d</button>
+              <input type="date" class="compare-date-input" id="chartRangeFrom" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px;margin-left:8px" title="Custom from date" aria-label="Custom range start">
+              <input type="date" class="compare-date-input" id="chartRangeTo" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px" title="Custom to date" aria-label="Custom range end">
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chartCanvas"></canvas></div>
+          <div class="chart-legend">
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(0, this)"><span class="chart-legend-line" style="background:var(--color-blue)" aria-hidden="true"></span>CTL (Fitness)</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(1, this)"><span class="chart-legend-line" style="background:var(--color-red)" aria-hidden="true"></span>ATL (Fatigue)</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(2, this)"><span class="chart-legend-line" style="background:var(--color-green)" aria-hidden="true"></span>TSB (Form)</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(3, this)"><span class="chart-legend-dot" style="background:var(--color-amber)" aria-hidden="true"></span>TSS Points</button>
+            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(4, this)"><span class="chart-legend-line" style="background:var(--color-blue);opacity:.4" aria-hidden="true"></span>Forecast</button>
+          </div>
+          <div class="forecast-bar">
+            <span class="forecast-bar-label">Forecast</span>
+            <input type="range" class="forecast-slider" id="sliderForecastDays" aria-label="Forecast days" min="0" max="60" value="14" oninput="updateForecast()">
+            <span class="forecast-days-display" id="displayForecastDays">14 days</span>
+            <span class="forecast-bar-label" style="margin-left:12px">Avg daily TSS</span>
+            <input type="number" class="forecast-tss-input" id="inputForecastTss" aria-label="Forecast average daily TSS" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
+          </div>
+        </div>
         <!-- This Week Mini Summary -->
         <div class="week-summary" id="weekSummary" style="display:none">
           <div class="week-summary-title">This Week</div>
@@ -189,37 +226,6 @@
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-top-bar">
-            <div class="card-title">Performance Management Chart</div>
-            <select class="compare-select" id="pmcSportSelect" aria-label="Sport shown on the chart" onchange="setPmcSport(this.value); renderSportFitness();" style="padding:6px 10px;font-size:13px">
-              <option value="all">All sports</option><option value="bike">Bike</option><option value="run">Run</option><option value="swim">Swim</option>
-            </select>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center" role="group" aria-label="Chart date range">
-              <button class="range-btn is-active" onclick="setChartRange('all',this)">All</button>
-              <button class="range-btn" onclick="setChartRange(90,this)">90d</button>
-              <button class="range-btn" onclick="setChartRange(60,this)">60d</button>
-              <button class="range-btn" onclick="setChartRange(30,this)">30d</button>
-              <input type="date" class="compare-date-input" id="chartRangeFrom" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px;margin-left:8px" title="Custom from date" aria-label="Custom range start">
-              <input type="date" class="compare-date-input" id="chartRangeTo" onchange="setCustomChartRange()" style="font-size:11px;padding:4px 8px" title="Custom to date" aria-label="Custom range end">
-            </div>
-          </div>
-          <div class="chart-canvas-wrap"><canvas id="chartCanvas"></canvas></div>
-          <div class="chart-legend">
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(0, this)"><span class="chart-legend-line" style="background:var(--color-blue)" aria-hidden="true"></span>CTL (Fitness)</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(1, this)"><span class="chart-legend-line" style="background:var(--color-red)" aria-hidden="true"></span>ATL (Fatigue)</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(2, this)"><span class="chart-legend-line" style="background:var(--color-green)" aria-hidden="true"></span>TSB (Form)</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(3, this)"><span class="chart-legend-dot" style="background:var(--color-amber)" aria-hidden="true"></span>TSS Points</button>
-            <button class="btn-reset chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(4, this)"><span class="chart-legend-line" style="background:var(--color-blue);opacity:.4" aria-hidden="true"></span>Forecast</button>
-          </div>
-          <div class="forecast-bar">
-            <span class="forecast-bar-label">Forecast</span>
-            <input type="range" class="forecast-slider" id="sliderForecastDays" aria-label="Forecast days" min="0" max="60" value="14" oninput="updateForecast()">
-            <span class="forecast-days-display" id="displayForecastDays">14 days</span>
-            <span class="forecast-bar-label" style="margin-left:12px">Avg daily TSS</span>
-            <input type="number" class="forecast-tss-input" id="inputForecastTss" aria-label="Forecast average daily TSS" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
-          </div>
-        </div>
         <!-- Insights from detailed Strava data -->
         <div class="card" id="insightsCard" style="display:none">
           <div class="card-top-bar" style="margin-bottom:12px"><div class="card-title">Training insights</div></div>
@@ -388,6 +394,7 @@
 <script src="js/thresholds.js?v=202609290909"></script>
 <script src="js/metrics.js?v=202609290909"></script>
 <script src="js/activity-detail.js?v=1"></script>
+<script src="js/wellness.js?v=1"></script>
 <script src="js/insights.js?v=202609290909"></script>
 <script src="js/plan-import.js?v=202609290909"></script>
 <script src="js/app.js?v=202609290909"></script>
