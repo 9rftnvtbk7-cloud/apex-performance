@@ -578,6 +578,8 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .detail-stat-value.tss { color: var(--color-tss); }
 .detail-map { height: 200px; border-radius: var(--r-lg); overflow: hidden; margin-bottom: 12px; background: var(--bg-card-sub); }
 .detail-map[hidden] { display: none; }
+.detail-map--dark .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.85) saturate(.4); }
+.detail-map--dark .leaflet-container, .detail-map--dark.leaflet-container { background: #1a1b1e; }
 .detail-panel { background: var(--bg-card-sub); border-radius: var(--r-lg); padding: 14px; margin-bottom: 12px; }
 .detail-panel[hidden] { display: none; }
 .detail-panel .segmented { display: flex; width: 100%; margin-bottom: 10px; }

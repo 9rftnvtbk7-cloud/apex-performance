@@ -635,7 +635,7 @@ test('Activity detail: stats, journal saved on the activity, Strava detail backf
   assert.ok(run(`__upd.some(([id, f]) => f.name === 'Morning Run <b>')`));
   // Journal
   el('detailNotes').value = 'Windy, felt strong';
-  el('detailRpe').value = '6';
+  await run(`setActivityRpe(6)`);
   await run(`setActivityFeel('4')`);
   const last = run(`__upd[__upd.length - 1][1]`);
   assert.deepEqual({ ...last }, { notes: 'Windy, felt strong', rpe: 6, feel: '4' });

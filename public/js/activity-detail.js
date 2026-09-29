@@ -9,7 +9,9 @@ let detailActivity = null;
 let detailCharts = [];
 let detailMap = null;
 let leafletLoading = null;
-const FEELS = [['1', '😫', 'Terrible'], ['2', '😕', 'Poor'], ['3', '😐', 'Normal'], ['4', '🙂', 'Good'], ['5', '🤩', 'Great']];
+const FEELS = [['1', 'Awful'], ['2', 'Poor'], ['3', 'OK'], ['4', 'Good'], ['5', 'Great']];
+let detailStreams = null;
+let detailChartKey = 'heartrate';
 
 // Google encoded polyline → [[lat, lng], ...]
 function decodePolyline(str) {
@@ -59,23 +61,22 @@ function fmtSpeedFor(a, mps) {
   return `${(mps * 3.6).toFixed(1)} km/h`;
 }
 
+// Hero trio (distance, moving time, elevation) + 3×2 stat grid
 function detailStatsHtml(a) {
   const st = a.streamStats || {};
-  const items = [
-    ['Duration', fmtDuration(a.duration)],
-    ['Distance', fmtDist(a.distance, a.sport)],
-    ['Elevation', a.elevationGain ? `${a.elevationGain} m` : null],
-    ['TSS', a.tss || null],
-    ['IF', a.intensityFactor ? a.intensityFactor.toFixed(2) : null],
-    [isRun(a.sport) || a.sport === 'swimming' ? 'Avg pace' : 'Avg speed', a.avgSpeed ? fmtSpeedFor(a, a.avgSpeed) : null],
-    ['Avg HR', a.avgHr ? `${a.avgHr} bpm` : null],
-    ['Max HR', a.maxHr ? `${a.maxHr} bpm` : null],
-    ['Avg power', a.avgPower ? `${a.avgPower} W` : null],
-    ['NP', a.np ? `${a.np} W` : null],
-    ['Decoupling', st.decoupling != null ? `${st.decoupling}%` : null],
-    ['Energy', a.calories ? `${a.calories} kJ` : null],
-  ].filter(([, v]) => v != null && v !== '—');
-  return `<div class="detail-stats">${items.map(([k, v]) => `<div class="detail-stat"><div class="detail-stat-label">${escapeHtml(k)}</div><div class="detail-stat-value">${escapeHtml(v)}</div></div>`).join('')}</div>`;
+  const km = a.distance ? (a.sport === 'swimming' ? [String(Math.round(a.distance)), 'm'] : [(a.distance / 1000).toFixed(1), 'km']) : null;
+  const h = Math.floor((a.duration || 0) / 3600), m = Math.round(((a.duration || 0) % 3600) / 60);
+  const time = a.duration ? (h ? [`${h}:${String(m).padStart(2, '0')}`, 'h'] : [String(m), 'min']) : null;
+  const hero = [['Distance', km], ['Moving time', time], ['Elevation', a.elevationGain ? [String(a.elevationGain), 'm'] : null]]
+    .filter(([, v]) => v).map(([k, [v, u]]) => `<div><div class="detail-hero__value">${escapeHtml(v)}<small>${u}</small></div><div class="detail-hero__label">${k}</div></div>`).join('');
+  const speedLabel = isRun(a.sport) || a.sport === 'swimming' ? 'Avg pace' : 'Avg speed';
+  const candidates = isCyc(a.sport)
+    ? [[speedLabel, a.avgSpeed ? fmtSpeedFor(a, a.avgSpeed) : null], ['Avg power', a.avgPower ? `${a.avgPower} W` : null], ['NP', a.np ? `${a.np} W` : null], ['Avg HR', a.avgHr ? `${a.avgHr} bpm` : null]]
+    : [[speedLabel, a.avgSpeed ? fmtSpeedFor(a, a.avgSpeed) : null], ['Avg HR', a.avgHr ? `${a.avgHr} bpm` : null], ['Max HR', a.maxHr ? `${a.maxHr} bpm` : null]];
+  const items = [...candidates, ['TSS', a.tss || null], ['IF', a.intensityFactor ? a.intensityFactor.toFixed(2) : null], ['Decoupling', st.decoupling != null ? `${Math.round(st.decoupling)} %` : null], ['Energy', a.calories ? `${a.calories} kJ` : null], ['Max HR', isCyc(a.sport) && a.maxHr ? `${a.maxHr} bpm` : null]]
+    .filter(([, v]) => v != null && v !== '—').slice(0, 6);
+  return `${hero ? `<div class="detail-hero">${hero}</div>` : ''}
+    <div class="detail-stats">${items.map(([k, v]) => `<div class="detail-stat"><div class="detail-stat-label">${escapeHtml(k)}</div><div class="detail-stat-value${k === 'TSS' ? ' tss' : ''}">${escapeHtml(v)}</div></div>`).join('')}</div>`;
 }
 
 function detailZonesHtml(a) {
@@ -86,17 +87,15 @@ function detailZonesHtml(a) {
     + (hist.pw ? zoneBarHtml('Power zones', POWER_ZONES.names, zonesFromHist(hist.pw, +th.ftp, POWER_ZONES)) : '');
 }
 
+// "How did it feel?": RPE 1–10 and a labelled 5-step feel scale (same stored values as before)
 function detailJournalHtml(a) {
-  const rpeOpts = ['<option value="">—</option>', ...Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}"${+a.rpe === i + 1 ? ' selected' : ''}>${i + 1}</option>`)].join('');
-  const feels = FEELS.map(([v, e, label]) => `<button type="button" class="feel-btn${String(a.feel) === v ? ' is-active' : ''}" aria-pressed="${String(a.feel) === v}" data-feel="${v}" onclick="setActivityFeel(this.dataset.feel)" title="${label}" aria-label="${label}">${e}</button>`).join('');
-  return `<div class="detail-journal">
-    <div class="detail-journal-row">
-      <label class="settings-label" for="detailRpe" style="margin:0">RPE</label>
-      <select class="compare-select" id="detailRpe" onchange="saveActivityJournal()">${rpeOpts}</select>
-      <span class="settings-label" style="margin:0 0 0 8px">Feel</span><div class="feel-group" role="group" aria-label="How did it feel">${feels}</div>
-    </div>
-    <label class="settings-label" for="detailNotes">Notes</label>
-    <textarea id="detailNotes" class="settings-input detail-notes" rows="3" placeholder="How did it go? Conditions, sensations, nutrition…" onchange="saveActivityJournal()">${escapeHtml(a.notes || '')}</textarea>
+  const rpe = Array.from({ length: 10 }, (_, i) => `<button type="button" class="scale__opt" aria-pressed="${+a.rpe === i + 1}" data-rpe="${i + 1}" onclick="setActivityRpe(+this.dataset.rpe)">${i + 1}</button>`).join('');
+  const feels = FEELS.map(([v, label]) => `<button type="button" class="scale__opt feel-btn" aria-pressed="${String(a.feel) === v}" data-feel="${v}" onclick="setActivityFeel(this.dataset.feel)">${label}</button>`).join('');
+  return `<div class="detail-panel detail-feel">
+    <h3>How did it feel?</h3>
+    <div class="field-label">RPE</div><div class="scale" role="group" aria-label="Rate of perceived exertion, 1 to 10" id="detailRpe">${rpe}</div>
+    <div class="field-label">Feel</div><div class="scale" role="group" aria-label="How did it feel">${feels}</div>
+    <textarea id="detailNotes" class="input detail-notes" rows="3" aria-label="Notes" placeholder="How did it go? Conditions, sensations, nutrition…" onchange="saveActivityJournal()">${escapeHtml(a.notes || '')}</textarea>
     <div class="insight-muted" id="detailSaved" aria-live="polite"></div>
   </div>`;
 }
@@ -105,27 +104,33 @@ async function openActivityDetail(activityId) {
   const a = allActivities.find(x => x.id === activityId);
   if (!a) return;
   detailActivity = a;
+  detailStreams = null;
+  detailChartKey = 'heartrate';
   const dlg = document.getElementById('activityDialog');
   const sid = typeof stravaIdOf === 'function' ? stravaIdOf(a) : null;
   const title = a.name || `${fmtSportName(a.sport)} · ${a.startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+  const when = a.startDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + a.startDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   document.getElementById('activityDialogBody').innerHTML = `
-    <div class="detail-head">
-      <div style="min-width:0">
-        <div class="detail-title">${escapeHtml(title)}</div>
-        <div class="plan-subtitle"><span class="sport-tag sport-tag--${sportTagClass(a.sport)}">${sportEmoji(a.sport)} ${escapeHtml(fmtSportName(a.sport))}</span> ${escapeHtml(fmtDate(a.startDate))}</div>
-      </div>
-      <button class="btn-reset detail-close" onclick="closeActivityDetail()" aria-label="Close">✕</button>
+    <div class="detail-nav">
+      <button class="btn-reset detail-back detail-close" onclick="closeActivityDetail()" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>Activities</button>
+      ${sid ? `<a class="strava-link" href="https://www.strava.com/activities/${encodeURIComponent(sid)}" target="_blank" rel="noopener">View on Strava</a>` : ''}
     </div>
+    <h2 class="detail-title">${escapeHtml(title)}</h2>
+    <div class="detail-sub">${typeof sportDot === 'function' ? sportDot(a.sport) : ''}${escapeHtml(typeof sportLabel === 'function' ? sportLabel(a.sport) : fmtSportName(a.sport))} · ${escapeHtml(when)}</div>
     ${detailStatsHtml(a)}
-    ${detailJournalHtml(a)}
     <div id="detailMap" class="detail-map" hidden></div>
-    <div id="detailCharts"></div>
-    <div id="detailZones">${detailZonesHtml(a)}</div>
+    <div class="detail-panel" id="detailChartPanel" hidden>
+      <div class="segmented" role="group" aria-label="Chart" id="detailChartTabs"></div>
+      <div class="detail-chart"><canvas id="detailChartCanvas"></canvas></div>
+      <div id="detailZones">${detailZonesHtml(a)}</div>
+    </div>
+    ${detailJournalHtml(a)}
     <div id="detailLaps"></div>
-    <div class="insight-muted" id="detailStatus"></div>
-    ${sid ? `<a class="strava-link" href="https://www.strava.com/activities/${encodeURIComponent(sid)}" target="_blank" rel="noopener">View on Strava</a>` : ''}`;
+    <div class="insight-muted" id="detailStatus"></div>`;
   if (!dlg.open) dlg.showModal();
   destroyDetailVisuals();
+  // Zones can show before the streams arrive
+  if (a.streamStats && a.streamStats.hist) document.getElementById('detailChartPanel').hidden = !detailZonesHtml(a);
   if (a.polyline) drawDetailMap(decodePolyline(a.polyline));
   if (sid && typeof stravaTokens !== 'undefined' && stravaTokens) loadStravaDetail(a, sid);
   else if (!sid) document.getElementById('detailStatus').textContent = 'Charts and laps are available for activities imported from Strava.';
@@ -153,8 +158,11 @@ async function drawDetailMap(points) {
     el.hidden = false;
     if (detailMap) detailMap.remove();
     detailMap = L.map(el, { scrollWheelZoom: false, attributionControl: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(detailMap);
-    const line = L.polyline(points, { color: '#f43f5e', weight: 3 }).addTo(detailMap);
+    // OSM tiles (CARTO basemaps now need an API key); darkened with a CSS filter in the dark theme
+    el.classList.toggle('detail-map--dark', !isLightTheme());
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19,
+      attribution: '© OpenStreetMap contributors' }).addTo(detailMap);
+    const line = L.polyline(points, { color: C().atl, weight: 3 }).addTo(detailMap);
     detailMap.fitBounds(line.getBounds(), { padding: [16, 16] });
   } catch (err) {
     console.error('Map error:', err);
@@ -205,47 +213,81 @@ async function loadStravaDetail(a, sid) {
   }
 }
 
+// One chart, switched by a segmented control (Heart rate / Pace or Speed / Power / Elevation)
 function renderDetailCharts(a, streams) {
-  const time = streams.time && streams.time.data;
-  const box = document.getElementById('detailCharts');
-  if (!time || !box || typeof Chart === 'undefined') return;
-  const series = [
-    ['heartrate', 'Heart rate', 'bpm', '#f43f5e', v => v],
-    [isCyc(a.sport) ? 'watts' : null, 'Power', 'W', '#f59e0b', v => v],
-    ['velocity_smooth', isCyc(a.sport) ? 'Speed' : 'Pace', isCyc(a.sport) ? 'km/h' : 'min/km', '#3b82f6',
-      v => (isCyc(a.sport) ? +(v * 3.6).toFixed(1) : v > 0.5 ? +(1000 / v / 60).toFixed(2) : null)],
-    ['altitude', 'Elevation', 'm', '#10b981', v => Math.round(v)],
-  ].filter(([k]) => k && streams[k] && streams[k].data && streams[k].data.some(v => v));
-  box.innerHTML = series.map((_, i) => `<div class="detail-chart"><canvas id="detailChart${i}"></canvas></div>`).join('');
-  const idx = downsample(time.map((_, i) => i), 600);
-  const labels = idx.map(i => fmtDuration(time[i]) === '—' ? '0m' : fmtDuration(time[i]));
-  series.forEach(([key, label, unit, color, conv], i) => {
-    const data = idx.map(j => { const v = streams[key].data[j]; return v == null ? null : conv(v); });
-    detailCharts.push(new Chart(document.getElementById(`detailChart${i}`).getContext('2d'), {
-      type: 'line',
-      data: { labels, datasets: [{ label: `${label} (${unit})`, data, borderColor: color, backgroundColor: color + '22', fill: key === 'altitude', pointRadius: 0, borderWidth: 1.5, tension: 0.2, spanGaps: true }] },
-      options: {
-        responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { labels: { color: '#a3a8bc', boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${label}: ${key === 'velocity_smooth' && !isCyc(a.sport) ? fmtPaceFromSpeed(1000 / (c.raw * 60)) : `${c.raw} ${unit}`}` } } },
-        scales: { x: { ticks: { color: '#858aa3', maxTicksLimit: 6 }, grid: { color: 'rgba(42,45,62,0.3)' } },
-                  y: { reverse: key === 'velocity_smooth' && !isCyc(a.sport), ticks: { color: '#858aa3', maxTicksLimit: 5 }, grid: { color: 'rgba(42,45,62,0.3)' } } },
-      },
-    }));
-  });
+  detailStreams = streams;
+  const tabs = detailChartSeries(a, streams);
+  const panel = document.getElementById('detailChartPanel');
+  if (!tabs.length || !panel) return;
+  if (!tabs.some(t => t.key === detailChartKey)) detailChartKey = tabs[0].key;
+  document.getElementById('detailChartTabs').innerHTML = tabs.map(t => `<button class="segmented__opt${t.key === detailChartKey ? ' is-active' : ''}" aria-pressed="${t.key === detailChartKey}" data-key="${t.key}" onclick="showDetailChart(this.dataset.key)">${t.label}</button>`).join('');
+  panel.hidden = false;
+  drawDetailChart(a);
+}
+
+function detailChartSeries(a, streams) {
+  const has = k => streams && streams[k] && streams[k].data && streams[k].data.some(v => v);
+  if (!streams || !streams.time) return [];
+  const pace = !isCyc(a.sport);
+  return [
+    has('heartrate') && { key: 'heartrate', label: 'Heart rate', unit: 'bpm', colorVar: 'atl', conv: v => v },
+    has('velocity_smooth') && { key: 'velocity_smooth', label: pace ? 'Pace' : 'Speed', unit: pace ? 'min/km' : 'km/h', colorVar: 'ctl', reverse: pace,
+      conv: v => (pace ? (v > 0.5 ? +(1000 / v / 60).toFixed(2) : null) : +(v * 3.6).toFixed(1)) },
+    isCyc(a.sport) && has('watts') && { key: 'watts', label: 'Power', unit: 'W', colorVar: 'tss', conv: v => v },
+    has('altitude') && { key: 'altitude', label: 'Elevation', unit: 'm', colorVar: 'tsb', fill: true, conv: v => Math.round(v) },
+  ].filter(Boolean);
+}
+
+function showDetailChart(key) {
+  detailChartKey = key;
+  document.querySelectorAll('#detailChartTabs .segmented__opt').forEach(b => { const on = b.dataset.key === key; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  if (detailActivity) drawDetailChart(detailActivity);
+}
+
+function drawDetailChart(a) {
+  const streams = detailStreams, series = detailChartSeries(a, streams).find(t => t.key === detailChartKey);
+  const canvas = document.getElementById('detailChartCanvas');
+  if (!series || !canvas || typeof Chart === 'undefined') return;
+  detailCharts.forEach(c => c.destroy());
+  detailCharts = [];
+  const c = C(), color = c[series.colorVar];
+  const time = streams.time.data;
+  const idx = downsample(time.map((_, i) => i), 500);
+  const labels = idx.map(i => { const t = time[i], h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60); return `${h}:${String(m).padStart(2, '0')}`; });
+  const data = idx.map(j => { const v = streams[series.key].data[j]; return v == null ? null : series.conv(v); });
+  const fmt = v => series.key === 'velocity_smooth' && series.reverse ? fmtPaceFromSpeed(1000 / (v * 60)) : `${v} ${series.unit}`;
+  detailCharts.push(new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: series.label, data, borderColor: color, backgroundColor: withAlpha(color, 0.12), fill: !!series.fill, pointRadius: 0, borderWidth: 1.8, tension: 0.25, spanGaps: true }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { ...chartTooltip(), callbacks: { label: ctx => `${series.label}: ${fmt(ctx.raw)}` } } },
+      scales: { x: chartScaleX({ ticks: { color: c.muted, maxTicksLimit: 4, maxRotation: 0 } }), y: chartScaleY({ reverse: !!series.reverse, ticks: { color: c.muted, maxTicksLimit: 4 } }) },
+    },
+  }));
 }
 
 function renderDetailLaps(a, laps) {
   const box = document.getElementById('detailLaps');
   if (!box || laps.length < 2) return;
-  const rows = laps.map((l, i) => `<tr><td>${i + 1}</td><td>${escapeHtml(fmtDuration(l.moving_time || l.elapsed_time))}</td><td>${escapeHtml(fmtDist(Math.round(l.distance || 0), a.sport))}</td><td>${escapeHtml(fmtSpeedFor(a, l.average_speed))}</td><td>${l.average_heartrate ? Math.round(l.average_heartrate) : '—'}</td><td>${l.average_watts ? Math.round(l.average_watts) + ' W' : '—'}</td></tr>`).join('');
-  box.innerHTML = `<div class="zone-block-title" style="margin-top:16px">Laps</div><div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>#</th><th>Time</th><th>Dist</th><th>${isRun(a.sport) || a.sport === 'swimming' ? 'Pace' : 'Speed'}</th><th>HR</th><th>Power</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const power = isCyc(a.sport) && laps.some(l => l.average_watts);
+  const pace = isRun(a.sport) || a.sport === 'swimming';
+  const rows = laps.map((l, i) => `<tr><td>${i + 1}</td><td>${escapeHtml(fmtDist(Math.round(l.distance || 0), a.sport))}</td><td>${escapeHtml(fmtSpeedFor(a, l.average_speed).replace('/km', ''))}</td>${power ? `<td>${l.average_watts ? Math.round(l.average_watts) + ' W' : '—'}</td>` : ''}<td>${l.average_heartrate ? Math.round(l.average_heartrate) : '—'}</td></tr>`).join('');
+  box.innerHTML = `<div class="detail-laps"><table class="laps"><thead><tr><th>Lap</th><th>Dist</th><th>${pace ? 'Pace' : 'Speed'}</th>${power ? '<th>Power</th>' : ''}<th>HR</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 // ── Journal: notes, RPE, feel ──
 function setActivityFeel(v) {
   if (!detailActivity) return;
   detailActivity.feel = String(detailActivity.feel) === v ? null : v; // tap again to clear
-  document.querySelectorAll('.feel-btn').forEach(b => { const on = b.dataset.feel === String(detailActivity.feel); b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  document.querySelectorAll('.feel-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.feel === String(detailActivity.feel))));
+  saveActivityJournal();
+}
+
+function setActivityRpe(n) {
+  if (!detailActivity) return;
+  detailActivity.rpe = detailActivity.rpe === n ? null : n; // tap again to clear
+  document.querySelectorAll('#detailRpe .scale__opt').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.rpe === detailActivity.rpe)));
   saveActivityJournal();
 }
 
@@ -253,8 +295,7 @@ async function saveActivityJournal() {
   const a = detailActivity;
   if (!a) return;
   a.notes = (document.getElementById('detailNotes')?.value || '').slice(0, 5000);
-  a.rpe = +(document.getElementById('detailRpe')?.value || 0) || null;
-  const ok = typeof updateActivityFields === 'function' ? await updateActivityFields(a.id, { notes: a.notes, rpe: a.rpe, feel: a.feel || null }) : false;
+  const ok = typeof updateActivityFields === 'function' ? await updateActivityFields(a.id, { notes: a.notes, rpe: a.rpe || null, feel: a.feel || null }) : false;
   const s = document.getElementById('detailSaved');
   if (s) s.textContent = ok ? 'Saved' : 'Could not save — check your connection';
 }
