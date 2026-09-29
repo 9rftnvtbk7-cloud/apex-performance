@@ -30,6 +30,15 @@ public/                    # Firebase Hosting root — ONLY this folder is serve
   js/fit-parser.js         # Binary FIT protocol parser (ArrayBuffer/DataView)
   js/strava.js             # Strava OAuth + activity sync
   js/plan-import.js        # Training plan parsing/validation (normalizePlan) — see schema below
+  js/thresholds.js         # Dated threshold history (FTP/LTHR/paces) — thresholdsAt(date)
+  js/metrics.js            # Pure stream analytics: histograms, mean-max curves, decoupling, eFTP, zones
+  js/insights.js           # Overview "Training insights" + Compare "Best efforts"
+  js/activity-detail.js    # Activity dialog: map (Leaflet), stream charts, laps, notes/RPE/feel
+  js/workout-export.js     # Plan steps → .zwo / .fit workout (FIT validated with Garmin's SDK)
+  js/race-target.js        # Planner race-day CTL/TSB solver
+  js/calendar.js           # Calendar tab: compliance colours, move sessions (plan/overrides)
+  js/wellness.js           # Wellness log + readiness rules
+  sw.js, manifest.webmanifest, icons/   # Installable app (PWA); sw: own files network-first
 worker/src/index.js        # Cloudflare Worker: Strava token exchange/refresh, verifies Firebase ID tokens
 worker/test/index.test.js  # Worker tests — `cd worker && npm test`
 worker/wrangler.toml       # Worker config (Client ID, project ID, allowed origins; no secrets)
@@ -51,7 +60,10 @@ tests/app.test.mjs         # App logic tests (node --test tests/)
 - `activities/{id}` — Individual workout data (date, sport, duration, TSS, power, HR, etc.)
 - `settings/{docId}` — User settings (FTP, threshold pace, etc.)
 - `planner/{docId}` — 26-week planner grid data
-- `plan/{docId}` — Imported training plan JSON + ZWO files
+- `plan/{docId}` — `current` (+ `current_part_N` when > 800 KB), `completions`, `overrides` (moved sessions), `raceDates`, `zwo_files`
+- `settings/thresholds` — `{ history: [{ from, ftp, lthr, pace, swimPace }] }`; `settings/strava` — tokens
+- `wellness/{YYYY-MM-DD}` — daily resting HR, HRV, sleep, soreness, stress, weight, notes
+- Activities from Strava carry `stravaId`, `name`, `polyline`, `elevationGain`, `streamStats` (histograms + curves, not raw streams), and journal fields `notes`, `rpe`, `feel`
 
 ### Key Concepts
 - **TSS (Training Stress Score)**: Calculated per activity. Priority: NP-based > power-based > pace-based > HR-based > duration fallback
@@ -59,6 +71,9 @@ tests/app.test.mjs         # App logic tests (node --test tests/)
 - **ATL (Acute Training Load)**: 7-day exponential moving average of TSS = "fatigue"
 - **TSB (Training Stress Balance)**: CTL - ATL = "form"
 - **PMC (Performance Management Chart)**: Plots CTL, ATL, TSB, and daily TSS over time
+- **Thresholds are dated**: always score with `thresholdsAt(activity.startDate)`, never with the current inputs
+- **Stream stats** store HR/power histograms so zones can be recomputed for any threshold without refetching; the background fetch (`backfillStreams`) respects Strava's 100 req / 15 min limit
+- **Auto-sync** runs on open / focus / every 15 min, only after `activitiesLoaded` (dedupe needs the list)
 - **Ramp rate**: CTL change over the last 7 days (>8/week = too fast). **TSB zones**: `tsbZone()` in `app.js`
 - **Plan vs actual**: `matchPlanToActivities()` ticks plan sessions matched to an activity on the same day with a compatible sport; plan week dates get their year from the plan's `race_date` (`planWeekStart()`)
 - **Activities come from Strava** for the owner; `.FIT` upload is secondary (account menu → Upload .FIT files)
