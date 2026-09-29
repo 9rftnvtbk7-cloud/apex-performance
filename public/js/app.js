@@ -732,6 +732,7 @@ function initPlanner() {
     for (const p of plannerData) p.tss = tssByWeek[localDateKey(p.weekStart)] || 0;
   }
   renderPlannerGrid(); updatePlannerForecast();
+  if (typeof renderRaceTargetForm === 'function') renderRaceTargetForm();
   // Auto-populate from plan if planner is empty
   const allZero = plannerData.every(p => p.tss === 0);
   if (allZero && trainingPlan && trainingPlan.weeks && trainingPlan.weeks.length) {
@@ -834,6 +835,7 @@ function removeRaceDate(idx) {
 
 function updateRaceDate(idx, field, value) {
   raceDates[idx][field] = value;
+  if (typeof renderRaceTargetForm === 'function') renderRaceTargetForm();
   updatePlannerForecast();
   saveRaceDates();
 }
@@ -841,6 +843,7 @@ function updateRaceDate(idx, field, value) {
 function renderRaceDateInputs() {
   const container = document.getElementById('raceDateInputs');
   if (!container) return;
+  if (typeof renderRaceTargetForm === 'function') renderRaceTargetForm();
   container.innerHTML = raceDates.map((r, i) => `
     <div style="display:flex;align-items:center;gap:4px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:8px;padding:4px 8px">
       <input type="date" class="compare-date-input" value="${escapeHtml(r.date)}" onchange="updateRaceDate(${i},'date',this.value)" style="font-size:12px;padding:3px 6px">

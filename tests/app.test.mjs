@@ -27,7 +27,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'race-target.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -736,4 +736,34 @@ test('Calendar renders planned, matched and unplanned chips with a weekly total'
   assert.match(html, /cal-chip--unplanned" data-id="extra"/);
   // Week in progress (today = Sun 13): compared with what was planned before today
   assert.match(html, /Week so far<\/div><div>64 \/ 210 TSS<\/div><div><strong>30%<\/strong><\/div><div class="cal-week-plan">plan 300<\/div>/);
+});
+
+// ── Race-day target ──
+test('Race target: hits CTL and TSB targets and warns about unrealistic ramps', () => {
+  const { run } = makeEnv();
+  const r = run(`solveRaceTarget({ ctl0: 40, atl0: 45, days: 56, taperDays: 10, targetCtl: 55, targetTsb: 10 })`);
+  assert.equal(r.ok, true);
+  assert.ok(Math.abs(r.ctl - 55) < 0.5, `ctl ${r.ctl}`);
+  assert.ok(Math.abs(r.tsb - 10) < 3, `tsb ${r.tsb}`);
+  assert.ok(r.f < 1 && r.f > 0.1);
+  // Re-simulating the returned loads gives the same race-day values
+  const check = run(`(() => { const r = solveRaceTarget({ ctl0: 40, atl0: 45, days: 56, taperDays: 10, targetCtl: 55, targetTsb: 10 });
+                     return simulateLoads(40, 45, r.loads); })()`);
+  assert.ok(Math.abs(check.ctl - r.ctl) < 1e-9);
+  // Huge jump in 3 weeks → ramp warning
+  const hard = run(`solveRaceTarget({ ctl0: 30, atl0: 30, days: 21, taperDays: 7, targetCtl: 70, targetTsb: 5 })`);
+  assert.ok(hard.warnings.some(w => /above ~8\/week/.test(w)), JSON.stringify(hard.warnings));
+  assert.equal(run(`solveRaceTarget({ ctl0: 30, atl0: 30, days: 3, taperDays: 2, targetCtl: 35, targetTsb: 5 }).ok`), false);
+});
+
+test('Race target: weekly totals are Monday-based and can be applied to the planner', () => {
+  const { run } = makeEnv();
+  // Wed 30 Sep: 5 days to Sunday, then full weeks
+  const w = run(`weeklyFromDaily(Array(12).fill(10), new Date(2026, 8, 30))`);
+  assert.deepEqual(JSON.parse(JSON.stringify(w)), [{ monday: '2026-09-28', tss: 50, days: 5 }, { monday: '2026-10-05', tss: 70, days: 7 }]);
+  run(`plannerData = [{ weekStart: new Date(2026, 9, 5), tss: 0 }, { weekStart: new Date(2026, 9, 12), tss: 300 }];
+       renderPlannerGrid = () => {}; updatePlannerForecast = () => {}; var __saved = 0; savePlannerData = () => { __saved++; };
+       raceTargetResult = { weeks: [{ monday: '2026-10-05', tss: 420 }] }; applyRaceTargetToPlanner();`);
+  assert.deepEqual([...run(`plannerData.map(p => p.tss)`)], [420, 300]);
+  assert.equal(run('__saved'), 1);
 });

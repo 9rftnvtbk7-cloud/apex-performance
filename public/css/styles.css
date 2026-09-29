@@ -480,6 +480,16 @@ select[multiple].compare-select option:checked {
   .plan-steps th, .plan-steps td { padding: 5px 5px; }
 }
 
+/* ── Race-day target ── */
+.race-target { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
+.race-target-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.race-target-form label { display: flex; flex-direction: column; }
+.race-target-form .settings-label { margin-bottom: 4px; }
+.race-target-form .settings-input { width: 96px; }
+.race-target-summary { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-top: 14px; }
+.race-target-summary > div { display: flex; flex-direction: column; }
+@media (max-width: 600px) { .race-target-form label { flex: 1 1 40%; } .race-target-form .settings-input, .race-target-form .compare-select { width: 100%; } }
+
 /* ── Calendar ── */
 .cal-grid { display: grid; gap: 4px; }
 .cal-grid--month { grid-template-columns: repeat(7, minmax(0, 1fr)) 92px; }

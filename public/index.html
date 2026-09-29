@@ -353,6 +353,17 @@
             <div id="raceDateInputs" style="display:flex;gap:8px;flex-wrap:wrap"></div>
             <button class="planner-preset-btn" onclick="addRaceDate()" style="padding:4px 12px;font-size:12px">+ Add race</button>
           </div>
+          <div class="race-target">
+            <div class="settings-panel-title" style="font-size:14px;margin-bottom:10px">🎯 Race-day target</div>
+            <div class="race-target-form">
+              <label><span class="settings-label">Race</span><select class="compare-select" id="raceTargetRace"></select></label>
+              <label><span class="settings-label">Target CTL</span><input class="settings-input" type="number" id="raceTargetCtl" min="0" max="200"></label>
+              <label><span class="settings-label">Target TSB</span><input class="settings-input" type="number" id="raceTargetTsb" value="10" min="-30" max="40"></label>
+              <label><span class="settings-label">Taper (days)</span><input class="settings-input" type="number" id="raceTargetTaper" value="10" min="0" max="28"></label>
+              <button class="btn-base btn-upload" onclick="calculateRaceTarget()">Calculate</button>
+            </div>
+            <div id="raceTargetResult"></div>
+          </div>
           <div class="planner-forecast-chart-wrap" style="margin-bottom:24px"><canvas id="plannerChart"></canvas></div>
           <div class="planner-info">Enter your planned weekly TSS to project how your CTL, ATL, and TSB will evolve over the next 6 months.</div>
           <div class="planner-actions">
@@ -420,6 +431,7 @@
 <script src="js/thresholds.js?v=202609290916"></script>
 <script src="js/metrics.js?v=202609290916"></script>
 <script src="js/activity-detail.js?v=202609290916"></script>
+<script src="js/race-target.js?v=1"></script>
 <script src="js/calendar.js?v=1"></script>
 <script src="js/wellness.js?v=202609290916"></script>
 <script src="js/insights.js?v=202609290916"></script>
