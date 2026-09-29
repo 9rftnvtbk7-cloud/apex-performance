@@ -399,6 +399,25 @@ async function loadPlanCompletions() {
 }
 
 
+// ── Sessions moved in the Calendar: plan/overrides { data: { sessionId: 'YYYY-MM-DD' } } ──
+async function loadPlanOverrides() {
+  if (!currentUser) return {};
+  try {
+    const doc = await db.collection('users').doc(currentUser.uid).collection('plan').doc('overrides').get();
+    return doc.exists && doc.data().data ? doc.data().data : {};
+  } catch (e) { console.error('Error loading moved sessions:', e); return {}; }
+}
+
+async function savePlanOverrides(overrides) {
+  if (!currentUser) return false;
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('plan').doc('overrides').set({
+      data: overrides, updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    return true;
+  } catch (e) { console.error('Error saving moved sessions:', e); return false; }
+}
+
 async function saveRaceDatesData(raceDates) {
   if (!currentUser) return;
   try {

@@ -87,6 +87,7 @@
       <div class="nav-tabs" role="tablist">
         <button class="nav-tab is-active" role="tab" aria-selected="true" onclick="switchTab('overview',this)">📊 Overview</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('plan',this)">🏋️ Plan</button>
+        <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('calendar',this)">🗓️ Calendar</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('compare',this)">📈 Compare</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('planner',this)">📅 Planner</button>
         <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('log',this)">📋 Log</button>
@@ -232,6 +233,26 @@
           <div id="insightsBody"></div>
         </div>
         </div><!-- /overviewContent -->
+      </div>
+
+      <!-- CALENDAR TAB -->
+      <div class="tab-content" id="tab-calendar" role="tabpanel">
+        <div class="card">
+          <div class="card-top-bar">
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="range-btn" onclick="calendarShift(-1)" aria-label="Previous">‹</button>
+              <div class="card-title" id="calendarTitle" style="min-width:150px;text-align:center"></div>
+              <button class="range-btn" onclick="calendarShift(1)" aria-label="Next">›</button>
+              <button class="range-btn" onclick="calendarToday()">Today</button>
+            </div>
+            <div style="display:flex;gap:6px" role="group" aria-label="Calendar view">
+              <button class="range-btn cal-view-btn" data-view="week" onclick="setCalendarView('week')">Week</button>
+              <button class="range-btn cal-view-btn" data-view="month" onclick="setCalendarView('month')">Month</button>
+            </div>
+          </div>
+          <div class="cal-legend"><span class="cal-chip cal-chip--green">on target</span><span class="cal-chip cal-chip--amber">partly</span><span class="cal-chip cal-chip--red">missed / off</span><span class="cal-chip cal-chip--planned">planned</span><span class="cal-chip cal-chip--unplanned">unplanned</span><span class="insight-muted" style="margin:0">Drag a session to another day, or tap it to move it.</span></div>
+          <div id="calendarGrid"></div>
+        </div>
       </div>
 
       <!-- COMPARE TAB -->
@@ -385,6 +406,11 @@
   <div id="activityDialogBody"></div>
 </dialog>
 
+<!-- Planned session (opened from the Calendar) -->
+<dialog id="sessionDialog" class="activity-dialog" aria-label="Planned session">
+  <div id="sessionDialogBody"></div>
+</dialog>
+
 <!-- App Scripts (order matters) -->
 <script src="js/firebase-config.js?v=202609290916"></script>
 <script src="js/auth.js?v=202609290916"></script>
@@ -394,6 +420,7 @@
 <script src="js/thresholds.js?v=202609290916"></script>
 <script src="js/metrics.js?v=202609290916"></script>
 <script src="js/activity-detail.js?v=202609290916"></script>
+<script src="js/calendar.js?v=1"></script>
 <script src="js/wellness.js?v=202609290916"></script>
 <script src="js/insights.js?v=202609290916"></script>
 <script src="js/plan-import.js?v=202609290916"></script>

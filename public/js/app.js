@@ -14,6 +14,7 @@ let currentRange = 'all';
 let sessionDataLoaded = false;
 let forecastTssEdited = false;
 let pmcSport = 'all';
+let planOverrides = {}; // sessionId → 'YYYY-MM-DD' when moved in the Calendar
 
 // ══════════════════════════════════════════════
 // Safety & Date Helpers
@@ -73,6 +74,7 @@ function switchTab(tabId, btn) {
   if (tabId === 'compare') { initCompareDefaults(); renderComparison(); if (typeof renderBestEfforts === 'function') setTimeout(renderBestEfforts, 200); }
   if (tabId === 'planner') initPlanner();
   if (tabId === 'plan') scrollToCurrentWeek();
+  if (tabId === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
 }
 
 // ══════════════════════════════════════════════
@@ -1316,6 +1318,12 @@ function planSessionDate(weekStart, day) {
   return addDays(weekStart, (dow - weekStart.getDay() + 7) % 7);
 }
 
+// Actual date of a session: moved by the user (Calendar) or its planned day
+function sessionDateFor(s, weekStart) {
+  const moved = s && planOverrides[s.id] && parseIsoDate(planOverrides[s.id]);
+  return moved || planSessionDate(weekStart, s && s.day);
+}
+
 function isWeekCurrent(week, plan, now) {
   const start = planWeekStart(week, plan);
   if (!start) return false;
@@ -1348,7 +1356,7 @@ function matchPlanToActivities(plan) {
   for (const week of plan.weeks || []) {
     const start = planWeekStart(week, plan);
     for (const s of week.sessions || []) {
-      const date = planSessionDate(start, s.day);
+      const date = sessionDateFor(s, start);
       if (!date || !s.id) continue;
       const act = (byDay[localDateKey(date)] || []).find(a => !used.has(a) && planSportMatches(s.sport, a.sport));
       if (act) { used.add(act); matches.set(s.id, act); }
@@ -1471,13 +1479,14 @@ function renderTrainingPlan() {
       const hasFile = s.zwo_file && (hasZwo ? zwoFiles[s.zwo_file] : true);
       const matched = matches.get(s.id);
       const isDone = !!(isSessionTicked(s) || matched);
-      const sessionDate = planSessionDate(weekStart, s.day);
+      const sessionDate = sessionDateFor(s, weekStart);
       const isMissed = !isDone && s.sport !== 'rest' && sessionDate && sessionDate < today;
       wh += `<div class="plan-session${isDone ? ' plan-session-done' : ''}">`;
       wh += matched
         ? `<div class="plan-session-check"><input type="checkbox" checked disabled aria-label="Completed on Strava" title="Completed — matched a Strava activity" style="width:16px;height:16px;accent-color:var(--color-green)"></div>`
         : `<div class="plan-session-check"><input type="checkbox" ${isDone ? 'checked' : ''} aria-label="Mark ${escapeHtml(s.name)} as done" data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)" style="cursor:pointer;width:16px;height:16px;accent-color:var(--color-green)"></div>`;
-      wh += `<div class="plan-session-day">${escapeHtml(String(s.day || '').slice(0, 3))}</div>`;
+      const movedTo = planOverrides[s.id] && sessionDate ? sessionDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }) : '';
+      wh += `<div class="plan-session-day">${escapeHtml(String(s.day || '').slice(0, 3))}${movedTo ? `<div class="plan-moved" title="Moved in the Calendar">↪ ${escapeHtml(movedTo)}</div>` : ''}</div>`;
       wh += `<div class="plan-session-body">`;
       wh += `<div class="plan-session-top"><span class="plan-session-sport" style="background:${sc}22;color:${sc}">${se} ${escapeHtml(s.sport)}</span>`;
       wh += `<span class="plan-session-name">${escapeHtml(s.name)}</span>`;
@@ -1499,6 +1508,7 @@ function renderTrainingPlan() {
   }
   document.getElementById('planWeeks').innerHTML = wh;
   renderUpcomingSessions();
+  if (typeof renderCalendar === 'function' && document.getElementById('tab-calendar')?.classList.contains('is-active')) renderCalendar();
 }
 
 // ── Overview: today's and tomorrow's planned sessions ──
@@ -1507,7 +1517,7 @@ function sessionsOnDate(plan, date) {
   for (const week of plan.weeks || []) {
     const start = planWeekStart(week, plan);
     for (const s of week.sessions || []) {
-      const d = planSessionDate(start, s.day);
+      const d = sessionDateFor(s, start);
       if (d && localDateKey(d) === key) out.push(s);
     }
   }
@@ -1672,6 +1682,10 @@ async function loadSavedPlan() {
     if (saved) { planCompletions = saved; renderTrainingPlan(); }
   }
   loadRaceDates();
+  if (typeof loadPlanOverrides === 'function') {
+    planOverrides = await loadPlanOverrides();
+    if (trainingPlan) renderTrainingPlan();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

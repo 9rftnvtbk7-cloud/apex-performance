@@ -9,7 +9,7 @@ const ROOT = new URL('../public/js/', import.meta.url).pathname;
 
 function makeEnv() {
   const els = {};
-  const el = id => (els[id] ??= { id, value: '', style: {}, textContent: '', innerHTML: '', classList: { add() {}, remove() {}, toggle() {} },
+  const el = id => (els[id] ??= { id, value: '', style: {}, textContent: '', innerHTML: '', classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
     getContext: () => ({}), appendChild() {}, querySelector: () => null, scrollIntoView() {},
     append(...c) { (this.children ??= []).push(...c); }, replaceChildren() { this.children = []; }, setAttribute() {}, hidden: true,
     showModal() { this.open = true; }, close() { this.open = false; } });
@@ -27,7 +27,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -681,4 +681,59 @@ test('Readiness: baseline comparisons, sleep, soreness and form drive a transpar
   assert.equal(r({ sleepHours: 6, sleepQuality: 2, stress: 4 }, -5).level, 'rest'); // three cautions
   // No baseline yet (fewer than 3 days) → RHR isn't judged
   assert.equal(run(`computeReadiness('2026-09-29', 0, { '2026-09-29': { restingHr: 60 } }).level`), 'ready');
+});
+
+// ── Calendar ──
+test('Compliance colours from actual vs planned TSS', () => {
+  const { run } = makeEnv();
+  run(`planCompletions = {}; var __today = new Date(2026, 8, 29); var __past = new Date(2026, 8, 20), __future = new Date(2026, 9, 5);`);
+  const c = (s, m, when) => run(`complianceOf(${JSON.stringify(s)}, ${JSON.stringify(m)}, ${when}, __today)`);
+  const s = { id: 'a', sport: 'bike', tss: 100 };
+  assert.equal(c(s, { tss: 95 }, '__past'), 'green');
+  assert.equal(c(s, { tss: 130 }, '__past'), 'amber');
+  assert.equal(c(s, { tss: 40 }, '__past'), 'red');
+  assert.equal(c(s, null, '__past'), 'red');           // missed
+  assert.equal(c(s, null, '__future'), 'planned');
+  assert.equal(c({ id: 'r', sport: 'rest', tss: 0 }, null, '__past'), 'rest');
+  run(`planCompletions = { a: true }`);
+  assert.equal(c(s, null, '__past'), 'green');         // ticked by hand
+});
+
+test('Moving a session updates plan vs actual, Next 2 days and can go back', async () => {
+  const { run, ctx, el } = makeEnv();
+  ctx.__text = fixture('plan_detailed.json');
+  run(`trainingPlan = normalizePlan(__text).plan; planCompletions = {}; planOverrides = {}; zwoFiles = {};
+       allActivities = [{ id: 'ride', sport: 'cycling', startDate: new Date(2026, 8, 10, 7), tss: 54 }];
+       var __saved = null; savePlanOverrides = async o => { __saved = { ...o }; return true; };`);
+  // Week 1 Tuesday bike (8 Sep) is missed; the ride happened on Thursday 10 Sep
+  assert.equal(run(`matchPlanToActivities(trainingPlan).get('w1-2-tue')`), undefined);
+  await run(`moveSession('w1-2-tue', '2026-09-10')`);
+  assert.deepEqual({ ...run('__saved') }, { 'w1-2-tue': '2026-09-10' });
+  assert.equal(run(`matchPlanToActivities(trainingPlan).get('w1-2-tue').id`), 'ride');
+  assert.match(el('planWeeks').innerHTML, /↪ Thu 10/);
+  // Shown on its new day in Next 2 days
+  run(`renderUpcomingSessions(new Date(2026, 8, 9, 8))`);
+  assert.match(el('upcomingDays').innerHTML, /<strong>Tomorrow<\/strong> · Thu 10 Sept?[\s\S]*W01 Tue – Vélo Tempo/);
+  // Moving it back to its planned day removes the override
+  await run(`moveSession('w1-2-tue', '2026-09-08')`);
+  assert.deepEqual({ ...run('__saved') }, {});
+});
+
+test('Calendar renders planned, matched and unplanned chips with a weekly total', () => {
+  const { run, ctx, el } = makeEnv();
+  ctx.__text = fixture('plan_detailed.json');
+  ctx.window.matchMedia = () => ({ matches: false });
+  run(`trainingPlan = normalizePlan(__text).plan; planCompletions = {}; planOverrides = {};
+       allActivities = [
+         { id: 'ride', sport: 'cycling', startDate: new Date(2026, 8, 8, 7), tss: 54, name: 'Tempo' },
+         { id: 'extra', sport: 'walking', startDate: new Date(2026, 8, 12, 10), tss: 10, name: 'Walk' }];
+       calendarView = 'week'; calendarCursor = new Date(2026, 8, 9);
+       renderCalendar(new Date(2026, 8, 13, 20));`);
+  const html = el('calendarGrid').innerHTML;
+  assert.match(el('calendarTitle').textContent, /Week of 7 Sept? 2026/);
+  assert.match(html, /cal-chip--green" draggable="true" data-session-id="w1-2-tue"/);   // 55 planned → 54
+  assert.match(html, /cal-chip--red" draggable="true" data-session-id="w1-1-mon"/);     // missed
+  assert.match(html, /cal-chip--unplanned" data-id="extra"/);
+  // Week in progress (today = Sun 13): compared with what was planned before today
+  assert.match(html, /Week so far<\/div><div>64 \/ 210 TSS<\/div><div><strong>30%<\/strong><\/div><div class="cal-week-plan">plan 300<\/div>/);
 });

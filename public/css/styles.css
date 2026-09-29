@@ -480,6 +480,50 @@ select[multiple].compare-select option:checked {
   .plan-steps th, .plan-steps td { padding: 5px 5px; }
 }
 
+/* ── Calendar ── */
+.cal-grid { display: grid; gap: 4px; }
+.cal-grid--month { grid-template-columns: repeat(7, minmax(0, 1fr)) 92px; }
+.cal-grid--week { grid-template-columns: 1fr; }
+.cal-head { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); text-align: center; padding: 4px 0; }
+.cal-day { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; min-height: 92px; padding: 4px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.cal-grid--week .cal-day { min-height: 0; padding: 8px 10px; }
+.cal-day.is-today { border-color: var(--color-blue); box-shadow: inset 0 0 0 1px var(--color-blue); }
+.cal-day.is-other-month { opacity: 0.45; }
+.cal-day.is-drop { background: rgba(59,130,246,0.12); border-style: dashed; }
+.cal-date { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+.cal-chip { display: flex; align-items: center; gap: 4px; font-size: 11px; line-height: 1.3; padding: 3px 5px; border-radius: 5px; border-left: 3px solid; background: var(--bg-card); color: var(--text-main); width: 100%; min-width: 0; text-align: left; cursor: pointer; }
+.cal-grid--week .cal-chip { font-size: 13px; padding: 6px 8px; }
+.cal-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.cal-chip small { color: var(--text-dim); font-family: 'JetBrains Mono'; white-space: nowrap; }
+.cal-chip--green { border-color: var(--color-green); background: rgba(16,185,129,0.1); }
+.cal-chip--amber { border-color: var(--color-amber); background: rgba(245,158,11,0.1); }
+.cal-chip--red { border-color: var(--color-red); background: rgba(244,63,94,0.1); }
+.cal-chip--planned { border-color: var(--color-blue); }
+.cal-chip--rest { border-color: var(--border-color); color: var(--text-dim); }
+.cal-chip--unplanned { border-color: var(--text-muted); border-left-style: dashed; color: var(--text-dim); }
+.cal-week { border-radius: 8px; padding: 6px 8px; font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-dim); background: var(--bg-surface); border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.cal-grid--week .cal-week { flex-direction: row; gap: 12px; align-items: center; font-size: 13px; }
+.cal-week-plan { font-size: 10px; color: var(--text-muted); }
+.cal-week-label { font-family: 'DM Sans'; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.8px; color: var(--text-muted); }
+.cal-week--green { border-color: rgba(16,185,129,0.5); }
+.cal-week--amber { border-color: rgba(245,158,11,0.5); }
+.cal-week--red { border-color: rgba(244,63,94,0.5); }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-bottom: 12px; }
+.cal-legend .cal-chip { width: auto; cursor: default; }
+.cal-view-btn.is-active { background: var(--bg-hover); color: var(--text-main); border-color: #3a3e54; }
+.session-tick { display: inline-flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 14px; }
+.session-tick input { width: 18px; height: 18px; accent-color: var(--color-green); }
+.session-move { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 0 6px; }
+.plan-moved { font-size: 10px; color: var(--color-amber); text-transform: none; white-space: nowrap; }
+@media (max-width: 600px) {
+  .cal-grid--month { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .cal-grid--month .cal-week { grid-column: 1 / -1; flex-direction: row; gap: 10px; padding: 3px 8px; }
+  .cal-grid--month .cal-head:nth-child(8) { display: none; }
+  .cal-grid--month .cal-day { min-height: 56px; padding: 2px; }
+  .cal-grid--month .cal-chip { padding: 2px; justify-content: center; font-size: 12px; }
+  .cal-grid--month .cal-chip-name, .cal-grid--month .cal-chip small { display: none; }
+}
+
 /* ── Readiness & wellness ── */
 .readiness-head { display: flex; align-items: center; gap: 10px; }
 .readiness-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
