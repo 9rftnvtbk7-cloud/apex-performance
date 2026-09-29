@@ -21,8 +21,9 @@ Triathlon fitness tracking web app. Users upload FIT files (or sync via Strava),
 
 ```
 public/                    # Firebase Hosting root — ONLY this folder is served
-  index.html               # App shell — all 5 tabs (Overview, Compare, Plan, Planner, Log)
-  css/styles.css           # Dark-theme styles
+  index.html               # App shell — 5 tabs: Today (#tab-overview), Calendar, Plan, Season (Forecast #tab-planner · Compare #tab-compare · Insights #tab-insights), Activities (#tab-log)
+  css/styles.css           # Graphite design system (dark) + Daylight (light) tokens and components
+  js/theme.js              # CSS tokens → Chart.js: C() palette, chartTooltip/chartScaleX/chartScaleY, rebuild on theme change
   js/app.js                # Core app logic — charts, comparison, plan, planner
   js/auth.js               # Firebase Auth with Google Sign-In
   js/database.js           # Firestore CRUD operations
@@ -32,10 +33,10 @@ public/                    # Firebase Hosting root — ONLY this folder is serve
   js/plan-import.js        # Training plan parsing/validation (normalizePlan) — see schema below
   js/thresholds.js         # Dated threshold history (FTP/LTHR/paces) — thresholdsAt(date)
   js/metrics.js            # Pure stream analytics: histograms, mean-max curves, decoupling, eFTP, zones
-  js/insights.js           # Overview "Training insights" + Compare "Best efforts"
+  js/insights.js           # Season › Insights: estimated FTP, zones, best efforts
   js/activity-detail.js    # Activity dialog: map (Leaflet), stream charts, laps, notes/RPE/feel
   js/workout-export.js     # Plan steps → .zwo / .fit workout (FIT validated with Garmin's SDK)
-  js/race-target.js        # Planner race-day CTL/TSB solver
+  js/race-target.js        # Season › Forecast race-day CTL/TSB solver
   js/calendar.js           # Calendar tab: compliance colours, move sessions (plan/overrides)
   js/wellness.js           # Wellness log + readiness rules
   sw.js, manifest.webmanifest, icons/   # Installable app (PWA); sw: own files network-first
@@ -204,7 +205,11 @@ Storage: the normalised plan is one JSON string in `plan/current`; above 800 KB 
 - Vanilla JavaScript — no build step, no bundler, no framework
 - Functions use camelCase, with descriptive names (`buildPMCChart`, `renderComparison`)
 - CSS uses BEM-like class naming (`.plan-week-card`, `.compare-chart-wrap`)
-- Dark theme throughout — colours are CSS variables in `:root` of `styles.css` (background `--bg-base: #0a0b0f`, accent `--color-blue: #3b82f6`). Text colours `--text-dim`/`--text-muted` meet WCAG AA contrast; mirror them in Chart.js tick colours (`#a3a8bc`/`#858aa3`)
+- Design: "Graphite" (dark, default) and "Daylight" (light, via `prefers-color-scheme` or `<html data-theme>`), specified in `design_handoff_apex_redesign/README.md`. All colours are tokens in `:root` of `styles.css` (`--bg-*`, `--text-*`, `--color-ctl/atl/tsb/tss`, `--color-ok/partial/missed`, `--sport-*`); never hard-code hex in markup or charts
+- Charts read colours through `C()` and share `chartTooltip()`, `chartScaleX()`, `chartScaleY()` from `theme.js` — no per-chart tooltip/grid colours. Data semantics: fitness blue, fatigue pink, form green, TSS amber
+- No emoji in the UI (line icons from the SVG sprite in `index.html`); `showToast(msg, '✅'|'⚠️'|'❌')` uses the emoji only as a kind code
+- Layout: sidebar ≥ 1024 px, bottom tab bar below; Activities shows a list below 900 px and the table from 900 px (both rendered by `renderTrainingTable`)
+- Dialogs (`#settingsDialog`, `#activityDialog`, `#sessionDialog`) are native `<dialog class="sheet">`
 - Interactive elements are real `<button>`s (never clickable `div`s) so keyboard and screen readers work
 - All Firestore operations go through `js/database.js` — never call Firestore directly from `app.js`
 - Chart instances stored in module-level variables (`pmcChart`, `compareChart`, `plannerChart`) and destroyed before recreation to prevent memory leaks
