@@ -4,7 +4,7 @@
 // Charts are canvas, so they can't use CSS variables directly. Every chart reads its colours through
 // C() at build time; when the OS switches between light and dark, charts are rebuilt.
 
-function cssVar(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function cssVar(name) { try { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); } catch (e) { return ''; } }
 
 // '#6AA8FF' + 0.5 → 'rgba(106,168,255,0.5)' (also accepts rgb()/rgba() strings)
 function withAlpha(color, a) {
@@ -20,7 +20,7 @@ function withAlpha(color, a) {
 }
 
 function isLightTheme() {
-  const t = document.documentElement.dataset.theme;
+  const t = document.documentElement && document.documentElement.dataset && document.documentElement.dataset.theme;
   if (t) return t === 'light';
   return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
 }
@@ -48,7 +48,7 @@ function chartScaleX(extra = {}) { const c = C(); return { grid: { display: fals
 function chartScaleY(extra = {}) { const c = C(); return { grid: { color: c.grid, drawTicks: false }, border: { display: false }, ticks: { color: c.muted, padding: 8 }, ...extra }; }
 
 function applyChartDefaults() {
-  if (typeof Chart === 'undefined') return;
+  if (typeof Chart === 'undefined' || !Chart.defaults) return;
   const c = C();
   Chart.defaults.font.family = "'Geist', system-ui, -apple-system, sans-serif";
   Chart.defaults.font.size = 12;

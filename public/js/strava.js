@@ -119,7 +119,7 @@ async function handleStravaCallback() {
     // Update the UI now; don't block on Firestore's server acknowledgement
     // (writes are queued locally and sync when the connection allows)
     updateStravaUI();
-    showToast(`Connected to Strava as ${data.athlete?.firstname || 'athlete'}`, '🔶');
+    showToast(`Connected to Strava as ${data.athlete?.firstname || 'athlete'}`, 'ok');
     saveStravaTokens().then(ok => console.info(ok ? '[Strava] Tokens saved to Firestore' : '[Strava] Token save failed'));
 
   } catch (err) {
@@ -208,10 +208,10 @@ async function syncStravaActivities({ quiet = false } = {}) {
   stravaSyncRunning = true;
   lastAutoSync = Date.now();
 
-  const syncBtn = document.getElementById('btnStravaSync');
-  if (syncBtn) { syncBtn.disabled = true; syncBtn.textContent = '⏳ Syncing…'; }
+  setSyncState('syncing');
+  let syncOutcome = 'ok';
 
-  if (!quiet) showToast('Fetching activities from Strava…', '🔶');
+  if (!quiet) showToast('Fetching activities from Strava…', 'info');
 
   let imported = 0;
   try {
@@ -238,6 +238,7 @@ async function syncStravaActivities({ quiet = false } = {}) {
       });
 
       if (resp.status === 429) {
+        syncOutcome = 'limited';
         showToast('Strava rate limit hit — imported what we could, sync again in 15 minutes', '⚠️');
         break;
       }
@@ -269,7 +270,7 @@ async function syncStravaActivities({ quiet = false } = {}) {
         if (typeof saveActivitiesBatch === 'function' && currentUser) await saveActivitiesBatch(fresh);
         allActivities.push(...fresh);
         imported += fresh.length;
-        if (activities.length === perPage) showToast(`Imported ${imported} activities so far…`, '🔶');
+        if (activities.length === perPage) showToast(`Imported ${imported} activities so far…`, 'info');
       }
 
       if (activities.length < perPage) break;
@@ -277,7 +278,7 @@ async function syncStravaActivities({ quiet = false } = {}) {
     }
 
     if (imported > 0) {
-      showToast(`Imported ${imported} new activit${imported > 1 ? 'ies' : 'y'} from Strava`, '🔶');
+      showToast(`Imported ${imported} new activit${imported > 1 ? 'ies' : 'y'} from Strava`, 'ok');
     } else if (!quiet) {
       showToast(`Already up to date (checked ${totalFetched} activities)`, '✅');
     }
@@ -291,12 +292,14 @@ async function syncStravaActivities({ quiet = false } = {}) {
 
   } catch (err) {
     console.error('Strava sync error:', err);
+    syncOutcome = navigator.onLine === false ? 'offline' : 'error';
     if (!quiet) showToast('Strava sync failed: ' + err.message, '❌');
   } finally {
     stravaSyncRunning = false;
     // Show whatever was imported, even if a later page failed
     if (imported > 0 && typeof refreshDashboard === 'function') refreshDashboard();
-    if (syncBtn) { syncBtn.disabled = false; syncBtn.textContent = '🔶 Sync Strava'; }
+    if (syncOutcome === 'ok') lastStravaSyncAt = new Date();
+    setSyncState(syncOutcome);
   }
   backfillStreams();
 }
@@ -394,6 +397,25 @@ function stravaToActivity(sa) {
   };
 }
 
+// ── Sync status: header pill + sidebar footer ──
+// state: ok | syncing | limited | offline | error | disconnected
+let lastStravaSyncAt = null;
+function setSyncState(state) {
+  const time = lastStravaSyncAt ? lastStravaSyncAt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
+  const label = { ok: time ? `Synced ${time}` : 'Sync now', syncing: 'Syncing…', limited: 'Rate-limited', offline: 'Offline', error: 'Sync failed', disconnected: 'Strava not connected' }[state] || 'Sync now';
+  const pill = document.getElementById('btnStravaSync');
+  if (pill) {
+    pill.dataset.state = state === 'error' ? 'limited' : state;
+    const t = pill.querySelector && pill.querySelector('.sync-pill__text'); if (t) t.textContent = label;
+    pill.disabled = state === 'syncing';
+  }
+  const dot = document.getElementById('sidebarSyncDot'), txt = document.getElementById('sidebarSyncText');
+  if (dot) dot.className = 'status-dot' + (state === 'ok' ? ' is-ok' : state === 'limited' || state === 'error' ? ' is-limited' : '');
+  if (txt) txt.textContent = state === 'ok' ? (time ? `Strava synced ${time}` : 'Strava connected') : state === 'disconnected' ? 'Strava not connected' : `Strava: ${label.toLowerCase()}`;
+}
+window.addEventListener('offline', () => setSyncState('offline'));
+window.addEventListener('online', () => setSyncState(stravaTokens ? 'ok' : 'disconnected'));
+
 // ── UI Updates ──
 function updateStravaUI() {
   const connectBtn = document.getElementById('btnStravaConnect');
@@ -402,21 +424,25 @@ function updateStravaUI() {
   const statusEl = document.getElementById('stravaStatus');
   const emptyBtn = document.getElementById('btnEmptyStrava');
   const connected = !!(stravaTokens && stravaTokens.access_token);
-  if (emptyBtn) emptyBtn.textContent = connected ? '🔶 Sync your Strava activities' : '🔶 Connect Strava';
+  if (emptyBtn) emptyBtn.textContent = connected ? 'Sync your Strava activities' : 'Connect with Strava';
 
+  if (!lastStravaSyncAt && stravaTokens && stravaTokens.lastSync) {
+    const ls = stravaTokens.lastSync.toDate ? stravaTokens.lastSync.toDate() : new Date(stravaTokens.lastSync);
+    if (!isNaN(ls)) lastStravaSyncAt = ls;
+  }
+  setSyncState(connected ? (stravaSyncRunning ? 'syncing' : 'ok') : 'disconnected');
   if (stravaTokens && stravaTokens.access_token) {
     if (connectBtn) connectBtn.style.display = 'none';
     if (syncBtn) syncBtn.style.display = 'inline-flex';
     if (disconnectBtn) disconnectBtn.style.display = 'flex';
     if (statusEl) {
       const name = stravaTokens.athlete ? `${stravaTokens.athlete.firstname} ${stravaTokens.athlete.lastname}` : 'Connected';
-      statusEl.textContent = `🔶 ${name}`;
-      statusEl.style.display = 'inline';
+      statusEl.textContent = `Strava: ${name}`;
     }
   } else {
     if (connectBtn) connectBtn.style.display = 'inline-flex';
     if (syncBtn) syncBtn.style.display = 'none';
     if (disconnectBtn) disconnectBtn.style.display = 'none';
-    if (statusEl) statusEl.style.display = 'none';
+    if (statusEl) statusEl.textContent = '';
   }
 }

@@ -278,7 +278,7 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .readiness-reasons li.is-rest::before { background: var(--color-missed); } .readiness-reasons li.is-caution::before { background: var(--color-partial); }
 .readiness-reasons li.is-ready::before { background: var(--color-ok); }
 .readiness__links { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; }
-.readiness__links .btn-reset { font-size: 14px; color: var(--text-dim); }
+.readiness__links .btn-reset { font-size: 14px; color: var(--text-dim); white-space: nowrap; }
 .readiness__links .btn-reset:hover, .readiness__links .btn-reset[aria-expanded="true"] { color: var(--text-main); }
 .readiness__panel { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle); }
 .readiness__panel[hidden] { display: none; }
@@ -315,19 +315,22 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .week-card__of { font-size: 16px; color: var(--text-dim); margin-left: 4px; }
 .week-card__status { font-size: 14px; font-weight: 500; }
 .week-progress { display: flex; gap: 4px; margin-top: 14px; height: 8px; }
-.week-progress__seg { flex: 1; min-width: 6px; border-radius: 4px; background: var(--bg-selected); }
+.week-progress__seg { flex: 1; min-width: 30px; border-radius: 4px; background: var(--bg-selected); }
 .week-progress__seg--done { background: var(--color-ok); }
 .week-progress__seg--partial { background: var(--color-partial); }
 .week-progress__seg--missed { background: var(--tint-missed); box-shadow: inset 0 0 0 1px var(--color-missed); }
 .week-progress__seg--today { background: transparent; box-shadow: inset 0 0 0 1.5px var(--text-main); }
 .week-progress__days { display: flex; gap: 4px; margin-top: 8px; font-size: 13px; color: var(--text-muted); }
-.week-progress__days span { flex: 1; min-width: 6px; overflow: hidden; white-space: nowrap; }
+.week-progress__days span { flex: 1; min-width: 30px; overflow: hidden; white-space: nowrap; }
 .week-card__caption { font-size: 14px; color: var(--text-dim); margin-top: 12px; }
 .week-sports { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13px; color: var(--text-dim); }
 .week-sports > span { display: inline-flex; align-items: center; gap: 6px; }
 
 /* Fitness card */
-.fitness-card__head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.fitness-card__head { display: flex; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; align-items: center; }
+.fitness-card__title { order: 0; }
+.fitness-card__controls { order: 1; margin-left: auto; }
+.fitness-card__head .pmc-stats { order: 2; flex: 1 1 100%; }
 .pmc-stats { display: flex; flex-wrap: wrap; }
 .pmc-stat { padding: 0 20px; border-left: 1px solid var(--border-color); min-width: 0; }
 .pmc-stat:first-child { padding-left: 0; border-left: none; }
@@ -373,11 +376,13 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
   .pmc-stats { flex-wrap: nowrap; }
   .pmc-stat { padding: 0 12px; flex: 1; }
   .pmc-stat__value { font-size: 24px; line-height: 30px; }
-  .fitness-card__controls { width: 100%; margin-top: 12px; }
+  .fitness-card__controls { width: 100%; margin-left: 0; order: 3; }
   .fitness-card__controls .segmented { display: flex; width: 100%; }
   .fitness-card__controls .segmented__opt { flex: 1; padding: 0 6px; }
   .chart-canvas-wrap { height: 240px; }
   .session-card__title { font-size: 20px; line-height: 25px; }
+  .target-strip > div { padding: 9px 10px; }
+  .target-strip b { font-size: 15px; }
 }
 
 /* ══════════════ Calendar ══════════════ */

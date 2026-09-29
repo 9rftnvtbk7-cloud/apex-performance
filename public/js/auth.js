@@ -13,7 +13,13 @@ function initAuth() {
       document.getElementById('appSection').style.display = 'block';
       document.getElementById('userAvatar').src = user.photoURL || '';
       document.getElementById('userAvatar').style.display = user.photoURL ? 'block' : 'none';
-      document.getElementById('userName').textContent = user.displayName || user.email;
+      const name = user.displayName || user.email || '';
+      document.getElementById('userName').textContent = name;
+      // Initials avatar (header on phones, sidebar on desktop) unless there is a profile photo
+      const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+      for (const id of ['headerInitials', 'sidebarInitials']) { const el = document.getElementById(id); if (el) el.textContent = initials; }
+      const hi = document.getElementById('headerInitials'); if (hi) hi.style.display = user.photoURL ? 'none' : '';
+      const sn = document.getElementById('sidebarUserName'); if (sn) sn.textContent = name;
       loadUserData();
     } else {
       // Signed out (possibly from another tab): reload so no in-memory state

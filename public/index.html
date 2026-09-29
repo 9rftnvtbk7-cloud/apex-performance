@@ -126,7 +126,6 @@
         <div class="tab-content is-active" id="tab-overview" role="tabpanel">
           <div class="page-head">
             <div><h1 class="page-title" id="todayTitle">Today</h1><div class="page-caption" id="todayCaption"></div></div>
-            <div class="page-actions desktop-only"><button class="btn btn--secondary" onclick="syncStravaActivities()">Sync now</button></div>
           </div>
 
           <!-- Shown until the first activity is imported -->
@@ -170,6 +169,7 @@
               <div class="section-head"><h2 class="section-title">Fitness</h2><button class="btn-reset link-muted" onclick="openSeason('forecast')">Season ›</button></div>
               <div class="card fitness-card">
                 <div class="fitness-card__head">
+                  <h2 class="card-title desktop-only fitness-card__title">Fitness</h2>
                   <div class="pmc-stats">
                     <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-ctl)"></i>Fitness<span class="desktop-only"> · CTL</span></div><div class="pmc-stat__value" id="valCtl">0</div><div class="pmc-stat__sub" id="subCtl">42-day avg</div></div>
                     <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-atl)"></i>Fatigue<span class="desktop-only"> · ATL</span></div><div class="pmc-stat__value" id="valAtl">0</div><div class="pmc-stat__sub">7-day avg</div></div>
@@ -200,7 +200,7 @@
                     <summary class="toggle-chip" id="forecastChip">Forecast <span id="displayForecastDays">14 days</span></summary>
                     <div class="chip-popover__body">
                       <label class="field-label" for="sliderForecastDays">Days ahead</label>
-                      <input type="range" class="range" id="sliderForecastDays" min="0" max="60" value="14" oninput="updateForecast()">
+                      <input type="range" class="range" id="sliderForecastDays" min="0" max="60" value="14" oninput="forecastDaysEdited = true; updateForecast()">
                       <label class="field-label" for="inputForecastTss">Average daily TSS</label>
                       <input type="number" class="input input--sm" id="inputForecastTss" value="50" min="0" max="500" oninput="forecastTssEdited = true; updateForecast()">
                       <button class="btn-reset link" onclick="toggleChartDataset(4, this)" aria-pressed="true">Hide forecast</button>

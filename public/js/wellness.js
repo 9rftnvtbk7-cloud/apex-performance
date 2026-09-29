@@ -45,30 +45,30 @@ function computeReadiness(dateKey, tsb, entries = wellnessEntries) {
   const reasons = [];
   const e = entries[dateKey] || {};
   if (tsb != null) {
-    if (tsb < -30) reasons.push({ level: 'rest', text: `Form ${tsb.toFixed(0)}: very high fatigue` });
-    else if (tsb < -20) reasons.push({ level: 'caution', text: `Form ${tsb.toFixed(0)}: carrying a lot of fatigue` });
-    else if (tsb > 5) reasons.push({ level: 'ready', text: `Form +${tsb.toFixed(0)}: fresh` });
+    if (tsb < -30) reasons.push({ key: 'tsb', level: 'rest', text: `Form ${tsb.toFixed(0)}: very high fatigue` });
+    else if (tsb < -20) reasons.push({ key: 'tsb', level: 'caution', text: `Form ${tsb.toFixed(0)}: carrying a lot of fatigue` });
+    else if (tsb > 5) reasons.push({ key: 'tsb', level: 'ready', text: `Form +${tsb.toFixed(0)}: fresh` });
   }
   const rhrBase = wellnessBaseline('restingHr', dateKey, entries);
   if (e.restingHr != null && rhrBase != null) {
     const d = e.restingHr - rhrBase;
-    if (d >= 7) reasons.push({ level: 'rest', text: `Resting HR ${e.restingHr} bpm, +${d.toFixed(0)} vs 7-day average` });
-    else if (d >= 4) reasons.push({ level: 'caution', text: `Resting HR ${e.restingHr} bpm, +${d.toFixed(0)} vs 7-day average` });
+    if (d >= 7) reasons.push({ key: 'restingHr', level: 'rest', text: `Resting HR ${e.restingHr} bpm, +${d.toFixed(0)} vs 7-day average` });
+    else if (d >= 4) reasons.push({ key: 'restingHr', level: 'caution', text: `Resting HR ${e.restingHr} bpm, +${d.toFixed(0)} vs 7-day average` });
   }
   const hrvBase = wellnessBaseline('hrv', dateKey, entries);
   if (e.hrv != null && hrvBase != null) {
     const pct = (e.hrv - hrvBase) / hrvBase * 100;
-    if (pct <= -20) reasons.push({ level: 'rest', text: `HRV ${e.hrv} ms, ${pct.toFixed(0)}% vs 7-day average` });
-    else if (pct <= -10) reasons.push({ level: 'caution', text: `HRV ${e.hrv} ms, ${pct.toFixed(0)}% vs 7-day average` });
+    if (pct <= -20) reasons.push({ key: 'hrv', level: 'rest', text: `HRV ${e.hrv} ms, ${pct.toFixed(0)}% vs 7-day average` });
+    else if (pct <= -10) reasons.push({ key: 'hrv', level: 'caution', text: `HRV ${e.hrv} ms, ${pct.toFixed(0)}% vs 7-day average` });
   }
-  if (e.sleepHours != null && e.sleepHours < 5) reasons.push({ level: 'rest', text: `Only ${e.sleepHours} h of sleep` });
-  else if (e.sleepHours != null && e.sleepHours < 6.5) reasons.push({ level: 'caution', text: `Short sleep (${e.sleepHours} h)` });
-  if (e.sleepQuality != null && e.sleepQuality <= 2) reasons.push({ level: 'caution', text: `Poor sleep quality (${e.sleepQuality}/5)` });
-  if (e.soreness != null && e.soreness >= 4) reasons.push({ level: e.soreness === 5 ? 'rest' : 'caution', text: `Soreness ${e.soreness}/5` });
-  if (e.stress != null && e.stress >= 4) reasons.push({ level: 'caution', text: `Stress ${e.stress}/5` });
+  if (e.sleepHours != null && e.sleepHours < 5) reasons.push({ key: 'sleepHours', level: 'rest', text: `Only ${e.sleepHours} h of sleep` });
+  else if (e.sleepHours != null && e.sleepHours < 6.5) reasons.push({ key: 'sleepHours', level: 'caution', text: `Short sleep (${e.sleepHours} h)` });
+  if (e.sleepQuality != null && e.sleepQuality <= 2) reasons.push({ key: 'sleepQuality', level: 'caution', text: `Poor sleep quality (${e.sleepQuality}/5)` });
+  if (e.soreness != null && e.soreness >= 4) reasons.push({ key: 'soreness', level: e.soreness === 5 ? 'rest' : 'caution', text: `Soreness ${e.soreness}/5` });
+  if (e.stress != null && e.stress >= 4) reasons.push({ key: 'stress', level: 'caution', text: `Stress ${e.stress}/5` });
 
   // Form in the normal range: shown as context, doesn't change the verdict
-  if (tsb != null && tsb >= -20 && tsb <= 5) reasons.push({ level: 'info', text: `Form ${tsb > 0 ? '+' : ''}${tsb.toFixed(0)}: ${tsbZone(tsb).label.toLowerCase()}` });
+  if (tsb != null && tsb >= -20 && tsb <= 5) reasons.push({ key: 'tsb', level: 'info', text: `Form ${tsb > 0 ? '+' : ''}${tsb.toFixed(0)}: ${tsbZone(tsb).label.toLowerCase()}` });
 
   const rest = reasons.filter(r => r.level === 'rest').length, caution = reasons.filter(r => r.level === 'caution').length;
   if (rest || caution >= 3) return { level: 'rest', label: 'Rest or go very easy', color: 'var(--color-red)', reasons };
@@ -83,25 +83,65 @@ function renderReadiness(now = new Date()) {
   const tsb = pmcResult && pmcResult.lastCtl != null ? pmcResult.lastCtl - pmcResult.lastAtl : null;
   const r = computeReadiness(key, tsb);
   const e = wellnessEntries[key];
-  const reasons = r.reasons.length
-    ? `<ul class="readiness-reasons">${r.reasons.map(x => `<li class="is-${x.level}">${escapeHtml(x.text)}</li>`).join('')}</ul>`
-    : `<div class="insight-muted">${e ? 'Nothing unusual today.' : 'Log this morning’s resting HR, HRV and sleep for a better readiness check.'}</div>`;
+  const levelOf = k => (r.reasons.find(x => x.key === k) || {}).level;
+  const cls = lvl => lvl === 'rest' ? 'is-rest' : lvl === 'caution' ? 'is-caution' : lvl === 'ready' ? 'is-ok' : '';
+  const signed = (n, digits = 0) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(digits)}`;
+  const cell = (label, value, delta, lvl) => `<div class="stat"><div class="stat__label">${label}</div><div class="stat__value">${value}${delta ? `<span class="stat__delta ${cls(lvl)}">${delta}</span>` : ''}</div></div>`;
+
+  let body;
+  if (e) {
+    const rhrBase = wellnessBaseline('restingHr', key), hrvBase = wellnessBaseline('hrv', key);
+    const zone = tsb != null ? tsbZone(tsb).label.split('—')[0].trim().toLowerCase() : '';
+    body = `<div class="stat-grid">
+      ${cell('Form', tsb != null ? signed(tsb, 1) : '—', zone, tsb != null && tsb > 5 ? 'ready' : levelOf('tsb'))}
+      ${cell('Resting HR', e.restingHr != null ? `${escapeHtml(e.restingHr)} bpm` : '—', e.restingHr != null && rhrBase != null ? signed(e.restingHr - rhrBase) : '', levelOf('restingHr'))}
+      ${cell('HRV', e.hrv != null ? `${escapeHtml(e.hrv)} ms` : '—', e.hrv != null && hrvBase ? `${signed((e.hrv - hrvBase) / hrvBase * 100)} %` : '', levelOf('hrv'))}
+      ${cell('Sleep', e.sleepHours != null ? `${escapeHtml(e.sleepHours)} h` : '—', '', levelOf('sleepHours'))}
+    </div>`;
+    // Reasons not shown in the grid (sleep quality, soreness, stress)
+    const extra = r.reasons.filter(x => ['sleepQuality', 'soreness', 'stress'].includes(x.key));
+    if (extra.length) body += `<ul class="readiness-reasons">${extra.map(x => `<li class="is-${x.level}">${escapeHtml(x.text)}</li>`).join('')}</ul>`;
+  } else {
+    const formLine = r.reasons.find(x => x.key === 'tsb');
+    body = `${formLine ? `<ul class="readiness-reasons"><li class="is-${formLine.level}">${escapeHtml(formLine.text)}</li></ul>` : ''}
+      <p class="readiness__empty">Log resting HR, HRV and sleep for a complete check.</p>
+      <button class="btn btn--primary btn--block" onclick="toggleWellnessPanel('form', true)">Log how you feel</button>`;
+  }
+  const icon = { ready: '✓', caution: '!', rest: '✕' }[r.level];
   document.getElementById('readinessBody').innerHTML = `
-    <div class="readiness-head"><span class="readiness-dot" style="background:${r.color}"></span><span class="readiness-label" style="color:${r.color}">${escapeHtml(r.label)}</span></div>
-    ${reasons}
-    <details class="wellness-form-wrap"${e ? '' : ' open'}><summary>${e ? 'Edit today’s wellness' : 'Log today’s wellness'}</summary>${wellnessFormHtml(key, e || {})}</details>
-    ${wellnessHistoryHtml(now)}`;
-  card.style.display = 'block';
+    <div class="readiness readiness--${r.level}">
+      <div class="readiness__icon" aria-hidden="true">${icon}</div>
+      <div><div class="readiness__label">Readiness</div><div class="readiness__verdict">${escapeHtml(r.label)}</div></div>
+    </div>
+    ${body}
+    <div class="readiness__links">
+      <button class="btn-reset" aria-expanded="false" aria-controls="wellnessPanelForm" onclick="toggleWellnessPanel('form')">${e ? 'Edit <span class="phone-only">today’s </span>wellness' : 'Log wellness'} ›</button>
+      <button class="btn-reset" aria-expanded="false" aria-controls="wellnessPanelHistory" onclick="toggleWellnessPanel('history')">Last 7 days ›</button>
+    </div>
+    <div class="readiness__panel" id="wellnessPanelForm" hidden>${wellnessFormHtml(key, e || {})}</div>
+    <div class="readiness__panel" id="wellnessPanelHistory" hidden>${wellnessHistoryHtml(now) || '<p class="card-text">No entries in the last 7 days.</p>'}</div>`;
+  card.style.display = '';
+}
+
+// Show one of the two panels under the readiness card (the other closes)
+function toggleWellnessPanel(which, forceOpen) {
+  for (const [k, id] of [['form', 'wellnessPanelForm'], ['history', 'wellnessPanelHistory']]) {
+    const panel = document.getElementById(id);
+    if (!panel) continue;
+    const open = k === which ? (forceOpen === true ? true : panel.hidden) : false;
+    panel.hidden = !open;
+    document.querySelector(`[aria-controls="${id}"]`)?.setAttribute('aria-expanded', String(open));
+  }
 }
 
 function wellnessFormHtml(dateKey, e) {
   const input = f => f.type === 'scale'
-    ? `<select class="compare-select" id="well_${f.key}" aria-label="${f.label}"><option value="">—</option>${[1, 2, 3, 4, 5].map(n => `<option value="${n}"${e[f.key] === n ? ' selected' : ''}>${n}</option>`).join('')}</select>`
-    : `<input class="settings-input" type="number" inputmode="decimal" id="well_${f.key}" aria-label="${f.label}" min="${f.min}" max="${f.max}" step="${f.step || 1}" value="${e[f.key] ?? ''}">`;
+    ? `<select class="select" id="well_${f.key}" aria-label="${f.label}"><option value="">—</option>${[1, 2, 3, 4, 5].map(n => `<option value="${n}"${e[f.key] === n ? ' selected' : ''}>${n}</option>`).join('')}</select>`
+    : `<input class="input" type="number" inputmode="decimal" id="well_${f.key}" aria-label="${f.label}" min="${f.min}" max="${f.max}" step="${f.step || 1}" value="${e[f.key] ?? ''}">`;
   return `<form class="wellness-form" onsubmit="event.preventDefault(); saveWellnessFromForm('${dateKey}')">
-    <div class="wellness-grid">${WELLNESS_FIELDS.map(f => `<label class="wellness-field"><span class="settings-label">${f.label} <small>${f.unit}</small></span>${input(f)}</label>`).join('')}</div>
-    <label class="wellness-field"><span class="settings-label">Notes</span><input class="settings-input" id="well_notes" value="${escapeHtml(e.notes || '')}" maxlength="2000" placeholder="Illness, travel, niggles…"></label>
-    <button class="btn-base btn-upload" type="submit" style="margin-top:10px">Save</button>
+    <div class="wellness-grid">${WELLNESS_FIELDS.map(f => `<label class="wellness-field"><span>${f.label} <small>${f.unit}</small></span>${input(f)}</label>`).join('')}</div>
+    <label class="wellness-field" style="margin-top:12px"><span>Notes</span><input class="input" id="well_notes" value="${escapeHtml(e.notes || '')}" maxlength="2000" placeholder="Illness, travel, niggles…"></label>
+    <button class="btn btn--primary btn--block" type="submit">Save</button>
   </form>`;
 }
 
@@ -110,7 +150,7 @@ function wellnessHistoryHtml(now) {
   if (!days.some(d => wellnessEntries[d])) return '';
   const cell = (d, k) => { const v = wellnessEntries[d]?.[k]; return v == null ? '—' : escapeHtml(v); };
   const rows = days.map(d => `<tr><td>${escapeHtml(parseIsoDate(d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }))}</td><td>${cell(d, 'restingHr')}</td><td>${cell(d, 'hrv')}</td><td>${cell(d, 'sleepHours')}</td><td>${cell(d, 'soreness')}</td><td>${cell(d, 'weight')}</td></tr>`).join('');
-  return `<details class="wellness-history"><summary>Last 7 days</summary><div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Day</th><th>RHR</th><th>HRV</th><th>Sleep</th><th>Sore</th><th>Kg</th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
+  return `<div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Day</th><th>RHR</th><th>HRV</th><th>Sleep</th><th>Sore</th><th>Kg</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 async function saveWellnessFromForm(dateKey) {

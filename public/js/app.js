@@ -10,9 +10,14 @@ let sortConfig = { key: 'date', dir: 'desc' };
 let plannerData = [];
 let raceDates = [];
 let plannerInited = false;
-let currentRange = 'all';
+let currentRange = 182; // 6 months by default (handoff: 6M)
+let seasonView = 'forecast';
+const pmcHidden = { 2: true }; // chart series hidden by the user (Form off by default)
+let logFilter = 'all';
+let selectMode = false;
 let sessionDataLoaded = false;
 let forecastTssEdited = false;
+let forecastDaysEdited = false;
 let pmcSport = 'all';
 let planOverrides = {}; // sessionId → 'YYYY-MM-DD' when moved in the Calendar
 
@@ -47,34 +52,28 @@ function log(msg, type) {
 // ══════════════════════════════════════════════
 function switchTab(tabId, btn) {
   document.querySelectorAll('.nav-tab').forEach(t => { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
-  btn.classList.add('is-active');
-  btn.setAttribute('aria-selected', 'true');
-
-  // Fade out current tab
-  const currentTab = document.querySelector('.tab-content.is-active');
-  const nextTab = document.getElementById('tab-' + tabId);
-  if (currentTab && currentTab !== nextTab) {
-    currentTab.style.opacity = '0';
-    currentTab.style.transform = 'translateY(8px)';
-    setTimeout(() => {
-      currentTab.classList.remove('is-active');
-      currentTab.style.opacity = '';
-      currentTab.style.transform = '';
-      // Fade in next tab
-      nextTab.classList.add('is-entering');
-      requestAnimationFrame(() => {
-        nextTab.classList.remove('is-entering');
-        nextTab.classList.add('is-active');
-      });
-    }, 150);
-  } else if (!currentTab) {
-    nextTab.classList.add('is-active');
-  }
-
-  if (tabId === 'compare') { initCompareDefaults(); renderComparison(); if (typeof renderBestEfforts === 'function') setTimeout(renderBestEfforts, 200); }
-  if (tabId === 'planner') initPlanner();
+  if (btn) { btn.classList.add('is-active'); btn.setAttribute('aria-selected', 'true'); }
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('is-active', t.id === 'tab-' + tabId));
+  window.scrollTo(0, 0);
+  if (tabId === 'season') setSeasonView(seasonView);
   if (tabId === 'plan') scrollToCurrentWeek();
   if (tabId === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
+}
+
+// ── Season: Forecast · Compare · Insights (one tab, segmented) ──
+const SEASON_PANELS = { forecast: 'tab-planner', compare: 'tab-compare', insights: 'tab-insights' };
+function setSeasonView(view) {
+  seasonView = SEASON_PANELS[view] ? view : 'forecast';
+  document.querySelectorAll('.season-view-btn').forEach(b => { const on = b.dataset.view === seasonView; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  for (const [v, id] of Object.entries(SEASON_PANELS)) document.getElementById(id)?.classList.toggle('is-active', v === seasonView);
+  if (seasonView === 'forecast') initPlanner();
+  if (seasonView === 'compare') { initCompareDefaults(); renderComparison(); }
+  if (seasonView === 'insights') { if (typeof renderInsights === 'function') renderInsights(); if (typeof renderBestEfforts === 'function') setTimeout(renderBestEfforts, 60); }
+}
+function openSeason(view) {
+  const btn = [...document.querySelectorAll('.nav-tab')].find(b => b.getAttribute('onclick')?.includes("'season'"));
+  seasonView = view || seasonView;
+  switchTab('season', btn);
 }
 
 // ══════════════════════════════════════════════
@@ -127,14 +126,14 @@ function computePMC() {
   document.getElementById('valAtl').textContent = atl.toFixed(1);
   const tsb = ctl - atl;
   const zone = tsbZone(tsb);
-  document.getElementById('valTsb').textContent = tsb.toFixed(1);
-  document.getElementById('valTsb').style.color = zone.color;
-  document.getElementById('subTsb').textContent = zone.label;
+  document.getElementById('valTsb').textContent = `${tsb > 0 ? '+' : ''}${tsb.toFixed(1)}`;
+  document.getElementById('subTsb').textContent = zone.label.split('—').pop().trim().replace(/^./, c => c.toUpperCase());
+  document.getElementById('subTsb').style.color = zone.color;
   // Ramp rate: CTL change over the last 7 days
   const ramp = nDays > 7 ? ctlV[nDays - 1] - ctlV[nDays - 8] : null;
   const subCtl = document.getElementById('subCtl');
   if (ramp === null) { subCtl.textContent = '42-day exponential avg'; subCtl.style.color = ''; }
-  else { const r = rampInfo(ramp); subCtl.textContent = `Ramp ${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)}/wk · ${r.label}`; subCtl.style.color = r.color; }
+  else { const r = rampInfo(ramp); subCtl.textContent = `${ramp >= 0 ? '+' : '−'}${Math.abs(ramp).toFixed(1)} / wk`; subCtl.title = `Ramp rate: ${r.label}`; subCtl.style.color = ramp > 5 ? r.color : ''; }
   // Forecast defaults to "maintain current fitness" until the user types their own value
   if (!forecastTssEdited) document.getElementById('inputForecastTss').value = Math.round(ctl);
   // Weekly TSS stats
@@ -150,9 +149,9 @@ function computePMC() {
     else if (d >= lastMonday && d <= lastSunday) { lastWeekTss += (a.tss || 0); lastWeekCount++; }
   }
   document.getElementById('valWeekTss').textContent = thisWeekTss.toLocaleString();
-  document.getElementById('subWeekTss').textContent = `${thisWeekCount} activities this week`;
+  document.getElementById('subWeekTss').textContent = `${thisWeekCount} activit${thisWeekCount === 1 ? 'y' : 'ies'} so far.`;
   document.getElementById('valLastWeekTss').textContent = lastWeekTss.toLocaleString();
-  document.getElementById('subLastWeekTss').textContent = `${lastWeekCount} activities last week`;
+  document.getElementById('subLastWeekTss').textContent = `${lastWeekCount} activit${lastWeekCount === 1 ? 'y' : 'ies'}`;
 
   // ── This Week Mini Summary ──
   renderWeekSummary(thisMonday, now, thisWeekTss, lastWeekTss);
@@ -161,55 +160,85 @@ function computePMC() {
 function renderWeekSummary(thisMonday, now, thisWeekTss, lastWeekTss) {
   const summaryEl = document.getElementById('weekSummary');
   if (!summaryEl) return;
+  summaryEl.style.display = allActivities.length ? '' : 'none';
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const weekActs = allActivities.filter(a => { const d = new Date(a.startDate); d.setHours(0, 0, 0, 0); return d >= thisMonday && d <= today; });
 
-  const weekActs = allActivities.filter(a => {
-    const d = new Date(a.startDate); d.setHours(0,0,0,0);
-    return d >= thisMonday && d <= now;
-  });
+  // Per-sport line (desktop)
+  const buckets = { cycling: [], running: [], swimming: [], other: [] };
+  for (const a of weekActs) buckets[isCyc(a.sport) ? 'cycling' : isRun(a.sport) ? 'running' : a.sport === 'swimming' ? 'swimming' : 'other'].push(a);
+  const line = list => list.length ? `${list.length}× · ${fmtDuration(list.reduce((n, a) => n + (a.duration || 0), 0))}` : '—';
+  document.getElementById('weekCyclingStats').textContent = line(buckets.cycling);
+  document.getElementById('weekRunningStats').textContent = line(buckets.running);
+  document.getElementById('weekSwimmingStats').textContent = line(buckets.swimming);
+  document.getElementById('weekOtherStats').textContent = line(buckets.other);
 
-  if (weekActs.length === 0 && allActivities.length > 0) {
-    // Show it but with "no activities yet" messaging
-    summaryEl.style.display = 'block';
-  } else if (weekActs.length > 0) {
-    summaryEl.style.display = 'block';
-  } else {
-    summaryEl.style.display = 'none';
-    return;
+  // Planned sessions this week (from the plan): one bar segment each, flex = planned TSS
+  const bar = document.getElementById('weekProgressBar'), days = document.getElementById('weekProgressDays');
+  const status = document.getElementById('weekProgressLabel');
+  const sessions = [];
+  if (trainingPlan) {
+    const matches = matchPlanToActivities(trainingPlan);
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(thisMonday, i);
+      for (const s of sessionsOnDate(trainingPlan, d)) if (s.sport !== 'rest') sessions.push({ s, d, matched: matches.get(s.id) });
+    }
   }
-
-  // Aggregate by sport category
-  const sportBuckets = { cycling: { dur: 0, dist: 0, tss: 0, count: 0 }, running: { dur: 0, dist: 0, tss: 0, count: 0 }, swimming: { dur: 0, dist: 0, tss: 0, count: 0 }, other: { dur: 0, dist: 0, tss: 0, count: 0 } };
-  for (const a of weekActs) {
-    let cat = 'other';
-    if (isCyc(a.sport)) cat = 'cycling';
-    else if (isRun(a.sport)) cat = 'running';
-    else if (a.sport === 'swimming') cat = 'swimming';
-    sportBuckets[cat].dur += (a.duration || 0);
-    sportBuckets[cat].dist += (a.distance || 0);
-    sportBuckets[cat].tss += (a.tss || 0);
-    sportBuckets[cat].count++;
-  }
-
-  const fmtSportSummary = (b, isSwiim) => {
-    if (b.count === 0) return '<span style="color:var(--text-muted)">No activities</span>';
-    const time = fmtDuration(b.dur);
-    const dist = isSwiim ? (b.dist > 0 ? `${b.dist}m` : '') : (b.dist >= 1000 ? `${(b.dist / 1000).toFixed(1)}km` : (b.dist > 0 ? `${b.dist}m` : ''));
-    return `${b.count}× · ${time}${dist ? ' · ' + dist : ''}`;
-  };
-
-  document.getElementById('weekCyclingStats').innerHTML = fmtSportSummary(sportBuckets.cycling, false);
-  document.getElementById('weekRunningStats').innerHTML = fmtSportSummary(sportBuckets.running, false);
-  document.getElementById('weekSwimmingStats').innerHTML = fmtSportSummary(sportBuckets.swimming, true);
-  document.getElementById('weekOtherStats').innerHTML = fmtSportSummary(sportBuckets.other, false);
-
-  // Progress bar — goal is this week's planned TSS (plan or Planner tab), else last week's TSS
   const planned = plannedTssForWeek(thisMonday);
-  const goal = planned ? planned.tss : lastWeekTss > 0 ? lastWeekTss : (thisWeekTss > 0 ? Math.round(thisWeekTss * 1.5) : 400);
-  const source = planned ? planned.source : lastWeekTss > 0 ? 'last week' : 'default';
-  const pct = Math.min(100, Math.round((thisWeekTss / goal) * 100));
-  document.getElementById('weekProgressLabel').textContent = `Weekly TSS vs ${planned ? 'planned' : 'goal'} (${source})`;
-  document.getElementById('weekProgressText').textContent = `${thisWeekTss} / ${goal} TSS`;
-  document.getElementById('weekProgressBar').style.width = pct + '%';
+  const phase = trainingPlan && (trainingPlan.weeks || []).find(w => { const st = planWeekStart(w, trainingPlan); return st && localDateKey(st) === localDateKey(thisMonday); });
+  document.getElementById('weekPhaseLabel').textContent = phase ? `W${String(phase.week).padStart(2, '0')}${phase.phase ? ' · ' + phase.phase[0] + phase.phase.slice(1).toLowerCase() : ''}` : '';
+
+  if (sessions.length) {
+    const doneCount = sessions.filter(x => x.matched || isSessionTicked(x.s)).length;
+    const plannedSoFar = sessions.filter(x => x.d < today).reduce((n, x) => n + (x.s.tss || 0), 0);
+    const total = planned ? planned.tss : sessions.reduce((n, x) => n + (x.s.tss || 0), 0);
+    document.getElementById('weekProgressText').textContent = `/ ${total} TSS`;
+    bar.innerHTML = sessions.map(x => {
+      const done = x.matched || isSessionTicked(x.s);
+      const state = done ? 'done' : localDateKey(x.d) === localDateKey(today) ? 'today' : x.d < today ? 'missed' : 'future';
+      return `<span class="week-progress__seg week-progress__seg--${state}" style="flex:${Math.max(1, x.s.tss || 1)}" title="${escapeHtml(x.s.name)}"></span>`;
+    }).join('');
+    days.innerHTML = sessions.map(x => `<span style="flex:${Math.max(1, x.s.tss || 1)}">${localDateKey(x.d) === localDateKey(today) ? 'Today' : escapeHtml(x.d.toLocaleDateString('en-GB', { weekday: 'short' }))}</span>`).join('');
+    bar.setAttribute('aria-label', `${doneCount} of ${sessions.length} planned sessions done`);
+    // Status vs what was planned before today (today's session may still be ahead)
+    const behind = plannedSoFar > 0 && thisWeekTss < plannedSoFar * 0.8;
+    status.textContent = behind ? `Behind plan · ${Math.round(thisWeekTss / plannedSoFar * 100)} %` : '✓ On track';
+    status.className = `week-card__status ${behind ? 'is-caution' : 'is-ok'}`;
+    document.getElementById('subWeekTss').textContent = `${doneCount} of ${sessions.length} sessions done.`;
+  } else {
+    // No plan: compare with last week
+    const goal = planned ? planned.tss : lastWeekTss || 0;
+    document.getElementById('weekProgressText').textContent = goal ? `/ ${goal} TSS` : 'TSS';
+    const pct = goal ? Math.min(100, Math.round(thisWeekTss / goal * 100)) : 0;
+    bar.innerHTML = goal ? `<span class="week-progress__seg week-progress__seg--done" style="flex:${pct || 0.001}"></span><span class="week-progress__seg" style="flex:${100 - pct}"></span>` : '';
+    days.innerHTML = '';
+    status.textContent = goal ? `${pct} % of ${planned ? 'planned' : 'last week'}` : '';
+    status.className = 'week-card__status';
+  }
+}
+
+// Today page title + caption: "Tuesday 29 Sept" / "W04 · Build · 47 days to Saint-Nolff Trail"
+function renderTodayHead(now = new Date()) {
+  const title = document.getElementById('todayTitle'), cap = document.getElementById('todayCaption');
+  if (!title) return;
+  title.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+  const parts = [];
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const week = trainingPlan && (trainingPlan.weeks || []).find(w => isWeekCurrent(w, trainingPlan, now));
+  if (week) parts.push(`W${String(week.week).padStart(2, '0')}`, week.phase ? week.phase[0] + week.phase.slice(1).toLowerCase() : '');
+  const next = (raceDates || []).filter(r => r.date && parseIsoDate(r.date) >= today).sort((a, b) => a.date.localeCompare(b.date))[0];
+  if (next) {
+    const n = Math.round((parseIsoDate(next.date) - today) / 86400000);
+    parts.push(n === 0 ? `Race day: ${next.name || 'race'}` : `${n} day${n > 1 ? 's' : ''} to ${next.name || 'race'}`);
+    // Forecast reaches the next race (≤ 60 days) so its marker shows on the chart, until the user picks a length
+    const slider = document.getElementById('sliderForecastDays');
+    if (!forecastDaysEdited && n > 0 && n <= 60 && +slider.value !== n) {
+      slider.value = n;
+      document.getElementById('displayForecastDays').textContent = `${n} days`;
+      if (pmcChart) buildPMCChart();
+    }
+  }
+  cap.textContent = parts.filter(Boolean).join(' · ');
 }
 
 // Form (TSB) zones, as commonly used with the Performance Management Chart
@@ -278,14 +307,15 @@ function setPmcSport(key) {
 function renderSportFitness() {
   const el = document.getElementById('sportFitness');
   if (!el) return;
-  const chips = Object.entries(PMC_SPORTS).map(([key, sp]) => {
+  el.innerHTML = Object.entries(PMC_SPORTS).map(([key, sp]) => {
     if (!allActivities.some(a => sp.test(a.sport))) return '';
     const s = pmcSeriesFor(key), n = s.ctlVals.length;
     const ramp = n > 7 ? s.ctlVals[n - 1] - s.ctlVals[n - 8] : 0;
-    return `<button class="btn-reset sport-fitness-chip${pmcSport === key ? ' is-active' : ''}" aria-pressed="${pmcSport === key}" onclick="setPmcSport(pmcSport === '${key}' ? 'all' : '${key}'); renderSportFitness(); document.getElementById('pmcSportSelect').value = pmcSport;">
-      ${sportIcon(sp.icon)} ${sp.label} <strong>${s.lastCtl.toFixed(0)}</strong> <small style="color:${rampInfo(ramp).color}">${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)}/wk</small></button>`;
+    const on = pmcSport === key;
+    return `<button class="btn-reset sport-fitness-chip" aria-pressed="${on}" title="${sp.label} fitness, ${ramp >= 0 ? '+' : ''}${ramp.toFixed(1)} per week — click to chart"
+      onclick="setPmcSport(pmcSport === '${key}' ? 'all' : '${key}'); renderSportFitness(); document.getElementById('pmcSportSelect').value = pmcSport;">
+      ${sportDot(key)}${sp.label} ${s.lastCtl.toFixed(0)}</button>`;
   }).join('');
-  el.innerHTML = chips ? `<span class="sport-fitness-label">Fitness by sport</span>${chips}` : '';
 }
 
 function computeSmallForecast(src = pmcResult) {
@@ -358,25 +388,34 @@ function buildPMCChart() {
     }
   }
 
+  const c = C();
+  const maxTss = Math.max(1, ...tssData.filter(v => v != null));
+  const short = labels.length <= 70;
   pmcChart = new Chart(ctx, {
     type: 'line',
     plugins: [pmcOverlayPlugin(labels)],
     data: { labels, datasets: [
-      { label: 'CTL (Fitness)', data: ctlData, borderColor: '#3b82f6', borderWidth: 2.5, pointRadius: 0, pointHitRadius: 6, tension: 0.3, fill: false, order: 2, spanGaps: true },
-      { label: 'ATL (Fatigue)', data: atlData, borderColor: '#f43f5e', borderWidth: 2, pointRadius: 0, pointHitRadius: 6, tension: 0.3, fill: false, order: 3, spanGaps: true },
-      { label: 'TSB (Form)', data: tsbData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.06)', borderWidth: 1.5, pointRadius: 0, pointHitRadius: 6, tension: 0.3, fill: true, order: 4, spanGaps: true },
-      { label: 'TSS', data: tssData, borderColor: 'rgba(245,158,11,0.7)', backgroundColor: 'rgba(245,158,11,0.5)', pointRadius: 4, pointHoverRadius: 7, showLine: false, order: 1, yAxisID: 'y1', spanGaps: false },
-      { label: 'CTL Forecast', data: fcCtlData, borderColor: 'rgba(59,130,246,0.4)', borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3, order: 5, spanGaps: false },
-      { label: 'ATL Forecast', data: fcAtlData, borderColor: 'rgba(244,63,94,0.3)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.3, order: 6, spanGaps: false },
-      { label: 'TSB Forecast', data: fcTsbData, borderColor: 'rgba(16,185,129,0.3)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.3, order: 7, spanGaps: false },
+      { label: 'Fitness', data: ctlData, borderColor: c.ctl, backgroundColor: withAlpha(c.ctl, 0.08), borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, pointHitRadius: 6, tension: 0.3, fill: 'origin', order: 2, spanGaps: true, hidden: !!pmcHidden[0] },
+      { label: 'Fatigue', data: atlData, borderColor: withAlpha(c.atl, 0.6), borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, pointHitRadius: 6, tension: 0.3, fill: false, order: 3, spanGaps: true, hidden: !!pmcHidden[1] },
+      { label: 'Form', data: tsbData, borderColor: c.tsb, backgroundColor: withAlpha(c.tsb, 0.10), borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, pointHitRadius: 6, tension: 0.3, fill: { target: { value: 0 } }, order: 4, spanGaps: true, hidden: !!pmcHidden[2] },
+      { type: 'bar', label: 'TSS', data: tssData, backgroundColor: withAlpha(c.tss, 0.55), borderWidth: 0, barThickness: short ? 4 : 2, order: 1, yAxisID: 'y1', hidden: !!pmcHidden[3] },
+      { label: 'Fitness forecast', data: fcCtlData, borderColor: withAlpha(c.ctl, 0.8), borderDash: [4, 4], borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3, order: 5, spanGaps: false, hidden: !!pmcHidden[4] },
+      { label: 'Fatigue forecast', data: fcAtlData, borderColor: withAlpha(c.atl, 0.45), borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.3, order: 6, spanGaps: false, hidden: !!pmcHidden[4] || !!pmcHidden[1] },
+      { label: 'Form forecast', data: fcTsbData, borderColor: withAlpha(c.tsb, 0.6), borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0.3, order: 7, spanGaps: false, hidden: !!pmcHidden[4] || !!pmcHidden[2] },
     ]},
     options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#a3a8bc', padding: 12, cornerRadius: 8, filter: i => i.raw !== null,
-        callbacks: { title: items => { if (!items.length) return ''; try { return new Date(items[0].label + 'T00:00:00').toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return items[0].label; } } } } },
+      layout: { padding: { top: 26 } },
+      plugins: { legend: { display: false }, tooltip: { ...chartTooltip(), filter: i => i.raw !== null && !i.dataset.hidden,
+        callbacks: { title: items => { if (!items.length) return ''; try { return new Date(items[0].label + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return items[0].label; } } } } },
       scales: {
-        x: { type: 'category', grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3', font: { family: 'DM Sans', size: 11 }, maxTicksLimit: 12, autoSkip: true, callback: function (v) { const l = this.getLabelForValue(v); try { return new Date(l + 'T00:00:00').toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }); } catch (e) { return l; } } } },
-        y: { position: 'left', grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'CTL / ATL / TSB', color: '#858aa3' } },
-        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: 'rgba(245,158,11,0.6)', font: { family: 'JetBrains Mono', size: 11 } }, title: { display: true, text: 'TSS', color: 'rgba(245,158,11,0.6)' }, min: 0 }
+        // Month names at month starts; for short ranges a date every week
+        x: chartScaleX({ type: 'category', ticks: { color: c.muted, autoSkip: false, maxRotation: 0,
+          callback: function (v, i) { const d = new Date(this.getLabelForValue(v) + 'T00:00:00'); if (isNaN(d)) return null;
+            if (short) return (i % 7 === 0) ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : null;
+            return d.getDate() === 1 ? d.toLocaleDateString('en-GB', { month: 'short' }) : null; } } }),
+        y: chartScaleY({ position: 'left' }),
+        // TSS bars live in the bottom ~16 % of the chart
+        y1: { position: 'right', display: false, min: 0, max: maxTss / 0.16, grid: { drawOnChartArea: false } },
       }
     }
   });
@@ -385,22 +424,26 @@ function buildPMCChart() {
 // PMC overlays: shaded form (TSB) zones behind the lines, and dashed race-day markers
 // (No band above +25: it would shade the CTL/ATL lines, which share the axis.)
 const TSB_BANDS = [
-  { from: 5, to: 25, color: 'rgba(16,185,129,0.07)' },          // fresh
-  { from: -30, to: -10, color: 'rgba(59,130,246,0.07)' },       // optimal training
-  { from: -Infinity, to: -30, color: 'rgba(244,63,94,0.08)' },  // high risk
+  { from: 5, to: 25, key: 'tsb' },            // fresh
+  { from: -30, to: -10, key: 'ctl' },         // optimal training
+  { from: -Infinity, to: -30, key: 'missed' },// high risk
 ];
 function pmcOverlayPlugin(labels) {
-  const races = (raceDates || []).filter(r => r.date).map(r => ({ idx: labels.indexOf(r.date), name: r.name || 'Race' })).filter(r => r.idx >= 0);
+  const races = (raceDates || []).filter(r => r.date).map(r => ({ idx: labels.indexOf(r.date), date: r.date, name: r.name || 'Race' })).filter(r => r.idx >= 0);
+  const todayIdx = labels.indexOf(localDateKey(new Date()));
   return {
     id: 'pmcOverlay',
     beforeDatasetsDraw(chart) {
+      // Form zones: only while Form is shown (subtle 4 % tints)
+      if (pmcHidden[2]) return;
       const { ctx, chartArea: a, scales: { y } } = chart;
       if (!a || !y) return;
+      const c = C();
       ctx.save();
       for (const b of TSB_BANDS) {
         const top = y.getPixelForValue(Math.min(b.to, y.max)), bottom = y.getPixelForValue(Math.max(b.from, y.min));
         if (bottom <= a.top || top >= a.bottom || bottom <= top) continue;
-        ctx.fillStyle = b.color;
+        ctx.fillStyle = withAlpha(c[b.key], 0.04);
         ctx.fillRect(a.left, Math.max(top, a.top), a.right - a.left, Math.min(bottom, a.bottom) - Math.max(top, a.top));
       }
       ctx.restore();
@@ -408,36 +451,54 @@ function pmcOverlayPlugin(labels) {
     afterDatasetsDraw(chart) {
       const { ctx, chartArea: a, scales: { x } } = chart;
       if (!a || !x) return;
+      const c = C();
+      // Label chip above the plot; returns its [left, right] so chips don't overlap
+      const chipBox = (px, text) => { ctx.font = "600 12px 'Geist', system-ui, sans-serif"; const w = ctx.measureText(text).width + 12; const left = Math.min(Math.max(px - w / 2, a.left), a.right - w); return [left, left + w]; };
+      const chip = (px, text, bg, fg) => {
+        const [left, right] = chipBox(px, text), h = 20;
+        ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(left, a.top - h - 4, right - left, h, 6) : ctx.rect(left, a.top - h - 4, right - left, h); ctx.fill();
+        ctx.fillStyle = fg; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, left + 6, a.top - h / 2 - 4);
+        return [left, right];
+      };
+      const vline = (px, color, width) => { ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke(); };
+      ctx.save();
+      const taken = [];
       for (const r of races) {
         const px = x.getPixelForValue(r.idx);
         if (px < a.left || px > a.right) continue;
-        ctx.save();
-        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
-        ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
-        ctx.setLineDash([]); ctx.fillStyle = '#f59e0b'; ctx.font = '600 11px DM Sans, sans-serif';
-        ctx.textAlign = px > a.right - 80 ? 'right' : 'left';
-        ctx.fillText('🏁 ' + r.name, px + (ctx.textAlign === 'right' ? -4 : 4), a.top + 12);
-        ctx.restore();
+        vline(px, c.tss, 1.5);
+        const d = parseIsoDate(r.date);
+        taken.push(chip(px, `${r.name} · ${d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}`, c.tss, '#0C0D10'));
       }
+      if (todayIdx >= 0) {
+        const px = x.getPixelForValue(todayIdx);
+        if (px >= a.left && px <= a.right) {
+          vline(px, withAlpha(c.text, 0.35), 1);
+          const [l, r] = chipBox(px, 'Today');
+          if (!taken.some(([tl, tr]) => l < tr + 6 && r > tl - 6)) chip(px, 'Today', c.raised, c.dim);
+        }
+      }
+      ctx.restore();
     },
   };
 }
 
 function updateForecast() { document.getElementById('displayForecastDays').textContent = `${document.getElementById('sliderForecastDays').value} days`; if (pmcChart) buildPMCChart(); }
+// Toggle a PMC series (0 CTL, 1 ATL, 2 TSB, 3 TSS, 4 forecast); remembered across chart rebuilds
 function toggleChartDataset(i, btn) {
-  if (!pmcChart) return;
-  let hidden;
-  if (i === 4) { hidden = !pmcChart.data.datasets[4].hidden; [4, 5, 6].forEach(j => pmcChart.data.datasets[j].hidden = hidden); }
-  else { hidden = !pmcChart.data.datasets[i].hidden; pmcChart.data.datasets[i].hidden = hidden; }
-  if (btn) btn.setAttribute('aria-pressed', String(!hidden));
-  pmcChart.update();
+  pmcHidden[i] = !pmcHidden[i];
+  if (btn) {
+    btn.setAttribute('aria-pressed', String(!pmcHidden[i]));
+    if (i === 4) btn.textContent = pmcHidden[4] ? 'Show forecast' : 'Hide forecast';
+  }
+  if (pmcChart) buildPMCChart();
 }
 
 function setCustomChartRange() {
   const from = document.getElementById('chartRangeFrom').value;
   const to = document.getElementById('chartRangeTo').value;
   if (!from || !to) return;
-  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('is-active'));
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('is-active', b.getAttribute('onclick')?.includes('toggleCustomRange')));
   currentRange = { from, to };
   buildPMCChart();
 }
@@ -445,8 +506,17 @@ function setCustomChartRange() {
 function setChartRange(r, btn) {
   document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('is-active'));
   btn.classList.add('is-active');
+  document.getElementById('customRange').hidden = true;
   currentRange = r;
   buildPMCChart();
+}
+
+// "Custom" range: reveal the two date inputs (the range applies once both are set)
+function toggleCustomRange(btn) {
+  const box = document.getElementById('customRange');
+  box.hidden = !box.hidden;
+  btn.setAttribute('aria-expanded', String(!box.hidden));
+  if (!box.hidden) document.getElementById('chartRangeFrom').focus();
 }
 
 // ══════════════════════════════════════════════
@@ -860,7 +930,7 @@ function saveRaceDates() {
 async function loadRaceDates() {
   if (typeof loadRaceDatesData !== 'function') return;
   const saved = await loadRaceDatesData();
-  if (saved) { raceDates = saved; renderRaceDateInputs(); }
+  if (saved) { raceDates = saved; renderRaceDateInputs(); renderTodayHead(); }
 }
 
 function updatePlannerForecast() {
@@ -972,7 +1042,7 @@ let selectedActivityIds = new Set();
 function onRowSelect(cb) {
   const id = cb.dataset.id;
   if (cb.checked) selectedActivityIds.add(id); else selectedActivityIds.delete(id);
-  cb.closest('tr').classList.toggle('row-selected', cb.checked);
+  cb.closest('tr, .log-row')?.classList.toggle('row-selected', cb.checked);
   updateSelectionUI();
 }
 
@@ -981,16 +1051,35 @@ function toggleSelectAll(checked) {
     cb.checked = checked;
     const id = cb.dataset.id;
     if (checked) selectedActivityIds.add(id); else selectedActivityIds.delete(id);
-    cb.closest('tr').classList.toggle('row-selected', checked);
+    cb.closest('tr, .log-row')?.classList.toggle('row-selected', checked);
   });
   updateSelectionUI();
+}
+
+// Activities: "Select" enters multi-select (checkboxes + delete bar)
+function toggleSelectMode(force) {
+  selectMode = typeof force === 'boolean' ? force : !selectMode;
+  if (!selectMode) selectedActivityIds.clear();
+  document.getElementById('tab-log').classList.toggle('select-mode', selectMode);
+  document.getElementById('selectBar').hidden = !selectMode;
+  const b = document.getElementById('btnSelectMode');
+  b.textContent = selectMode ? 'Done' : 'Select';
+  b.setAttribute('aria-pressed', String(selectMode));
+  renderTrainingTable();
+  updateSelectionUI();
+}
+
+function setLogFilter(f) {
+  logFilter = f;
+  document.querySelectorAll('#logFilters .chip').forEach(c => c.classList.toggle('is-active', c.dataset.filter === f));
+  renderTrainingTable();
 }
 
 function updateSelectionUI() {
   const n = selectedActivityIds.size;
   const sc = document.getElementById('selectedCount');
   const bd = document.getElementById('btnDeleteSelected');
-  if (sc) { sc.style.display = n > 0 ? 'inline' : 'none'; sc.textContent = n + ' selected'; }
+  if (sc) sc.textContent = n + ' selected';
   if (bd) bd.style.display = n > 0 ? 'inline-flex' : 'none';
   const selectAll = document.getElementById('selectAllCheckbox');
   if (selectAll) {
@@ -1084,7 +1173,7 @@ function emptyStateStrava() {
 function setDashboardVisibility(has) {
   document.getElementById('dashboardSection').style.display = 'block';
   document.getElementById('uploadDropzone').style.display = has ? 'none' : 'block';
-  document.getElementById('overviewContent').style.display = has ? 'block' : 'none';
+  document.getElementById('overviewContent').style.display = has ? '' : 'none';
   document.getElementById('dangerZone').style.display = has ? 'flex' : 'none';
 }
 
@@ -1092,6 +1181,7 @@ function refreshDashboard() {
   const has = allActivities.length > 0;
   setDashboardVisibility(has);
   renderTrainingTable();
+  renderTodayHead();
   if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); renderSportFitness(); }
   if (typeof renderInsights === 'function') renderInsights();
   if (typeof renderReadiness === 'function' && activitiesLoaded) renderReadiness();
@@ -1137,8 +1227,9 @@ function onDrop(e) { e.preventDefault(); const el = document.getElementById('upl
 
 // UI
 function toggleSettings() {
-  const open = document.getElementById('settingsPanel').classList.toggle('is-open');
-  document.getElementById('btnSettings').setAttribute('aria-expanded', String(open));
+  const dlg = document.getElementById('settingsDialog');
+  if (dlg.open) dlg.close(); else dlg.showModal();
+  document.getElementById('btnSettings')?.setAttribute('aria-expanded', String(dlg.open));
 }
 
 // ── Account menu ──
@@ -1153,7 +1244,9 @@ function closeAccountMenu() {
   document.getElementById('btnAccount').setAttribute('aria-expanded', 'false');
 }
 document.addEventListener('click', e => {
-  if (!e.target.closest('.account-menu-wrap')) closeAccountMenu();
+  if (!e.target.closest('[data-account-trigger], #accountMenu')) closeAccountMenu();
+  // Close open dropdown menus (<details class="menu">, chip popovers) when clicking elsewhere
+  document.querySelectorAll('details.menu[open], details.chip-popover[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; });
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('accountMenu')?.classList.contains('is-open')) {
@@ -1162,7 +1255,22 @@ document.addEventListener('keydown', e => {
   }
 });
 function toggleDebug() { document.getElementById('debugPanel').classList.toggle('is-open'); }
-function showToast(msg, icon = 'ℹ️') { const el = document.createElement('div'); el.className = 'toast-notification'; const ic = document.createElement('span'); ic.textContent = icon; el.append(ic, ' ' + msg); document.body.appendChild(el); setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2500); setTimeout(() => el.remove(), 3000); }
+// Toast with a glyph by type. `kind` is 'ok' | 'error' | 'warn' | 'info' (older callers pass an emoji: mapped)
+const TOAST_KINDS = { '✅': 'ok', '❌': 'error', '⚠️': 'warn', '🗑': 'ok', '📅': 'ok' };
+function showToast(msg, kind = 'info') {
+  const type = TOAST_KINDS[kind] || (['ok', 'error', 'warn', 'info'].includes(kind) ? kind : 'info');
+  const el = document.createElement('div');
+  el.className = `toast-notification toast--${type}`;
+  el.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  const g = document.createElement('span');
+  g.className = 'toast-glyph';
+  g.setAttribute('aria-hidden', 'true');
+  g.textContent = { ok: '✓', error: '✕', warn: '!', info: 'i' }[type];
+  el.append(g, msg);
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2800);
+  setTimeout(() => el.remove(), 3200);
+}
 
 
 // ══════════════════════════════════════════════
@@ -1308,6 +1416,7 @@ function toggleSessionComplete(sessionId) {
   if (!session) return;
   planCompletions[sessionId] = !isSessionTicked(session);
   renderTrainingPlan();
+  if (allActivities.length) computePMC(); // week progress bar
   if (typeof savePlanCompletions === 'function') savePlanCompletions(planCompletions);
 }
 
@@ -1517,6 +1626,7 @@ function renderTrainingPlan() {
   }
   document.getElementById('planWeeks').innerHTML = wh;
   renderUpcomingSessions();
+  renderTodayHead();
   if (typeof renderCalendar === 'function' && document.getElementById('tab-calendar')?.classList.contains('is-active')) renderCalendar();
 }
 
@@ -1538,28 +1648,79 @@ function renderUpcomingSessions(now = new Date()) {
   if (!card) return;
   if (!trainingPlan) { card.style.display = 'none'; return; }
   const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const tomorrow = addDays(today, 1);
   const matches = matchPlanToActivities(trainingPlan);
-  const days = [today, addDays(today, 1)];
-  const dayHtml = (date, i) => {
-    const sessions = sessionsOnDate(trainingPlan, date);
-    const title = `<div class="upcoming-day-title"><strong>${i === 0 ? 'Today' : 'Tomorrow'}</strong> · ${escapeHtml(date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }))}</div>`;
-    if (!sessions.length) return `<div class="upcoming-day">${title}<div class="upcoming-empty">Nothing planned</div></div>`;
-    return `<div class="upcoming-day">${title}${sessions.map(s => {
-      const matched = matches.get(s.id);
-      const done = !!(isSessionTicked(s) || matched);
-      const box = s.sport === 'rest' ? '<span style="width:16px;flex-shrink:0"></span>'
-        : matched ? `<input type="checkbox" checked disabled aria-label="Completed on Strava" title="Completed — matched a Strava activity">`
-        : `<input type="checkbox" ${done ? 'checked' : ''} aria-label="Mark ${escapeHtml(s.name)} as done" data-session-id="${escapeHtml(s.id)}" onchange="toggleSessionComplete(this.dataset.sessionId)">`;
-      const tss = s.tss ? `<span class="plan-session-tss">TSS ${escapeHtml(s.tss)}</span>` : '';
-      const actual = matched ? ` <span class="plan-session-actual">✓ ${escapeHtml(matched.tss)} TSS actual</span>` : '';
-      return `<div class="upcoming-session${done ? ' is-done' : ''}">${box}<div style="min-width:0">
-        <div class="upcoming-session-name">${sportIcon(s.sport)} ${escapeHtml(s.name)}</div>
-        ${s.description ? `<div class="plan-session-desc is-clamped" style="font-size:13px;color:var(--text-dim)">${escapeHtml(s.description)}</div>` : ''}
-        ${sessionMetaHtml(s)}<div style="margin-top:4px">${tss}${actual}</div></div></div>`;
-    }).join('')}</div>`;
-  };
-  document.getElementById('upcomingDays').innerHTML = days.map(dayHtml).join('');
-  card.style.display = 'block';
+  const dayLabel = d => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
+
+  // Today: the first session as the big card, others as compact rows inside it
+  const todays = sessionsOnDate(trainingPlan, today);
+  let todayHtml;
+  if (!todays.length) {
+    todayHtml = `<article class="card session-card session-card--today"><div class="session-card__top"><span class="sport-label">Today</span></div>
+      <h3 class="session-card__title">Nothing planned today</h3><p class="session-card__desc">Enjoy the rest, or check the plan for the week.</p>
+      <div class="session-card__actions"><button class="btn btn--secondary btn--lg" onclick="openPlanTab()">Open plan</button></div></article>`;
+  } else {
+    const [s, ...more] = todays;
+    todayHtml = todaySessionCardHtml(s, matches.get(s.id), more.map(x => sessionRowHtml(x, 'Also today', matches.get(x.id))).join(''));
+  }
+
+  // Tomorrow: compact rows that open the session sheet
+  const tomorrows = sessionsOnDate(trainingPlan, tomorrow);
+  const tomorrowHtml = `<div class="card upcoming-tomorrow">${tomorrows.length
+    ? tomorrows.map(s => sessionRowHtml(s, `Tomorrow · ${dayLabel(tomorrow)}`, matches.get(s.id))).join('')
+    : `<div class="list-row" style="cursor:default"><div class="list-row__main"><div class="list-row__caption">Tomorrow · ${escapeHtml(dayLabel(tomorrow))}</div><div class="list-row__title">Nothing planned</div></div></div>`}</div>`;
+
+  document.getElementById('upcomingDays').innerHTML = todayHtml + tomorrowHtml;
+  card.style.display = '';
+}
+
+// Plan sport or activity sport → CSS sport key and label
+function sportKey(s) {
+  if (s === 'bike' || isCyc(s)) return 'bike';
+  if (s === 'run' || ['running', 'trail_running', 'walking', 'hiking'].includes(s)) return 'run';
+  if (s === 'swim' || s === 'swimming') return 'swim';
+  if (['strength', 'strength+swim', 'fitness_equipment'].includes(s)) return 'strength';
+  if (s === 'race') return 'race';
+  return 'rest';
+}
+function sportLabel(s) { return { bike: 'Bike', run: 'Run', swim: 'Swim', strength: 'Strength', race: 'Race', rest: s === 'rest' ? 'Rest' : fmtSportName(s) }[sportKey(s)]; }
+function sportDot(s) { return `<i class="sport-dot" style="--sport:var(--sport-${sportKey(s)})" aria-hidden="true"></i>`; }
+
+function todaySessionCardHtml(s, matched, extraRows = '') {
+  const done = !!(isSessionTicked(s) || matched);
+  const id = escapeHtml(s.id);
+  const strip = [];
+  if (s.durationMin) strip.push(['Duration', escapeHtml(fmtMinutes(s.durationMin))]);
+  if (s.hrTarget) strip.push([/^[≤<]/.test(s.hrTarget) ? 'HR cap' : 'Heart rate', escapeHtml(s.hrTarget)]);
+  if (s.powerTarget) { const m = String(s.powerTarget).match(/^(.*?)\s*\((.*)\)$/); strip.push(['Power', m ? `${escapeHtml(m[1])} <small>${escapeHtml(m[2])}</small>` : escapeHtml(s.powerTarget)]); }
+  let actions;
+  if (s.sport === 'rest') actions = `<button class="btn btn--secondary btn--lg" data-session-id="${id}" onclick="openSessionDialog(this.dataset.sessionId)">Details</button>`;
+  else {
+    const main = matched
+      ? `<span class="btn btn--secondary btn--lg" style="cursor:default;color:var(--color-ok)">✓ Done · ${escapeHtml(matched.tss)} TSS</span>`
+      : done ? `<button class="btn btn--secondary btn--lg" data-session-id="${id}" onclick="toggleSessionComplete(this.dataset.sessionId)" aria-pressed="true" style="color:var(--color-ok)">✓ Done</button>`
+        : `<button class="btn btn--primary btn--lg" data-session-id="${id}" onclick="toggleSessionComplete(this.dataset.sessionId)" aria-pressed="false">Mark done</button>`;
+    actions = main + `<button class="btn btn--secondary btn--lg" data-session-id="${id}" onclick="openSessionDialog(this.dataset.sessionId)">Details</button>`
+      + (s.steps && s.steps.length && ['bike', 'run'].includes(s.sport) ? `<button class="btn btn--secondary btn--lg desktop-only" data-session-id="${id}" onclick="exportSessionWorkout(this.dataset.sessionId, 'zwo')"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>.zwo</button>` : '');
+  }
+  return `<article class="card session-card session-card--today${done ? ' is-done' : ''}">
+    <div class="session-card__top"><span class="sport-label">${sportDot(s.sport)}Today · ${escapeHtml(sportLabel(s.sport))}</span>${s.tss ? `<span class="tss">TSS ${escapeHtml(s.tss)}</span>` : ''}</div>
+    <h3 class="session-card__title">${escapeHtml(s.name)}</h3>
+    ${s.description ? `<p class="session-card__desc plan-session-desc${s.description.length > 200 ? ' is-clamped' : ''}">${escapeHtml(s.description)}</p>` : ''}
+    ${strip.length ? `<div class="target-strip">${strip.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>` : ''}
+    <div class="session-card__actions">${actions}</div>
+    ${extraRows ? `<div style="margin-top:14px;border-top:1px solid var(--border-subtle);padding-top:6px">${extraRows}</div>` : ''}
+  </article>`;
+}
+
+// Compact session row (tomorrow, extra sessions): opens the session sheet
+function sessionRowHtml(s, caption, matched) {
+  const meta = [sessionMetaText(s), s.tss ? `TSS ${s.tss}` : ''].filter(Boolean).join(' · ');
+  const done = !!(isSessionTicked(s) || matched);
+  return `<button class="btn-reset list-row" data-session-id="${escapeHtml(s.id)}" onclick="openSessionDialog(this.dataset.sessionId)">
+    ${sportDot(s.sport)}<div class="list-row__main"><div class="list-row__caption">${escapeHtml(caption)}${done ? ' · <span class="is-ok">✓ done</span>' : ''}</div>
+    <div class="list-row__title">${escapeHtml(s.name)}</div>${meta ? `<div class="list-row__meta">${escapeHtml(meta)}</div>` : ''}</div>
+    <svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>`;
 }
 
 function openPlanTab() {
@@ -1568,14 +1729,10 @@ function openPlanTab() {
 }
 
 // Duration, HR and power targets under the session name
-function sessionMetaHtml(s) {
-  const items = [];
-  if (s.durationMin) items.push(`⏱ ${escapeHtml(fmtMinutes(s.durationMin))}`);
-  if (s.hrTarget) items.push(`❤️ ${escapeHtml(s.hrTarget)}`);
-  if (s.powerTarget) items.push(`⚡ ${escapeHtml(s.powerTarget)}`);
-  return items.length ? `<div class="plan-session-meta">${items.map(i => `<span>${i}</span>`).join('')}</div>` : '';
-}
-function fmtMinutes(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h}h${m ? String(m).padStart(2, '0') : ''}` : `${m} min`; }
+// "50 min · ≤160 bpm · 170 W (85 % FTP)" — targets as one plain line
+function sessionMetaText(s) { return [s.durationMin ? fmtMinutes(s.durationMin) : '', s.hrTarget || '', s.powerTarget || ''].filter(Boolean).join(' · '); }
+function sessionMetaHtml(s) { const t = sessionMetaText(s); return t ? `<div class="plan-session-meta">${escapeHtml(t)}</div>` : ''; }
+function fmtMinutes(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h${m ? ' ' + String(m).padStart(2, '0') : ''}` : `${m} min`; }
 
 // Expandable details: Markdown text, steps table, and the full description when it was clamped
 function sessionDetailsHtml(s) {

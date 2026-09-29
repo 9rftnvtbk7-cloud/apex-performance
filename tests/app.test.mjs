@@ -9,7 +9,7 @@ const ROOT = new URL('../public/js/', import.meta.url).pathname;
 
 function makeEnv() {
   const els = {};
-  const el = id => (els[id] ??= { id, value: '', style: {}, textContent: '', innerHTML: '', classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+  const el = id => (els[id] ??= { id, value: '', style: {}, dataset: {}, textContent: '', innerHTML: '', classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
     getContext: () => ({}), appendChild() {}, querySelector: () => null, scrollIntoView() {},
     append(...c) { (this.children ??= []).push(...c); }, replaceChildren() { this.children = []; }, setAttribute() {}, hidden: true,
     showModal() { this.open = true; }, close() { this.open = false; } });
@@ -17,7 +17,8 @@ function makeEnv() {
   const ctx = {
     console: { log() {}, info() {}, warn() {}, error() {} },
     document: { getElementById: el, querySelector: () => null, querySelectorAll: () => [], addEventListener() {}, createElement: () => el('tmp' + Math.random()), body: { appendChild() {} } },
-    window: { location: { origin: 'https://x', search: '' } },
+    window: { location: { origin: 'https://x', search: '' }, addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) },
+    getComputedStyle: () => ({ getPropertyValue: () => '' }), navigator: { onLine: true },
     setTimeout: (fn) => 0, setInterval: () => 0, requestAnimationFrame() {}, confirm: () => true,
     Chart: function () { this.destroy = () => {}; this.update = () => {}; },
     sessionStorage: { getItem() {}, setItem() {}, removeItem() {} },
@@ -27,7 +28,7 @@ function makeEnv() {
   vm.createContext(ctx);
   // Firebase globals used at load time by auth/database/strava
   vm.runInContext('var auth = { onAuthStateChanged(){ return () => {}; } }; var db = {}; var firebase = { firestore: { FieldValue: { serverTimestamp(){} }, Timestamp: { fromDate: d => d } } };', ctx);
-  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'activity-detail.js', 'workout-export.js', 'race-target.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
+  for (const f of ['auth.js', 'database.js', 'strava.js', 'thresholds.js', 'metrics.js', 'theme.js', 'activity-detail.js', 'workout-export.js', 'race-target.js', 'calendar.js', 'wellness.js', 'insights.js', 'plan-import.js', 'app.js']) vm.runInContext(fs.readFileSync(ROOT + f, 'utf8'), ctx, { filename: f });
   // Capture toasts
   vm.runInContext('showToast = (m) => __toasts.push(m);', Object.assign(ctx, { __toasts: toasts }));
   el('inputFtp').value = '250'; el('inputLthr').value = '165'; el('inputPace').value = '4:30'; el('inputSwimPace').value = '1:40';
@@ -445,25 +446,30 @@ test('Storage: a missing part is reported, not silently ignored', async () => {
 });
 
 // ── Overview: next 2 days ──
-test('Next 2 days shows today and tomorrow from the plan, tickable, with rest days and done state', () => {
+test('Today: session card with Mark done, tomorrow rows, rest days, done state', () => {
   const { run, ctx, el } = makeEnv();
   ctx.__text = fixture('plan_detailed.json');
   run(`planCompletions = { 'w4-2-tue': true }; allActivities = []; trainingPlan = normalizePlan(__text).plan;`);
   run(`renderUpcomingSessions(new Date(2026, 8, 28, 9))`); // Monday 28 Sep = week 4
   const html = el('upcomingDays').innerHTML;
-  assert.equal(el('upcomingCard').style.display, 'block');
-  assert.match(html, /<strong>Today<\/strong> · Mon 28 Sept?/);
-  assert.match(html, /#i-strength"\/><\/svg> W04 Mon – Renfo A/);
-  assert.match(html, /data-session-id="w4-1-mon"/);
-  assert.match(html, /<strong>Tomorrow<\/strong>/);
-  assert.match(html, /upcoming-session is-done"><input type="checkbox" checked aria-label="Mark W04 Tue/);
-  assert.match(html, /⚡ 170W \(85% FTP\)/);
-  // Thursday: rest day has no checkbox; Sunday → Monday of a week after the plan: nothing planned
+  assert.notEqual(el('upcomingCard').style.display, 'none');
+  // Today's card: sport + title + Mark done (tickable) + Details
+  assert.match(html, /session-card--today"[\s\S]*Today · Strength[\s\S]*<h3 class="session-card__title">W04 Mon – Renfo A<\/h3>/);
+  assert.match(html, /data-session-id="w4-1-mon" onclick="toggleSessionComplete\(this.dataset.sessionId\)" aria-pressed="false">Mark done/);
+  assert.match(html, /<span>Duration<\/span><b>35 min<\/b>/);
+  // Tomorrow row, already ticked
+  assert.match(html, /upcoming-tomorrow[\s\S]*Tomorrow · Tue 29 · <span class="is-ok">✓ done<\/span>[\s\S]*W04 Tue – Vélo Tempo 3×8min[\s\S]*50 min · ≤160 bpm · 170W \(85% FTP\) · TSS 55/);
+  // A ticked today session shows "✓ Done" (click to undo)
+  run(`planCompletions = { 'w4-1-mon': true }; renderUpcomingSessions(new Date(2026, 8, 28, 9))`);
+  assert.match(el('upcomingDays').innerHTML, /aria-pressed="true" style="color:var\(--color-ok\)">✓ Done<\/button>/);
+  // Thursday: rest day has no Mark done
   run(`renderUpcomingSessions(new Date(2026, 9, 1, 9))`);
-  assert.match(el('upcomingDays').innerHTML, /#i-rest"\/><\/svg> W04 Thu – Repos/);
+  assert.match(el('upcomingDays').innerHTML, /W04 Thu – Repos/);
+  assert.ok(!/Mark done/.test(el('upcomingDays').innerHTML));
+  // Race day; the day after the plan: nothing planned
   run(`renderUpcomingSessions(new Date(2026, 10, 15, 9))`);
-  assert.match(el('upcomingDays').innerHTML, /#i-race"\/><\/svg> W10 Sun – Trail de Saint-Nolff 30km[\s\S]*Nothing planned/);
-  // No plan → card hidden
+  assert.match(el('upcomingDays').innerHTML, /Today · Race[\s\S]*W10 Sun – Trail de Saint-Nolff 30km[\s\S]*Nothing planned/);
+  // No plan → hidden
   run(`trainingPlan = null; renderUpcomingSessions()`);
   assert.equal(el('upcomingCard').style.display, 'none');
 });
@@ -713,7 +719,7 @@ test('Moving a session updates plan vs actual, Next 2 days and can go back', asy
   assert.match(el('planWeeks').innerHTML, /↪ Thu 10/);
   // Shown on its new day in Next 2 days
   run(`renderUpcomingSessions(new Date(2026, 8, 9, 8))`);
-  assert.match(el('upcomingDays').innerHTML, /<strong>Tomorrow<\/strong> · Thu 10 Sept?[\s\S]*W01 Tue – Vélo Tempo/);
+  assert.match(el('upcomingDays').innerHTML, /Tomorrow · Thu 10[\s\S]*W01 Tue – Vélo Tempo/);
   // Moving it back to its planned day removes the override
   await run(`moveSession('w1-2-tue', '2026-09-08')`);
   assert.deepEqual({ ...run('__saved') }, {});
