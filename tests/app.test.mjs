@@ -146,6 +146,31 @@ test('Delete: nothing removed from screen when Firestore delete fails', async ()
   assert.deepEqual([...run('allActivities.map(a => a.id)')], ['x2']);
 });
 
+test('Activities: phone list grouped by week, search and sport filter, count', () => {
+  const { run, el } = makeEnv();
+  run(`trainingPlan = null; allActivities = [
+    { id: 'a', name: 'Fractionné côtes', sport: 'running', startDate: new Date(2026, 8, 27, 7), duration: 5760, distance: 16800, tss: 102 },
+    { id: 'b', name: 'Tempo', sport: 'cycling', startDate: new Date(2026, 8, 22, 18), duration: 3600, distance: 30000, tss: 70 },
+    { id: 'c', name: 'Natation', sport: 'swimming', startDate: new Date(2026, 8, 15, 12), duration: 2700, distance: 1950, tss: 44 }];
+    sortConfig = { key: 'date', dir: 'desc' }; logFilter = 'all'; selectMode = false; renderTrainingTable();`);
+  const html = el('logList').innerHTML;
+  assert.match(html, /W39 · 21 – 27 Sept/);
+  assert.match(html, /2 activities · 2 h 36 · TSS 172/);
+  assert.match(html, /W38 · 14 – 20 Sept/);
+  assert.match(html, /16\.8 km/);
+  assert.match(html, /1 h 36 · <span class="log-row__tss">102/);
+  assert.equal((el('tableBody').innerHTML.match(/<tr/g) || []).length, 3);
+  assert.doesNotMatch(el('tableBody').innerHTML, /row-checkbox/, 'no checkboxes outside select mode');
+  assert.equal(el('activityCount').textContent, '3 activities');
+  run(`setLogFilter('run')`);
+  assert.equal(el('activityCount').textContent, '1 of 3 activities');
+  run(`setLogFilter('all'); document.getElementById('logSearch').value = 'natat'; renderTrainingTable()`);
+  assert.match(el('logList').innerHTML, /Natation/);
+  assert.doesNotMatch(el('logList').innerHTML, /Tempo/);
+  run(`document.getElementById('logSearch').value = 'zzz'; renderTrainingTable()`);
+  assert.match(el('logList').innerHTML, /Nothing matches/);
+});
+
 test('deleteActivities splits into batches under the 500-write limit', async () => {
   const { run, ctx } = makeEnv();
   ctx.__commits = [];

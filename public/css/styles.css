@@ -620,20 +620,28 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .log-row__right { text-align: right; flex-shrink: 0; }
 .log-row__primary { font-size: 15px; font-weight: 600; }
 .log-row__secondary { font-size: 13px; color: var(--text-dim); }
+.log-row__name, .log-row__date, .log-row__primary, .log-row__secondary { display: block; }
+.log-row__main, .log-row__right { display: flex; flex-direction: column; }
+.log-row__right { font-variant-numeric: tabular-nums; }
+.log-row__tss { color: var(--color-tss); }
+.log-row .row-checkbox { width: 20px; height: 20px; accent-color: var(--color-ctl); }
 .row-checkbox { width: 20px; height: 20px; accent-color: var(--color-ok); cursor: pointer; }
 .row-selected, .log-row.row-selected { background: var(--bg-raised) !important; }
 .training-table-wrap { overflow-x: auto; }
 .training-table { width: 100%; border-collapse: collapse; }
-.training-table th { text-align: left; height: 44px; padding: 0 14px; font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); cursor: pointer; user-select: none; white-space: nowrap; border-bottom: 1px solid var(--border-subtle); }
+.training-table th { text-align: left; height: 44px; padding: 0 10px; font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); cursor: pointer; user-select: none; white-space: nowrap; border-bottom: 1px solid var(--border-subtle); }
 .training-table th.num, .training-table td.num { text-align: right; }
 .training-table th.is-sorted { color: var(--text-main); }
 .training-table .sort-indicator { font-size: 9px; opacity: 0; margin-left: 2px; }
 .training-table th.is-sorted .sort-indicator { opacity: 1; }
-.training-table td { height: 44px; padding: 0 14px; font-size: 14px; border-top: 1px solid var(--border-subtle); white-space: nowrap; }
+.training-table td { height: 44px; padding: 0 10px; font-size: 14px; border-top: 1px solid var(--border-subtle); white-space: nowrap; }
 .training-table tbody tr:hover td { background: var(--bg-raised); }
-.training-table .col-check { width: 44px; }
-.training-table .col-check .row-checkbox { visibility: hidden; }
-.select-mode .training-table .col-check .row-checkbox { visibility: visible; }
+.training-table .col-check { display: none; width: 44px; }
+.select-mode .training-table .col-check { display: table-cell; }
+.training-table .col-check + *, .select-mode .training-table .col-check { padding-left: 20px; }
+.select-mode .training-table .col-check + * { padding-left: 4px; }
+.training-table th:last-child, .training-table td:last-child { padding-right: 20px; }
+#tab-log .page-head { padding-right: 0; }
 .cell-tss { color: var(--color-tss); font-weight: 600; }
 .cell-dim { color: var(--text-dim); }
 .activity-link { color: var(--text-main); font-weight: 600; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }

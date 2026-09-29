@@ -1024,13 +1024,78 @@ function updatePlannerForecast() {
 // ══════════════════════════════════════════════
 function renderTrainingTable() {
   const sorted = [...allActivities].sort((a, b) => { const k = sortConfig.key; let va, vb; if (k === 'date') { va = a.startDate?.getTime() || 0; vb = b.startDate?.getTime() || 0; } else if (k === 'sport' || k === 'name') { va = a[k] || ''; vb = b[k] || ''; } else { va = a[k] || 0; vb = b[k] || 0; } if (typeof va === 'string') return sortConfig.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va); return sortConfig.dir === 'asc' ? va - vb : vb - va; });
-  document.getElementById('tableBody').innerHTML = sorted.map((a, idx) => {
-    const aid = a.id || ('local-' + idx);
+  // Search (name or sport) + sport filter chips
+  const q = (document.getElementById('logSearch')?.value || '').trim().toLowerCase();
+  const rows = sorted.map((a, idx) => ({ a, aid: a.id || ('local-' + idx) })).filter(({ a }) =>
+    (logFilter === 'all' || sportKey(a.sport) === logFilter) &&
+    (!q || `${a.name || ''} ${fmtSportName(a.sport)}`.toLowerCase().includes(q)));
+
+  document.getElementById('tableBody').innerHTML = rows.map(({ a, aid }) => {
     const checked = selectedActivityIds.has(aid) ? 'checked' : '';
-    return `<tr class="${checked ? 'row-selected' : ''}"><td><input type="checkbox" class="row-checkbox" data-id="${escapeHtml(aid)}" ${checked} onchange="onRowSelect(this)" style="cursor:pointer"></td><td class="cell-mono">${fmtDate(a.startDate)}</td><td class="cell-name">${a.id ? `<button class="btn-reset activity-link" data-id="${escapeHtml(a.id)}" onclick="openActivityDetail(this.dataset.id)">${escapeHtml(a.name || fmtSportName(a.sport))}</button>` : escapeHtml(a.name || '—')}</td><td><span class="sport-tag sport-tag--${sportTagClass(a.sport)}">${sportEmoji(a.sport)} ${escapeHtml(fmtSportName(a.sport))}</span></td><td class="cell-mono">${fmtDuration(a.duration)}</td><td class="cell-mono">${fmtDist(a.distance, a.sport)}</td><td class="cell-tss">${a.tss || '—'}</td><td class="cell-mono">${a.intensityFactor ? a.intensityFactor.toFixed(2) : '—'}</td><td class="cell-mono">${a.avgHr ? a.avgHr + ' bpm' : '—'}</td><td class="cell-mono">${a.avgPower ? a.avgPower + 'w' : '—'}</td><td class="cell-mono">${a.calories ? a.calories.toLocaleString() : '—'}</td></tr>`;
+    const check = selectMode ? `<input type="checkbox" class="row-checkbox" data-id="${escapeHtml(aid)}" ${checked} onchange="onRowSelect(this)" aria-label="Select ${escapeHtml(a.name || 'activity')}">` : '';
+    const name = a.id ? `<button class="btn-reset activity-link" data-id="${escapeHtml(a.id)}" onclick="openActivityDetail(this.dataset.id)">${escapeHtml(a.name || fmtSportName(a.sport))}</button>` : escapeHtml(a.name || '—');
+    return `<tr class="${checked ? 'row-selected' : ''}"><td class="col-check">${check}</td><td>${fmtDate(a.startDate)}</td><td class="cell-name">${name}</td><td><span class="sport-label">${sportDot(a.sport)}${escapeHtml(sportLabel(a.sport))}</span></td><td class="num">${fmtDuration(a.duration)}</td><td class="num">${fmtDist(a.distance, a.sport)}</td><td class="num cell-tss">${a.tss || '—'}</td><td class="num">${a.intensityFactor ? a.intensityFactor.toFixed(2) : '—'}</td><td class="num">${a.avgHr ? a.avgHr + ' bpm' : '—'}</td><td class="num">${a.avgPower ? a.avgPower + ' W' : '—'}</td><td class="num">${a.calories ? a.calories.toLocaleString('en-GB') : '—'}</td></tr>`;
   }).join('');
-  document.getElementById('activityCount').textContent = `${allActivities.length} activit${allActivities.length === 1 ? 'y' : 'ies'}`;
+
+  const list = document.getElementById('logList');
+  if (list) list.innerHTML = logListHtml(rows);
+
+  const n = allActivities.length, word = x => `activit${x === 1 ? 'y' : 'ies'}`;
+  document.getElementById('activityCount').textContent = rows.length === n ? `${n} ${word(n)}` : `${rows.length} of ${n} ${word(n)}`;
   document.querySelectorAll('.training-table th').forEach(th => { const ok = th.dataset.col === sortConfig.key; th.classList.toggle('is-sorted', ok); const ar = th.querySelector('.sort-indicator'); if (ar) ar.textContent = (ok && sortConfig.dir === 'asc') ? '▲' : '▼'; });
+}
+
+// Phone list: grouped by week when sorted by date ("W39 · 21 – 27 Sept" + summary), one card of rows per group
+function logListHtml(rows) {
+  if (!rows.length) return `<div class="empty-state card"><div class="empty-state__title">No activities</div><div class="empty-state__text">${allActivities.length ? 'Nothing matches this search or filter.' : 'Activities synced from Strava appear here.'}</div></div>`;
+  const groups = [];
+  if (sortConfig.key === 'date') {
+    for (const r of rows) {
+      const d = r.a.startDate instanceof Date && !isNaN(r.a.startDate) ? r.a.startDate : null;
+      const mon = d ? addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -((d.getDay() + 6) % 7)) : null;
+      const key = mon ? localDateKey(mon) : '';
+      let g = groups[groups.length - 1];
+      if (!g || g.key !== key) groups.push(g = { key, mon, rows: [] });
+      g.rows.push(r);
+    }
+  } else groups.push({ key: 'all', mon: null, rows });
+  const now = new Date(), thisWeek = localDateKey(addDays(new Date(now.getFullYear(), now.getMonth(), now.getDate()), -((now.getDay() + 6) % 7)));
+
+  return groups.map(g => {
+    let head = '';
+    if (g.key !== 'all') {
+      const secs = g.rows.reduce((t, r) => t + (r.a.duration || 0), 0), tss = g.rows.reduce((t, r) => t + (r.a.tss || 0), 0);
+      const meta = `${g.rows.length} ${g.rows.length === 1 ? 'activity' : 'activities'} · ${fmtMinutes(Math.round(secs / 60))} · TSS ${Math.round(tss)}`;
+      const title = !g.mon ? 'Undated' : g.key === thisWeek ? 'This week' : logWeekTitle(g.mon);
+      head = `<div class="log-group__head"><div class="log-group__title">${escapeHtml(title)}</div><div class="log-group__meta">${meta}</div></div>`;
+    }
+    return `<section class="log-group">${head}<div class="log-rows">${g.rows.map(logRowHtml).join('')}</div></section>`;
+  }).join('');
+}
+
+function logWeekTitle(mon) {
+  const sun = addDays(mon, 6);
+  const pw = trainingPlan && (trainingPlan.weeks || []).find(w => { const st = planWeekStart(w, trainingPlan); return st && localDateKey(st) === localDateKey(mon); });
+  // ISO week number (Thursday of the week decides the year)
+  const thu = addDays(mon, 3), jan4 = new Date(thu.getFullYear(), 0, 4);
+  const iso = 1 + Math.round((thu - addDays(jan4, -((jan4.getDay() + 6) % 7))) / 604800000);
+  const range = `${mon.getDate()}${mon.getMonth() !== sun.getMonth() ? ' ' + mon.toLocaleDateString('en-GB', { month: 'short' }) : ''} – ${sun.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+  return `W${String(pw ? pw.week : iso).padStart(2, '0')} · ${range}`;
+}
+
+function logRowHtml({ a, aid }) {
+  const k = sportKey(a.sport), hasDist = a.distance > 0 && ['run', 'bike', 'swim'].includes(k);
+  const mins = a.duration > 0 ? fmtMinutes(Math.round(a.duration / 60)) : '—';
+  const primary = hasDist ? `${(a.distance / 1000).toFixed(1)} km` : mins;
+  const secondary = `${hasDist ? escapeHtml(mins) : '—'} · <span class="log-row__tss">${a.tss ? escapeHtml(a.tss) : '—'}</span>`;
+  const date = a.startDate instanceof Date && !isNaN(a.startDate) ? a.startDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : '—';
+  const body = `<span class="log-row__main"><span class="log-row__name">${escapeHtml(a.name || fmtSportName(a.sport))}</span><span class="log-row__date">${date}</span></span><span class="log-row__right"><span class="log-row__primary">${escapeHtml(primary)}</span><span class="log-row__secondary">${secondary}</span></span>`;
+  if (selectMode) {
+    const checked = selectedActivityIds.has(aid);
+    return `<label class="log-row${checked ? ' row-selected' : ''}"><span class="log-row__tile"><input type="checkbox" class="row-checkbox" data-id="${escapeHtml(aid)}" ${checked ? 'checked' : ''} onchange="onRowSelect(this)"></span>${body}</label>`;
+  }
+  const tile = `<span class="log-row__tile" style="color:var(--sport-${k})">${sportIcon(a.sport)}</span>`;
+  return a.id ? `<button class="btn-reset log-row" data-id="${escapeHtml(a.id)}" onclick="openActivityDetail(this.dataset.id)">${tile}${body}</button>` : `<div class="log-row">${tile}${body}</div>`;
 }
 function sortColumn(k) { sortConfig = { key: k, dir: (sortConfig.key === k && sortConfig.dir === 'desc') ? 'asc' : 'desc' }; renderTrainingTable(); }
 
@@ -1042,7 +1107,8 @@ let selectedActivityIds = new Set();
 function onRowSelect(cb) {
   const id = cb.dataset.id;
   if (cb.checked) selectedActivityIds.add(id); else selectedActivityIds.delete(id);
-  cb.closest('tr, .log-row')?.classList.toggle('row-selected', cb.checked);
+  // The phone list and the desktop table both carry a checkbox per activity: keep them in step
+  document.querySelectorAll('.row-checkbox').forEach(x => { if (x.dataset.id !== id) return; x.checked = cb.checked; x.closest('tr, .log-row')?.classList.toggle('row-selected', cb.checked); });
   updateSelectionUI();
 }
 
@@ -1083,7 +1149,7 @@ function updateSelectionUI() {
   if (bd) bd.style.display = n > 0 ? 'inline-flex' : 'none';
   const selectAll = document.getElementById('selectAllCheckbox');
   if (selectAll) {
-    const total = document.querySelectorAll('.row-checkbox').length;
+    const total = new Set([...document.querySelectorAll('.row-checkbox')].map(cb => cb.dataset.id)).size;
     selectAll.checked = total > 0 && n === total;
     selectAll.indeterminate = n > 0 && n < total;
   }
