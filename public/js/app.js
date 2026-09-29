@@ -788,7 +788,7 @@ function initPlanner() {
   for (let w = 0; w < 26; w++) {
     const ws = addDays(startMon, w * 7);
     const we = addDays(ws, 6);
-    plannerData.push({ weekStart: ws, weekLabel: `${ws.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${we.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`, monthLabel: ws.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), tss: 0 });
+    plannerData.push({ weekStart: ws, weekLabel: `${ws.getDate()}${ws.getMonth() !== we.getMonth() ? ' ' + ws.toLocaleDateString('en-GB', { month: 'short' }) : ''} – ${we.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`, monthLabel: ws.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }), tss: 0 });
   }
   // Restore saved planner data by week start date (not position), so plans don't shift as weeks pass
   if (savedPlannerWeeks && savedPlannerWeeks.length) {
@@ -812,17 +812,23 @@ function initPlanner() {
 
 function renderPlannerGrid() {
   const g = document.getElementById('plannerGrid');
-  let h = '<div class="planner-header-cell">Week</div><div class="planner-header-cell">Dates</div><div class="planner-header-cell">Weekly TSS</div><div class="planner-header-cell">Daily Avg</div><div class="planner-header-cell">Zone</div>';
+  let h = '<div class="planner-header-cell">Week</div><div class="planner-header-cell">Dates</div><div class="planner-header-cell planner-col-tss">Weekly TSS</div><div class="planner-header-cell planner-col-extra">Daily avg</div><div class="planner-header-cell planner-col-extra">Zone</div>';
   let cm = '';
   for (let i = 0; i < plannerData.length; i++) {
-    const p = plannerData[i]; if (p.monthLabel !== cm) { cm = p.monthLabel; h += `<div class="planner-month-divider">${cm}</div>`; }
+    const p = plannerData[i]; if (p.monthLabel !== cm) { cm = p.monthLabel; h += `<div class="planner-month-divider">${escapeHtml(cm)}</div>`; }
     const da = p.tss > 0 ? Math.round(p.tss / 7) : 0, z = getTrainingZone(p.tss);
-    h += `<div class="planner-week-label">W${i + 1}</div><div class="planner-cell" style="font-size:12px;color:var(--text-dim)">${p.weekLabel}</div><div class="planner-cell"><input type="number" class="planner-input ${p.tss > 0 ? 'has-value' : ''}" value="${p.tss || ''}" min="0" max="2000" placeholder="0" data-week="${i}" onchange="updatePlannerWeek(${i},this.value)" oninput="this.classList.toggle('has-value',this.value>0)"></div><div class="planner-cell"><span class="cell-mono" style="color:var(--text-dim)">${da}</span></div><div class="planner-cell"><span style="font-size:12px;font-weight:600;color:${z.color}">${z.label}</span></div>`;
+    h += `<div class="planner-week-label">W${i + 1}</div><div class="planner-cell planner-dates">${escapeHtml(p.weekLabel)}</div>`
+      + `<div class="planner-cell planner-col-tss"><div class="stepper"><button class="stepper__btn" onclick="stepPlannerWeek(${i},-25)" aria-label="W${i + 1}: 25 TSS less">−</button>`
+      + `<input type="number" class="planner-input ${p.tss > 0 ? 'has-value' : ''}" value="${p.tss || ''}" min="0" max="2000" placeholder="0" data-week="${i}" aria-label="W${i + 1} weekly TSS" onchange="updatePlannerWeek(${i},this.value)" oninput="this.classList.toggle('has-value',this.value>0)">`
+      + `<button class="stepper__btn" onclick="stepPlannerWeek(${i},25)" aria-label="W${i + 1}: 25 TSS more">+</button></div></div>`
+      + `<div class="planner-cell planner-col-extra num">${da}</div><div class="planner-cell planner-col-extra"><span class="planner-zone" style="color:${safeColor(z.color)}">${z.label}</span></div>`;
   }
   g.innerHTML = h;
 }
 
-function getTrainingZone(tss) { if (tss <= 0) return { label: '—', color: 'var(--text-muted)' }; if (tss < 200) return { label: 'Recovery', color: 'var(--color-green)' }; if (tss < 400) return { label: 'Endurance', color: 'var(--color-blue)' }; if (tss < 600) return { label: 'Tempo', color: 'var(--color-amber)' }; if (tss < 800) return { label: 'Threshold', color: '#f97316' }; return { label: 'Overreach', color: 'var(--color-red)' }; }
+function stepPlannerWeek(idx, delta) { updatePlannerWeek(idx, (plannerData[idx].tss || 0) + delta); }
+
+function getTrainingZone(tss) { if (tss <= 0) return { label: '—', color: 'var(--text-muted)' }; if (tss < 200) return { label: 'Recovery', color: 'var(--color-ok)' }; if (tss < 400) return { label: 'Endurance', color: 'var(--color-ctl)' }; if (tss < 600) return { label: 'Tempo', color: 'var(--color-tss)' }; if (tss < 800) return { label: 'Threshold', color: 'var(--color-atl)' }; return { label: 'Overreach', color: 'var(--color-missed)' }; }
 
 function updatePlannerWeek(idx, val) {
   plannerData[idx].tss = Math.max(0, parseInt(val) || 0);
@@ -914,13 +920,11 @@ function renderRaceDateInputs() {
   const container = document.getElementById('raceDateInputs');
   if (!container) return;
   if (typeof renderRaceTargetForm === 'function') renderRaceTargetForm();
-  container.innerHTML = raceDates.map((r, i) => `
-    <div style="display:flex;align-items:center;gap:4px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:8px;padding:4px 8px">
-      <input type="date" class="compare-date-input" value="${escapeHtml(r.date)}" onchange="updateRaceDate(${i},'date',this.value)" style="font-size:12px;padding:3px 6px">
-      <input type="text" class="settings-input" value="${escapeHtml(r.name)}" placeholder="Race name" onchange="updateRaceDate(${i},'name',this.value)" style="font-size:12px;padding:3px 6px;width:120px;margin:0">
-      <button onclick="removeRaceDate(${i})" style="background:none;border:none;color:var(--color-red);cursor:pointer;font-size:14px;padding:2px 4px" title="Remove">✕</button>
-    </div>
-  `).join('');
+  container.innerHTML = raceDates.length ? raceDates.map((r, i) => `<div class="race-row">
+      <input type="date" class="input" value="${escapeHtml(r.date)}" onchange="updateRaceDate(${i},'date',this.value)" aria-label="Race date">
+      <input type="text" class="input" value="${escapeHtml(r.name)}" placeholder="Race name" onchange="updateRaceDate(${i},'name',this.value)" aria-label="Race name">
+      <button class="icon-btn icon-btn--danger" onclick="removeRaceDate(${i})" aria-label="Remove race">✕</button>
+    </div>`).join('') : '<p class="card-text">No race yet. Add one to see it on the charts and plan a race-day target.</p>';
 }
 
 function saveRaceDates() {
@@ -939,7 +943,7 @@ function updatePlannerForecast() {
   for (const week of plannerData) { const dt = week.tss / 7; for (let d = 0; d < 7; d++) { ctl += (dt - ctl) / 42; atl += (dt - atl) / 7; } labels.push(week.weekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })); ctlV.push(+ctl.toFixed(1)); atlV.push(+atl.toFixed(1)); tsbV.push(+(ctl - atl).toFixed(1)); }
   document.getElementById('planCtl').textContent = ctl.toFixed(1);
   document.getElementById('planAtl').textContent = atl.toFixed(1);
-  const tsb = ctl - atl; document.getElementById('planTsb').textContent = tsb.toFixed(1); document.getElementById('planTsb').style.color = tsb >= 0 ? 'var(--color-green)' : 'var(--color-red)';
+  const tsb = ctl - atl; document.getElementById('planTsb').textContent = (tsb > 0 ? '+' : tsb < 0 ? '−' : '') + Math.abs(tsb).toFixed(1); document.getElementById('planTsb').style.color = tsb >= 0 ? 'var(--color-tsb)' : 'var(--color-missed)';
   // Build race date markers — find label indices
   const raceMarkers = [];
   for (const rd of raceDates) {
@@ -960,61 +964,44 @@ function updatePlannerForecast() {
     if (bestIdx >= 0) raceMarkers.push({ idx: bestIdx, name: rd.name || 'Race', date: rd.date });
   }
 
-  // Custom plugin to draw vertical race lines
+  // Race markers: amber line + label chip above the plot (same look as the PMC chart)
   const raceLinePlugin = {
     id: 'raceLines',
-    afterDraw(chart) {
-      const ctx = chart.ctx;
-      const xScale = chart.scales.x;
-      const yScale = chart.scales.y;
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea: a, scales: { x } } = chart;
+      if (!a || !x) return;
+      const c = C();
+      ctx.save();
       for (const rm of raceMarkers) {
-        const x = xScale.getPixelForValue(rm.idx);
-        if (x < xScale.left || x > xScale.right) continue;
-        // Vertical dashed line
-        ctx.save();
-        ctx.beginPath();
-        ctx.setLineDash([6, 4]);
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 2;
-        ctx.moveTo(x, yScale.top);
-        ctx.lineTo(x, yScale.bottom);
-        ctx.stroke();
-        // Race flag + label
-        ctx.setLineDash([]);
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = 'bold 12px DM Sans';
-        ctx.textAlign = 'center';
-        ctx.fillText('🏁 ' + rm.name, x, yScale.top - 8);
-        // Date below
-        ctx.fillStyle = '#a3a8bc';
-        ctx.font = '11px JetBrains Mono';
-        ctx.fillText(rm.date, x, yScale.top - 22);
-        ctx.restore();
+        const px = x.getPixelForValue(rm.idx);
+        if (px < a.left || px > a.right) continue;
+        ctx.strokeStyle = c.tss; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
+        const d = parseIsoDate(rm.date), text = `${rm.name}${d ? ' · ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''}`;
+        ctx.font = "600 12px 'Geist', system-ui, sans-serif";
+        const w = ctx.measureText(text).width + 12, h = 20, left = Math.min(Math.max(px - w / 2, a.left), a.right - w);
+        ctx.fillStyle = c.tss; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(left, a.top - h - 4, w, h, 6) : ctx.rect(left, a.top - h - 4, w, h); ctx.fill();
+        ctx.fillStyle = '#0C0D10'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(text, left + 6, a.top - h / 2 - 4);
       }
+      ctx.restore();
     }
   };
 
+  const c = C();
   if (plannerChart) plannerChart.destroy();
   plannerChart = new Chart(document.getElementById('plannerChart').getContext('2d'), {
     type: 'line',
     plugins: [raceLinePlugin],
     data: { labels, datasets: [
-      { label: 'CTL (Fitness)', data: ctlV, borderColor: '#3b82f6', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#3b82f6', tension: 0.3, fill: false },
-      { label: 'ATL (Fatigue)', data: atlV, borderColor: '#f43f5e', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#f43f5e', tension: 0.3, fill: false },
-      { label: 'TSB (Form)', data: tsbV, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 1.5, pointRadius: 3, pointBackgroundColor: '#10b981', tension: 0.3, fill: true },
+      { label: 'Fitness', data: ctlV, borderColor: c.ctl, backgroundColor: withAlpha(c.ctl, 0.08), borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: 'origin' },
+      { label: 'Fatigue', data: atlV, borderColor: withAlpha(c.atl, 0.6), borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: false },
+      { label: 'Form', data: tsbV, borderColor: c.tsb, backgroundColor: withAlpha(c.tsb, 0.1), borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.3, fill: { value: 0 } },
     ]},
     options: {
       responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: 'index', intersect: false },
-      layout: { padding: { top: 35 } },
-      plugins: {
-        legend: { display: true, labels: { color: '#a3a8bc', usePointStyle: true, pointStyle: 'line' } },
-        tooltip: { backgroundColor: '#1e2030', borderColor: '#2a2d3e', borderWidth: 1, titleColor: '#e8eaf0', bodyColor: '#a3a8bc', padding: 12, cornerRadius: 8 }
-      },
-      scales: {
-        x: { grid: { color: 'rgba(42,45,62,0.4)' }, ticks: { color: '#858aa3', maxRotation: 45 } },
-        y: { grid: { color: 'rgba(42,45,62,0.3)' }, ticks: { color: '#858aa3' }, title: { display: true, text: 'CTL / ATL / TSB', color: '#858aa3' } }
-      }
+      layout: { padding: { top: raceMarkers.length ? 28 : 4 } },
+      plugins: { legend: { display: false }, tooltip: { ...chartTooltip(), mode: 'index', intersect: false } },
+      scales: { x: chartScaleX({ ticks: { color: c.muted, maxRotation: 0, autoSkipPadding: 20 } }), y: chartScaleY() }
     }
   });
 }

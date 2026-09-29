@@ -909,6 +909,6 @@ test('Race target: result table keeps partial-week markers inside the date cell'
   run('calculateRaceTarget()');
   const html = el('raceTargetResult').innerHTML;
   const rows = html.match(/<tr>[\s\S]*?<\/tr>/g).slice(1); // skip the header row
-  for (const r of rows) assert.equal((r.match(/<td>/g) || []).length, 3, r);
+  for (const r of rows) assert.equal((r.match(/<td[ >]/g) || []).length, 3, r);
   assert.ok(!/<\/td>\s*<small>|<\/small><\/td><\/td>/.test(html));
 });

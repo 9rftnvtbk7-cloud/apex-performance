@@ -76,7 +76,7 @@ function calculateRaceTarget() {
   const out = document.getElementById('raceTargetResult');
   const raceKey = document.getElementById('raceTargetRace').value;
   const race = parseIsoDate(raceKey);
-  if (!race) { out.innerHTML = '<div class="insight-muted">Add a future race date first (🏁 Race dates above).</div>'; return; }
+  if (!race) { out.innerHTML = '<p class="card-text">Add a future race in Races above first.</p>'; return; }
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const days = Math.round((race - today) / 86400000); // loads for today … the day before the race
   const r = solveRaceTarget({
@@ -86,8 +86,8 @@ function calculateRaceTarget() {
     targetTsb: +document.getElementById('raceTargetTsb').value || 0,
   });
   raceTargetResult = r.ok ? { ...r, weeks: weeklyFromDaily(r.loads, today) } : null;
-  if (!r.ok) { out.innerHTML = `<div class="insight-muted">${escapeHtml(r.warnings[0])}</div>`; return; }
-  const rows = raceTargetResult.weeks.map(w => `<tr><td>${escapeHtml(parseIsoDate(w.monday).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}${w.days < 7 ? ` <small>(${w.days} d)</small>` : ''}</td><td>${w.tss}</td><td>${Math.round(w.tss / w.days)}</td></tr>`).join('');
+  if (!r.ok) { out.innerHTML = `<div class="status-panel status-panel--error">${escapeHtml(r.warnings[0])}</div>`; return; }
+  const rows = raceTargetResult.weeks.map(w => `<tr><td>${escapeHtml(parseIsoDate(w.monday).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}${w.days < 7 ? ` <small>(${w.days} d)</small>` : ''}</td><td class="num">${w.tss}</td><td class="num">${Math.round(w.tss / w.days)}</td></tr>`).join('');
   out.innerHTML = `
     <div class="race-target-summary">
       <div><span class="insight-stat-value">${Math.round(r.L * 7)}</span><span class="insight-stat-label">TSS / week during the build (${Math.round(r.L)}/day)</span></div>
@@ -95,8 +95,8 @@ function calculateRaceTarget() {
       <div><span class="insight-stat-value">${r.ctl.toFixed(0)} / ${r.tsb > 0 ? '+' : ''}${r.tsb.toFixed(0)}</span><span class="insight-stat-label">race-day CTL / TSB</span></div>
     </div>
     ${r.warnings.length ? `<ul class="readiness-reasons">${r.warnings.map(w => `<li class="is-caution">${escapeHtml(w)}</li>`).join('')}</ul>` : ''}
-    <details class="wellness-history"><summary>Weekly plan (${raceTargetResult.weeks.length} weeks)</summary><div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Week of</th><th>TSS</th><th>Per day</th></tr></thead><tbody>${rows}</tbody></table></div></details>
-    <button class="btn-base btn-upload" style="margin-top:10px" onclick="applyRaceTargetToPlanner()">Apply to planner</button>`;
+    <details class="race-target-weeks"><summary>Weekly plan (${raceTargetResult.weeks.length} weeks)</summary><div class="plan-steps-wrap"><table class="plan-steps"><thead><tr><th>Week of</th><th class="num">TSS</th><th class="num">Per day</th></tr></thead><tbody>${rows}</tbody></table></div></details>
+    <button class="btn btn--secondary" onclick="applyRaceTargetToPlanner()">Apply to planner</button>`;
 }
 
 // Fill the Planner weeks that the race target covers (others unchanged)

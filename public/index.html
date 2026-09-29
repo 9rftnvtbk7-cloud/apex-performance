@@ -278,10 +278,13 @@
 
           <!-- Forecast (planner + race-day target) -->
           <div class="season-panel is-active" id="tab-planner">
-            <div class="pmc-stats pmc-stats--card card">
-              <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-ctl)"></i>Projected fitness</div><div class="pmc-stat__value" id="planCtl">—</div><div class="pmc-stat__sub">in 26 weeks</div></div>
-              <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-atl)"></i>Projected fatigue</div><div class="pmc-stat__value" id="planAtl">—</div></div>
-              <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-tsb)"></i>Projected form</div><div class="pmc-stat__value" id="planTsb">—</div></div>
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">Projected in 26 weeks</h2></div>
+              <div class="pmc-stats">
+                <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-ctl)"></i>Fitness</div><div class="pmc-stat__value" id="planCtl">—</div></div>
+                <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-atl)"></i>Fatigue</div><div class="pmc-stat__value" id="planAtl">—</div></div>
+                <div class="pmc-stat"><div class="pmc-stat__label"><i style="background:var(--color-tsb)"></i>Form</div><div class="pmc-stat__value" id="planTsb">—</div></div>
+              </div>
             </div>
             <div class="card">
               <div class="card-head"><h2 class="card-title">Races</h2><button class="btn btn--secondary btn--sm" onclick="addRaceDate()">+ Add race</button></div>
