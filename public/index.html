@@ -16,7 +16,7 @@
   <link rel="icon" href="/icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=202610011135">
+  <link rel="stylesheet" href="css/styles.css?v=202610011205">
 
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -177,9 +177,9 @@
                   </div>
                   <div class="fitness-card__controls">
                     <div class="segmented" role="group" aria-label="Chart range">
-                      <button class="segmented__opt range-btn" onclick="setChartRange(42,this)">6W</button>
+                      <button class="segmented__opt range-btn is-active" onclick="setChartRange(42,this)">6W</button>
                       <button class="segmented__opt range-btn" onclick="setChartRange(91,this)">3M</button>
-                      <button class="segmented__opt range-btn is-active" onclick="setChartRange(182,this)">6M</button>
+                      <button class="segmented__opt range-btn" onclick="setChartRange(182,this)">6M</button>
                       <button class="segmented__opt range-btn" onclick="setChartRange(365,this)">1Y</button>
                       <button class="segmented__opt range-btn" onclick="toggleCustomRange(this)" aria-controls="customRange">Custom</button>
                     </div>
@@ -193,7 +193,7 @@
                 <div class="chart-legend">
                   <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(0, this)"><i style="background:var(--color-ctl)"></i>Fitness</button>
                   <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(1, this)"><i style="background:var(--color-atl)"></i>Fatigue</button>
-                  <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="false" onclick="toggleChartDataset(2, this)"><i style="background:var(--color-tsb)"></i>Form</button>
+                  <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(2, this)"><i style="background:var(--color-tsb)"></i>Form</button>
                   <button class="btn-reset toggle-chip chart-legend-item" aria-pressed="true" onclick="toggleChartDataset(3, this)"><i class="sq" style="background:var(--color-tss)"></i>TSS</button>
                   <details class="chip-popover">
                     <summary class="toggle-chip" id="forecastChip">Forecast <span id="displayForecastDays">14 days</span></summary>
@@ -327,45 +327,93 @@
           <!-- Compare -->
           <div class="season-panel" id="tab-compare">
             <div class="card">
-              <div class="compare-controls">
-                <label><span class="field-label">Mode</span><select class="select" id="compareMode" onchange="onCompareModeChange()"><option value="range">Date range</option><option value="year">Year vs year</option><option value="month">Month vs month</option></select></label>
-                <label><span class="field-label">Grouping</span><select class="select" id="compareGrouping" onchange="renderComparison()"><option value="week">Weekly</option><option value="month" selected>Monthly</option><option value="year">Yearly</option></select></label>
-                <label><span class="field-label">Sport</span><select class="select" id="compareSport" onchange="renderComparison()"><option value="all">All sports</option></select></label>
-                <label><span class="field-label">Calculation</span><select class="select" id="compareCalc" onchange="renderComparison()"><option value="total">Period total</option><option value="cumulative">Running total</option></select></label>
+              <div class="card-head"><h2 class="card-title">Compare periods</h2></div>
+              <div class="chip-row compare-chips" role="group" aria-label="Periods">
+                <button class="chip compare-preset" data-preset="4w" onclick="setComparePreset('4w')">4 weeks vs 4 before</button>
+                <button class="chip compare-preset" data-preset="month" onclick="setComparePreset('month')">This month vs last</button>
+                <button class="chip compare-preset" data-preset="ytd" onclick="setComparePreset('ytd')">Year to date vs last year</button>
+                <button class="chip compare-preset" data-preset="12w" onclick="setComparePreset('12w')">12 weeks vs a year ago</button>
+                <button class="chip compare-preset" data-preset="custom" onclick="setComparePreset('custom')">Custom</button>
               </div>
-              <div class="compare-controls" id="compareRangeControls">
-                <label><span class="field-label">From</span><input type="date" class="input" id="compareFrom" onchange="renderComparison()"></label>
-                <label><span class="field-label">To</span><input type="date" class="input" id="compareTo" onchange="renderComparison()"></label>
+              <div class="compare-custom" id="compareCustom" hidden>
+                <fieldset><legend class="field-label">Period</legend><input type="date" class="input" id="compareBFrom" aria-label="Period from" onchange="renderComparison()"><input type="date" class="input" id="compareBTo" aria-label="Period to" onchange="renderComparison()"></fieldset>
+                <fieldset><legend class="field-label">Compared with</legend><input type="date" class="input" id="compareAFrom" aria-label="Compared with, from" onchange="renderComparison()"><input type="date" class="input" id="compareATo" aria-label="Compared with, to" onchange="renderComparison()"></fieldset>
               </div>
-              <div class="compare-controls" id="compareYearControls" style="display:none">
-                <label><span class="field-label">Year A</span><select class="select" id="compareYearA" onchange="renderComparison()"></select></label>
-                <label><span class="field-label">Year B</span><select class="select" id="compareYearB" onchange="renderComparison()"></select></label>
+              <div class="chip-row compare-chips" role="group" aria-label="Sport">
+                <button class="chip compare-sport" data-sport="all" onclick="setCompareSport('all')">All sports</button>
+                <button class="chip compare-sport" data-sport="run" onclick="setCompareSport('run')"><i style="background:var(--sport-run)"></i>Run</button>
+                <button class="chip compare-sport" data-sport="bike" onclick="setCompareSport('bike')"><i style="background:var(--sport-bike)"></i>Bike</button>
+                <button class="chip compare-sport" data-sport="swim" onclick="setCompareSport('swim')"><i style="background:var(--sport-swim)"></i>Swim</button>
+                <button class="chip compare-sport" data-sport="strength" onclick="setCompareSport('strength')"><i style="background:var(--sport-strength)"></i>Strength</button>
               </div>
-              <div class="compare-controls" id="compareMonthControls" style="display:none">
-                <label><span class="field-label">Months A</span><select class="select select--multi" id="compareMonthA" multiple size="5" onchange="renderComparison()"></select></label>
-                <label><span class="field-label">Months B</span><select class="select select--multi" id="compareMonthB" multiple size="5" onchange="renderComparison()"></select></label>
-              </div>
+              <div class="compare-legend" id="compareLegend"></div>
               <div class="compare-grid" id="compareMetrics"></div>
-              <div id="compareChartArea" class="compare-chart-wrap"><canvas id="compareChart"></canvas></div>
+              <div class="card-head compare-chart-head"><h3 class="ins-subtitle">Day by day</h3>
+                <div class="segmented" role="group" aria-label="Chart metric">
+                  <button class="segmented__opt compare-metric" data-metric="tss" onclick="setCompareMetric('tss')">TSS</button>
+                  <button class="segmented__opt compare-metric" data-metric="duration" onclick="setCompareMetric('duration')">Time</button>
+                  <button class="segmented__opt compare-metric" data-metric="distance" onclick="setCompareMetric('distance')">Distance</button>
+                  <button class="segmented__opt compare-metric" data-metric="elevation" onclick="setCompareMetric('elevation')">Climbing</button>
+                </div>
+              </div>
+              <div id="compareChartArea" class="compare-chart-wrap"><canvas id="compareChart" aria-label="Running total of both periods, day by day"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h2 class="card-title">Trend</h2>
+                <div class="card-head__actions">
+                  <select class="select select--chip" id="compareGrouping" aria-label="Grouping" onchange="renderComparison()"><option value="week" selected>Weekly</option><option value="month">Monthly</option></select>
+                  <select class="select select--chip" id="trendRange" aria-label="Range" onchange="setTrendRange(this.value)"><option value="84">12 weeks</option><option value="182" selected>6 months</option><option value="365">12 months</option><option value="all">All</option></select>
+                </div>
+              </div>
+              <div class="compare-chart-wrap"><canvas id="trendChart" aria-label="Load per week or month"></canvas></div>
             </div>
           </div>
 
           <!-- Insights -->
           <div class="season-panel" id="tab-insights">
-            <div class="card" id="insightsCard" style="display:none">
-              <div class="card-head"><h2 class="card-title">Estimated FTP &amp; zones</h2></div>
-              <div id="insightsBody"></div>
-            </div>
-            <div class="card" id="bestEffortsCard">
-              <div class="card-head">
-                <h2 class="card-title">Best efforts</h2>
-                <div class="card-head__actions">
-                  <select class="select select--chip" id="bestEffortsKind" aria-label="Sport" onchange="renderBestEfforts()"><option value="power">Power · rides</option><option value="pace">Pace · runs</option></select>
-                  <select class="select select--chip" id="bestEffortsRange" aria-label="Period" onchange="renderBestEfforts()"><option value="28">28 days</option><option value="90" selected>90 days</option><option value="365">365 days</option></select>
+            <p class="card-text" id="insightsEmpty" hidden>Insights appear once your first activities are imported.</p>
+            <div class="ins-grid">
+              <section class="card ins-card" aria-labelledby="insStatusTitle">
+                <div class="card-head"><h2 class="card-title" id="insStatusTitle">Training status</h2></div>
+                <div id="insStatusBody"></div>
+              </section>
+              <section class="card ins-card" aria-labelledby="insRaceTitle">
+                <div class="card-head"><h2 class="card-title" id="insRaceTitle">Race readiness</h2></div>
+                <div id="insRaceBody"></div>
+              </section>
+              <section class="card ins-card" aria-labelledby="insGuardTitle">
+                <div class="card-head"><h2 class="card-title" id="insGuardTitle">Running load</h2><span class="section-meta">last 7 days vs 4 weeks before</span></div>
+                <div id="insGuardBody"></div>
+              </section>
+              <section class="card ins-card" aria-labelledby="insIntensityTitle">
+                <div class="card-head"><h2 class="card-title" id="insIntensityTitle">Intensity</h2>
+                  <select class="select select--chip" id="insWindow" aria-label="Period" onchange="setInsightsWindow(this.value)"><option value="7">7 days</option><option value="28" selected>28 days</option><option value="90">90 days</option></select></div>
+                <div id="insIntensityBody"></div>
+              </section>
+              <section class="card ins-card" id="insightsCard" aria-labelledby="insThresholdTitle">
+                <div class="card-head"><h2 class="card-title" id="insThresholdTitle">Thresholds</h2></div>
+                <div id="insightsBody"></div>
+              </section>
+              <section class="card ins-card" aria-labelledby="insAerobicTitle">
+                <div class="card-head"><h2 class="card-title" id="insAerobicTitle">Aerobic fitness</h2>
+                  <select class="select select--chip" id="insAerobicKind" aria-label="Sport" onchange="setAerobicKind(this.value)"><option value="run">Runs</option><option value="bike">Rides</option></select></div>
+                <div id="insAerobicBody"></div>
+              </section>
+              <section class="card ins-card" aria-labelledby="insBestsTitle">
+                <div class="card-head"><h2 class="card-title" id="insBestsTitle">New bests</h2><span class="section-meta">last 28 days</span></div>
+                <div id="insBestsBody"></div>
+              </section>
+              <section class="card ins-card" id="bestEffortsCard">
+                <div class="card-head">
+                  <h2 class="card-title">Best efforts</h2>
+                  <div class="card-head__actions">
+                    <select class="select select--chip" id="bestEffortsKind" aria-label="Sport" onchange="renderBestEfforts()"><option value="power">Power · rides</option><option value="pace">Pace · runs</option></select>
+                    <select class="select select--chip" id="bestEffortsRange" aria-label="Period" onchange="renderBestEfforts()"><option value="28">28 days</option><option value="90" selected>90 days</option><option value="365">365 days</option></select>
+                  </div>
                 </div>
-              </div>
-              <p class="card-text" id="bestEffortsEmpty">No detailed Strava data yet — it is fetched automatically in the background after each sync.</p>
-              <div class="chart-canvas-wrap chart-canvas-wrap--short"><canvas id="bestEffortsCanvas"></canvas></div>
+                <p class="card-text" id="bestEffortsEmpty">No detailed Strava data yet — it is fetched automatically in the background after each sync.</p>
+                <div class="chart-canvas-wrap chart-canvas-wrap--short"><canvas id="bestEffortsCanvas"></canvas></div>
+              </section>
             </div>
           </div>
         </div>
@@ -431,6 +479,10 @@
     <p class="card-text">Activities from this date on are rescored; earlier ones keep their thresholds.</p>
     <h3 class="settings-section">History</h3>
     <div id="thresholdHistory"></div>
+    <h3 class="settings-section">Sync</h3>
+    <p class="card-text">Compare these lines on your phone and your computer: they should match.</p>
+    <div id="syncInfo" class="sync-info"></div>
+    <button class="btn btn--secondary btn--block" onclick="refreshSharedData(true)"><svg class="icon" aria-hidden="true"><use href="#i-sync"/></svg>Reload from my account</button>
     <div class="card danger-zone" id="dangerZone" style="display:none">
       <div><div class="danger-zone__title">Delete all activities</div><p class="card-text">Permanently removes every activity from your account. Strava activities can be re-imported with Sync.</p></div>
       <button class="btn btn--danger-text" onclick="clearAll()" id="btnClear">Delete all…</button>
@@ -449,21 +501,21 @@
 </dialog>
 
 <!-- App Scripts (order matters) -->
-<script src="js/firebase-config.js?v=202610011135"></script>
-<script src="js/auth.js?v=202610011135"></script>
-<script src="js/database.js?v=202610011135"></script>
-<script src="js/fit-parser.js?v=202610011135"></script>
-<script src="js/strava.js?v=202610011135"></script>
-<script src="js/thresholds.js?v=202610011135"></script>
-<script src="js/metrics.js?v=202610011135"></script>
-<script src="js/theme.js?v=202610011135"></script>
-<script src="js/activity-detail.js?v=202610011135"></script>
-<script src="js/workout-export.js?v=202610011135"></script>
-<script src="js/race-target.js?v=202610011135"></script>
-<script src="js/calendar.js?v=202610011135"></script>
-<script src="js/wellness.js?v=202610011135"></script>
-<script src="js/insights.js?v=202610011135"></script>
-<script src="js/plan-import.js?v=202610011135"></script>
-<script src="js/app.js?v=202610011135"></script>
+<script src="js/firebase-config.js?v=202610011205"></script>
+<script src="js/auth.js?v=202610011205"></script>
+<script src="js/database.js?v=202610011205"></script>
+<script src="js/fit-parser.js?v=202610011205"></script>
+<script src="js/strava.js?v=202610011205"></script>
+<script src="js/thresholds.js?v=202610011205"></script>
+<script src="js/metrics.js?v=202610011205"></script>
+<script src="js/theme.js?v=202610011205"></script>
+<script src="js/activity-detail.js?v=202610011205"></script>
+<script src="js/workout-export.js?v=202610011205"></script>
+<script src="js/race-target.js?v=202610011205"></script>
+<script src="js/calendar.js?v=202610011205"></script>
+<script src="js/wellness.js?v=202610011205"></script>
+<script src="js/insights.js?v=202610011205"></script>
+<script src="js/plan-import.js?v=202610011205"></script>
+<script src="js/app.js?v=202610011205"></script>
 </body>
 </html>

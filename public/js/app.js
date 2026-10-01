@@ -10,9 +10,9 @@ let sortConfig = { key: 'date', dir: 'desc' };
 let plannerData = [];
 let raceDates = [];
 let plannerInited = false;
-let currentRange = 182; // 6 months by default (handoff: 6M)
+let currentRange = 42; // opens on 6 weeks
 let seasonView = 'forecast';
-const pmcHidden = { 2: true }; // chart series hidden by the user (Form off by default)
+const pmcHidden = {}; // chart series hidden by the user (all shown when the app opens)
 let logFilter = 'all';
 let selectMode = false;
 let sessionDataLoaded = false;
@@ -20,6 +20,7 @@ let forecastTssEdited = false;
 let forecastDaysEdited = false;
 let pmcSport = 'all';
 let planOverrides = {}; // sessionId → 'YYYY-MM-DD' when moved in the Calendar
+const planWeeksOpen = new Set(); // past plan weeks the user expanded in the List view (collapsed by default)
 
 // ══════════════════════════════════════════════
 // Safety & Date Helpers
@@ -576,6 +577,10 @@ function toggleCustomRange(btn) {
 // Comparison (with mode: range / year / month)
 // ══════════════════════════════════════════════
 let compareCharts = [];
+let comparePreset = '4w';
+let compareSportKey = 'all';
+let compareMetricKey = 'tss';
+let trendRange = 182;
 
 function destroyCompareCharts() {
   compareCharts.forEach(c => c.destroy());
@@ -583,260 +588,162 @@ function destroyCompareCharts() {
   if (compareChart) { compareChart.destroy(); compareChart = null; }
 }
 
-function initCompareDefaults() {
-  if (!allActivities.length) return;
-  const sorted = [...allActivities].sort((a, b) => a.startDate - b.startDate);
-  document.getElementById('compareFrom').value = localDateKey(sorted[0].startDate);
-  document.getElementById('compareTo').value = localDateKey(new Date());
-  const sports = [...new Set(allActivities.map(a => a.sport))].sort();
-  document.getElementById('compareSport').innerHTML = '<option value="all">All Sports</option>' + sports.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(fmtSportName(s))}</option>`).join('');
-  // Populate year selectors
-  const years = [...new Set(allActivities.map(a => a.startDate.getFullYear()))].sort();
-  const yearOpts = years.map(y => `<option value="${y}">${y}</option>`).join('');
-  const yA = document.getElementById('compareYearA');
-  const yB = document.getElementById('compareYearB');
-  if (yA && yB) { yA.innerHTML = yearOpts; yB.innerHTML = yearOpts; if (years.length >= 2) { yA.value = years[years.length - 2]; yB.value = years[years.length - 1]; } else if (years.length === 1) { yA.value = years[0]; yB.value = years[0]; } }
-  // Populate month selectors (all months that have data)
-  const monthSet = new Set();
-  allActivities.forEach(a => monthSet.add(localDateKey(a.startDate).slice(0, 7)));
-  const months = [...monthSet].sort().reverse();
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthOpts = months.map(m => {
-    const [y, mo] = m.split('-');
-    return `<option value="${m}">${monthNames[parseInt(mo)-1]} ${y}</option>`;
-  }).join('');
-  const mA = document.getElementById('compareMonthA'), mB = document.getElementById('compareMonthB');
-  if (mA) {
-    mA.innerHTML = monthOpts;
-    // Pre-select second most recent month
-    if (months.length >= 2) { mA.options[1].selected = true; }
-  }
-  if (mB) {
-    mB.innerHTML = monthOpts;
-    // Pre-select most recent month
-    if (months.length >= 1) { mB.options[0].selected = true; }
+// ── Season › Compare: this period vs an earlier one, plus a weekly / monthly trend ──
+const COMPARE_SPORTS = { all: () => true, run: s => ['running', 'trail_running'].includes(s), bike: s => isCyc(s), swim: s => s === 'swimming', strength: s => isStrength(s) };
+const COMPARE_METRICS = {
+  tss: { label: 'Load (TSS)', of: a => a.tss || 0, fmt: v => Math.round(v).toLocaleString('en-GB') },
+  duration: { label: 'Time', of: a => (a.duration || 0) / 3600, fmt: v => fmtDuration(Math.round(v * 3600)) },
+  distance: { label: 'Distance', of: a => (a.distance || 0) / 1000, fmt: v => `${v.toFixed(1)} km` },
+  elevation: { label: 'Climbing', of: a => a.elevationGain || 0, fmt: v => `${Math.round(v).toLocaleString('en-GB')} m` },
+};
+
+// The two periods for a preset, relative to `now` (B = recent, A = the one it is compared with)
+function comparePeriods(preset, now = new Date()) {
+  const today = new Date(now); today.setHours(0, 0, 0, 0);
+  const sameDayIn = (y, m, d) => new Date(y, m, Math.min(d, new Date(y, m + 1, 0).getDate()));
+  switch (preset) {
+    case 'month': { const a = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      return { a: { from: a, to: sameDayIn(a.getFullYear(), a.getMonth(), today.getDate()) }, b: { from: new Date(today.getFullYear(), today.getMonth(), 1), to: today } }; }
+    case 'ytd': return { a: { from: new Date(today.getFullYear() - 1, 0, 1), to: sameDayIn(today.getFullYear() - 1, today.getMonth(), today.getDate()) }, b: { from: new Date(today.getFullYear(), 0, 1), to: today } };
+    case '12w': { const from = addDays(today, -83);
+      return { a: { from: new Date(from.getFullYear() - 1, from.getMonth(), from.getDate()), to: new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()) }, b: { from, to: today } }; }
+    case 'custom': {
+      const v = id => parseIsoDate(document.getElementById(id)?.value);
+      const a = { from: v('compareAFrom'), to: v('compareATo') }, b = { from: v('compareBFrom'), to: v('compareBTo') };
+      return a.from && a.to && b.from && b.to ? { a, b } : null; }
+    default: return { a: { from: addDays(today, -55), to: addDays(today, -28) }, b: { from: addDays(today, -27), to: today } };
   }
 }
 
-function onCompareModeChange() {
-  const mode = document.getElementById('compareMode').value;
-  document.getElementById('compareRangeControls').style.display = mode === 'range' ? 'flex' : 'none';
-  const yc = document.getElementById('compareYearControls'); if (yc) yc.style.display = mode === 'year' ? 'flex' : 'none';
-  const mc = document.getElementById('compareMonthControls'); if (mc) mc.style.display = mode === 'month' ? 'flex' : 'none';
-  initCompareDefaults();
-  renderComparison();
+function fmtDateRange(p) {
+  const sameYear = p.from.getFullYear() === p.to.getFullYear(), thisYear = p.to.getFullYear() === new Date().getFullYear();
+  const f = p.from.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', ...(sameYear ? {} : { year: 'numeric' }) });
+  return `${f} – ${p.to.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', ...(thisYear && sameYear ? {} : { year: 'numeric' }) })}`;
 }
+
+// Totals for one period (activities from `from` 00:00 to `to` 23:59)
+function compareTotals(p, sportKey = 'all', acts = allActivities) {
+  const end = addDays(p.to, 1), test = COMPARE_SPORTS[sportKey] || COMPARE_SPORTS.all;
+  const list = acts.filter(a => a.startDate >= p.from && a.startDate < end && test(a.sport));
+  const sum = f => list.reduce((s, a) => s + f(a), 0);
+  const hr = list.filter(a => a.avgHr > 0);
+  const zones = typeof zoneTotals === 'function' ? zoneTotals(list.filter(a => a.streamStats && !a.streamStats.none), 'hr') : [];
+  const zTotal = zones.reduce((x, y) => x + y, 0);
+  const ctlIdx = (pmcResult.labels || []).lastIndexOf(localDateKey(p.to > new Date() ? new Date() : p.to));
+  return {
+    list, count: list.length, tss: sum(COMPARE_METRICS.tss.of), duration: sum(COMPARE_METRICS.duration.of), distance: sum(COMPARE_METRICS.distance.of), elevation: sum(COMPARE_METRICS.elevation.of),
+    longest: list.reduce((m, a) => Math.max(m, a.duration || 0), 0),
+    avgHr: hr.length ? hr.reduce((s, a) => s + a.avgHr, 0) / hr.length : null,
+    easyPct: zTotal ? (zones[0] + zones[1]) / zTotal * 100 : null,
+    ctl: ctlIdx >= 0 && sportKey === 'all' ? pmcResult.ctlVals[ctlIdx] : null,
+  };
+}
+
+function initCompareDefaults() {
+  if (!allActivities.length) return;
+  const today = localDateKey(new Date());
+  for (const [id, v] of [['compareBTo', today], ['compareATo', localDateKey(addDays(new Date(), -365))]]) { const el = document.getElementById(id); if (el && !el.value) el.value = v; }
+  for (const [id, v] of [['compareBFrom', localDateKey(addDays(new Date(), -27))], ['compareAFrom', localDateKey(addDays(new Date(), -392))]]) { const el = document.getElementById(id); if (el && !el.value) el.value = v; }
+}
+
+function setComparePreset(p) { comparePreset = p; renderComparison(); }
+function setCompareSport(k) { compareSportKey = k; renderComparison(); }
+function setCompareMetric(k) { compareMetricKey = k; renderComparison(); }
+function setTrendRange(v) { trendRange = v === 'all' ? 'all' : +v; renderComparison(); }
 
 function renderComparison() {
   if (!allActivities.length) return;
-  const modeEl = document.getElementById('compareMode');
-  const mode = modeEl ? modeEl.value : 'range';
-  const grouping = document.getElementById('compareGrouping').value;
-  const sportFilter = document.getElementById('compareSport').value;
+  document.querySelectorAll('.compare-preset').forEach(b => { const on = b.dataset.preset === comparePreset; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  document.querySelectorAll('.compare-sport').forEach(b => { const on = b.dataset.sport === compareSportKey; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  document.querySelectorAll('.compare-metric').forEach(b => { const on = b.dataset.metric === compareMetricKey; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  const custom = document.getElementById('compareCustom'); if (custom) custom.hidden = comparePreset !== 'custom';
+  destroyCompareCharts();
+  const periods = comparePeriods(comparePreset);
+  if (periods) renderPeriodComparison(periods);
+  renderTrend();
+}
 
-  if (mode === 'range') {
-    const fromStr = document.getElementById('compareFrom').value;
-    const toStr = document.getElementById('compareTo').value;
-    if (!fromStr || !toStr) return;
-    const from = new Date(fromStr + 'T00:00:00'), to = new Date(toStr + 'T23:59:59');
-    let filtered = allActivities.filter(a => a.startDate >= from && a.startDate <= to);
-    if (sportFilter !== 'all') filtered = filtered.filter(a => a.sport === sportFilter);
-    const periods = {};
-    for (const a of filtered) {
-      const key = getPeriodKey(a.startDate, grouping);
-      if (!periods[key]) periods[key] = { label: key, tss: 0, duration: 0, distance: 0, count: 0, hrs: [], ifs: [], powers: [] };
-      const p = periods[key]; p.tss += (a.tss || 0); p.duration += (a.duration || 0); p.distance += (a.distance || 0); p.count++;
-      if (a.avgHr) p.hrs.push(a.avgHr); if (a.intensityFactor) p.ifs.push(a.intensityFactor);
-    }
-    const sp = Object.values(periods).sort((a, b) => a.label.localeCompare(b.label));
-    renderCompareMetricsRange(sp, grouping);
-    renderCompareChartRange(sp, grouping);
-  } else {
-    let periodsArr;
-    if (mode === 'year') {
-      const yA = +document.getElementById('compareYearA').value, yB = +document.getElementById('compareYearB').value;
-      if (!yA || !yB) return;
-      periodsArr = [
-        { from: new Date(yA, 0, 1), to: new Date(yA, 11, 31, 23, 59, 59), label: String(yA) },
-        { from: new Date(yB, 0, 1), to: new Date(yB, 11, 31, 23, 59, 59), label: String(yB) },
-      ];
-    } else {
-      const selA = document.getElementById('compareMonthA'), selB = document.getElementById('compareMonthB');
-      const monthsA = Array.from(selA.selectedOptions).map(o => o.value);
-      const monthsB = Array.from(selB.selectedOptions).map(o => o.value);
-      if (!monthsA.length || !monthsB.length) return;
-      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      function monthRange(months) {
-        let from = null, to = null;
-        for (const m of months) {
-          const [y, mo] = m.split('-').map(Number);
-          const s = new Date(y, mo-1, 1), e = new Date(y, mo, 0, 23, 59, 59);
-          if (!from || s < from) from = s;
-          if (!to || e > to) to = e;
-        }
-        const label = months.length === 1
-          ? monthNames[parseInt(months[0].split('-')[1])-1] + ' ' + months[0].split('-')[0]
-          : months.length + ' months';
-        return { from, to, label };
-      }
-      const rA = monthRange(monthsA), rB = monthRange(monthsB);
-      periodsArr = [
-        { from: rA.from, to: rA.to, label: rA.label },
-        { from: rB.from, to: rB.to, label: rB.label },
-      ];
-    }
-    const datasets = periodsArr.map(p => {
-      let f = allActivities.filter(a => a.startDate >= p.from && a.startDate <= p.to);
-      if (sportFilter !== 'all') f = f.filter(a => a.sport === sportFilter);
-      return { label: p.label, _from: p.from, _to: p.to, tss: f.reduce((s,a)=>s+(a.tss||0),0), duration: f.reduce((s,a)=>s+(a.duration||0),0), distance: f.reduce((s,a)=>s+(a.distance||0),0), count: f.length, hrs: f.filter(a=>a.avgHr).map(a=>a.avgHr), ifs: f.filter(a=>a.intensityFactor).map(a=>a.intensityFactor) };
-    });
-    renderCompareMetricsSideBySide(datasets);
-    renderCompareChartsSideBySide(datasets);
+function renderPeriodComparison({ a, b }) {
+  const A = compareTotals(a, compareSportKey), B = compareTotals(b, compareSportKey), c = C();
+  document.getElementById('compareLegend').innerHTML = `<span><i style="background:${c.ctl}"></i>${escapeHtml(fmtDateRange(b))}</span><span><i style="background:${c.muted}"></i>${escapeHtml(fmtDateRange(a))}</span>`;
+  const rows = [
+    ['Load (TSS)', B.tss, A.tss, COMPARE_METRICS.tss.fmt, true],
+    ['Time', B.duration, A.duration, COMPARE_METRICS.duration.fmt],
+    ['Distance', B.distance, A.distance, COMPARE_METRICS.distance.fmt],
+    ['Climbing', B.elevation, A.elevation, COMPARE_METRICS.elevation.fmt],
+    ['Sessions', B.count, A.count, v => String(v)],
+    ['Longest session', B.longest, A.longest, v => fmtDuration(v)],
+    ['Fitness at the end', B.ctl, A.ctl, v => v.toFixed(0)],
+    ['Easy time (Z1–Z2)', B.easyPct, A.easyPct, v => `${Math.round(v)} %`],
+    ['Average HR', B.avgHr, A.avgHr, v => `${Math.round(v)} bpm`],
+  ].filter(([, x, y]) => x != null || y != null);
+  document.getElementById('compareMetrics').innerHTML = rows.map(([label, now, before, fmt, tss]) => {
+    const delta = now != null && before > 0 ? (now - before) / before * 100 : null;
+    return `<div class="compare-metric-card"><div class="compare-metric-label">${escapeHtml(label)}</div>
+      <div class="compare-metric-value${tss ? ' is-tss' : ''}">${now != null ? escapeHtml(fmt(now)) : '—'}${delta != null ? compareDeltaHtml(delta) : ''}</div>
+      <div class="compare-metric-sub"><span>before ${before != null ? escapeHtml(fmt(before)) : '—'}</span></div></div>`;
+  }).join('');
+  // Cumulative day-by-day: where you are compared with the same day of the other period
+  const m = COMPARE_METRICS[compareMetricKey] || COMPARE_METRICS.tss;
+  const days = p => Math.round((p.to - p.from) / 86400000) + 1, n = Math.max(days(a), days(b));
+  const series = (p, T, stopAtToday) => {
+    const byDay = new Array(days(p)).fill(0);
+    for (const x of T.list) { const i = Math.floor((new Date(x.startDate).setHours(0, 0, 0, 0) - p.from) / 86400000); if (i >= 0 && i < byDay.length) byDay[i] += m.of(x); }
+    let cum = 0; const today = new Date(); today.setHours(0, 0, 0, 0);
+    return Array.from({ length: n }, (_, i) => i >= byDay.length || (stopAtToday && addDays(p.from, i) > today) ? null : +(cum += byDay[i]).toFixed(1));
+  };
+  const labels = Array.from({ length: n }, (_, i) => fmtShortDate(addDays(b.from, i)));
+  compareChart = new Chart(document.getElementById('compareChart').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: fmtDateRange(b), data: series(b, B, true), borderColor: c.ctl, backgroundColor: withAlpha(c.ctl, 0.08), fill: true, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 },
+      { label: fmtDateRange(a), data: series(a, A, false), borderColor: withAlpha(c.muted, 0.9), borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 },
+    ] },
+    options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { ...chartTooltip(), callbacks: { title: x => `Day ${x[0].dataIndex + 1}`, label: x => `${x.dataset.label}: ${x.raw == null ? '—' : m.fmt(x.raw)}` } } },
+      scales: { x: chartScaleX({ ticks: { color: c.muted, maxRotation: 0, autoSkipPadding: 18 } }), y: chartScaleY({ beginAtZero: true, ticks: { color: c.muted, callback: v => compareMetricKey === 'duration' ? `${v} h` : v } }) } },
+  });
+}
+
+// Trend: totals per week or month over the chosen range
+function renderTrend() {
+  const grouping = document.getElementById('compareGrouping')?.value || 'week';
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const sel = document.getElementById('trendRange'); if (sel) sel.value = String(trendRange);
+  const from = trendRange === 'all' ? new Date(0) : addDays(today, -trendRange);
+  const test = COMPARE_SPORTS[compareSportKey] || COMPARE_SPORTS.all;
+  const periods = {};
+  for (const a of allActivities) {
+    if (a.startDate < from || !test(a.sport)) continue;
+    const day = new Date(a.startDate); day.setHours(0, 0, 0, 0);
+    const key = grouping === 'week' ? localDateKey(addDays(day, -((day.getDay() + 6) % 7))) : getPeriodKey(a.startDate, grouping);
+    const p = periods[key] ||= { label: key, tss: 0, duration: 0, distance: 0, elevation: 0, count: 0, hrs: [], ifs: [] };
+    p.tss += a.tss || 0; p.duration += a.duration || 0; p.distance += a.distance || 0; p.elevation += a.elevationGain || 0; p.count++;
+    if (a.avgHr) p.hrs.push(a.avgHr); if (a.intensityFactor) p.ifs.push(a.intensityFactor);
   }
+  const sp = Object.values(periods).sort((a, b) => a.label.localeCompare(b.label));
+  renderCompareChartRange(sp, grouping);
 }
 
 function compareDeltaHtml(delta) {
-  if (!delta || !isFinite(delta)) return '';
+  if (!delta || !isFinite(delta) || Math.abs(delta) < 0.5) return '';
   return `<span class="compare-delta ${delta > 0 ? 'pos' : 'neg'}">${delta > 0 ? '+' : '−'}${Math.abs(delta).toFixed(0)} %</span>`;
 }
 
-function renderCompareMetricsRange(sp, grouping) {
-  const avgOf = xs => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
-  const metrics = [
-    { label: 'Total TSS', values: sp.map(p => p.tss), fmt: v => Math.round(v).toLocaleString('en-GB'), tss: true },
-    { label: 'Total time', values: sp.map(p => p.duration), fmt: v => fmtDuration(Math.round(v)) },
-    { label: 'Total distance', values: sp.map(p => p.distance), fmt: v => (v / 1000).toFixed(1) + ' km' },
-    { label: 'Activities', values: sp.map(p => p.count), fmt: v => String(Math.round(v)) },
-    { label: 'Avg IF', values: sp.map(p => p.ifs.length ? +avgOf(p.ifs).toFixed(2) : 0), fmt: v => v.toFixed(2) },
-    { label: 'Avg HR', values: sp.map(p => p.hrs.length ? Math.round(avgOf(p.hrs)) : 0), fmt: v => Math.round(v) + ' bpm' },
-  ];
-  document.getElementById('compareMetrics').innerHTML = metrics.map(m => {
-    const vals = m.values, latest = vals.length ? vals[vals.length - 1] : 0, prev = vals.length > 1 ? vals[vals.length - 2] : 0;
-    const delta = prev > 0 ? ((latest - prev) / prev * 100) : 0, avg = avgOf(vals);
-    return `<div class="compare-metric-card"><div class="compare-metric-label">${m.label}</div><div class="compare-metric-value${m.tss ? ' is-tss' : ''}">${m.fmt(latest)}${compareDeltaHtml(delta)}</div><div class="compare-metric-sub"><span>Previous ${m.fmt(prev)}</span><span>Average ${m.fmt(avg)}</span></div></div>`;
-  }).join('');
-}
-
 function renderCompareChartRange(sp, grouping) {
-  const labels = sp.map(p => formatPeriodLabel(p.label, grouping));
-  destroyCompareCharts();
-  document.getElementById('compareChartArea').innerHTML = '<canvas id="compareChart"></canvas>';
-  const c = C();
-  compareChart = new Chart(document.getElementById('compareChart').getContext('2d'), {
+  const labels = sp.map(p => grouping === 'week' ? fmtShortDate(parseIsoDate(p.label)) : formatPeriodLabel(p.label, grouping));
+  const canvas = document.getElementById('trendChart');
+  if (!canvas) return;
+  const c = C(), run = compareSportKey === 'run';
+  const chart = new Chart(canvas.getContext('2d'), {
     type: 'bar', data: { labels, datasets: [
-      { label: 'TSS', data: sp.map(p=>p.tss), backgroundColor: withAlpha(c.tss, 0.75), borderRadius: 6, maxBarThickness: 36, yAxisID: 'y' },
-      { label: 'Hours', data: sp.map(p=>+(p.duration/3600).toFixed(1)), backgroundColor: withAlpha(c.ctl, 0.65), borderRadius: 6, maxBarThickness: 36, yAxisID: 'y1' },
-    ]}, options: { responsive:true, maintainAspectRatio:false, animation:false, interaction: { mode: 'index', intersect: false },
+      { label: 'TSS', data: sp.map(p => Math.round(p.tss)), backgroundColor: withAlpha(c.tss, 0.75), borderRadius: 6, maxBarThickness: 36, yAxisID: 'y' },
+      { label: run ? 'Climbing (m)' : 'Hours', data: sp.map(p => run ? Math.round(p.elevation) : +(p.duration / 3600).toFixed(1)), backgroundColor: withAlpha(c.ctl, 0.65), borderRadius: 6, maxBarThickness: 36, yAxisID: 'y1' },
+    ]}, options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: true, align: 'start', labels: { color: c.dim, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 8, boxHeight: 8 } }, tooltip: chartTooltip() },
-      scales: { x: chartScaleX(), y: chartScaleY({ position: 'left', beginAtZero: true, ticks: { color: c.tss, padding: 8 } }), y1: chartScaleY({ position: 'right', min: 0, grid: { drawOnChartArea: false }, ticks: { color: c.ctl, padding: 8 } }) } }
+      scales: { x: chartScaleX({ ticks: { color: c.muted, maxRotation: 0, autoSkipPadding: 10 } }), y: chartScaleY({ position: 'left', beginAtZero: true, ticks: { color: c.tss, padding: 8 } }), y1: chartScaleY({ position: 'right', min: 0, grid: { drawOnChartArea: false }, ticks: { color: c.ctl, padding: 8 } }) } }
   });
-}
-
-// Period A = fitness blue, period B = TSS amber (same as the charts)
-function comparePeriodColors() { const c = C(); return [c.ctl, c.tss]; }
-
-function renderCompareMetricsSideBySide(datasets) {
-  const defs = [
-    { label: 'Total TSS', key: 'tss', fmt: v => Math.round(v).toLocaleString('en-GB') },
-    { label: 'Total time', key: 'duration', fmt: v => fmtDuration(v) },
-    { label: 'Total distance', key: 'distance', fmt: v => (v / 1000).toFixed(1) + ' km' },
-    { label: 'Activities', key: 'count', fmt: v => String(v) },
-    { label: 'Avg IF', key: 'ifs', fmt: v => v.toFixed(2), avg: true },
-    { label: 'Avg HR', key: 'hrs', fmt: v => Math.round(v) + ' bpm', avg: true },
-  ];
-  const colors = comparePeriodColors();
-  document.getElementById('compareMetrics').innerHTML = defs.map(m => {
-    const vals = datasets.map(ds => m.avg ? (ds[m.key].length ? ds[m.key].reduce((a, b) => a + b, 0) / ds[m.key].length : 0) : ds[m.key]);
-    const delta = vals[0] > 0 ? ((vals[1] - vals[0]) / vals[0] * 100) : 0;
-    return `<div class="compare-metric-card"><div class="compare-metric-label">${m.label}</div>${datasets.map((ds, i) => `<div class="compare-period-row"><span class="compare-period-label"><span class="compare-period-dot" style="background:${safeColor(colors[i])}"></span>${escapeHtml(ds.label)}</span><span class="compare-period-value">${m.fmt(vals[i])}${i === 1 ? compareDeltaHtml(delta) : ''}</span></div>`).join('')}</div>`;
-  }).join('');
-}
-
-function renderCompareChartsSideBySide(datasets) {
-  destroyCompareCharts();
-  const calc = document.getElementById('compareCalc') ? document.getElementById('compareCalc').value : 'total';
-
-  if (calc === 'cumulative') {
-    renderCumulativeCharts(datasets);
-    return;
-  }
-
-  const c = C(), color = comparePeriodColors().map(x => withAlpha(x, 0.75));
-  const chartDefs = [
-    { title:'TSS', data: datasets.map(ds=>ds.tss), color },
-    { title:'Hours', data: datasets.map(ds=>+(ds.duration/3600).toFixed(1)), color },
-    { title:'Distance (km)', data: datasets.map(ds=>+(ds.distance/1000).toFixed(1)), color },
-    { title:'Activities', data: datasets.map(ds=>ds.count), color },
-  ];
-  const area = document.getElementById('compareChartArea');
-  area.innerHTML = '<div class="compare-charts-grid">' + chartDefs.map((_,i) => `<div class="compare-chart-cell"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
-  chartDefs.forEach((cd, i) => {
-    const c = new Chart(document.getElementById('cmpChart'+i).getContext('2d'), {
-      type: 'bar', data: { labels: datasets.map(ds=>ds.label), datasets: [{ data: cd.data, backgroundColor: cd.color, borderRadius: 6, barPercentage: 0.6, maxBarThickness: 56 }] },
-      options: { responsive:true, maintainAspectRatio:false, animation:false, plugins: { legend:{display:false}, title:{display:true,text:cd.title,align:'start',color:c.text,font:{size:15,weight:600},padding:{bottom:12}}, tooltip: chartTooltip() }, scales: { x: chartScaleX({ ticks: { color: c.dim } }), y: chartScaleY({ beginAtZero: true }) } }
-    });
-    compareCharts.push(c);
-  });
-}
-
-function renderCumulativeCharts(datasets) {
-  destroyCompareCharts();
-  const c = C(), colors = comparePeriodColors();
-  const metricDefs = [
-    { title: 'Cumulative TSS', key: 'tss', extract: a => a.tss || 0 },
-    { title: 'Cumulative Hours', key: 'duration', extract: a => (a.duration || 0) / 3600 },
-    { title: 'Cumulative Distance (km)', key: 'distance', extract: a => (a.distance || 0) / 1000 },
-    { title: 'Cumulative Activities', key: 'count', extract: a => 1 },
-  ];
-  const sportFilter = document.getElementById('compareSport').value;
-  const area = document.getElementById('compareChartArea');
-  area.innerHTML = '<div class="compare-charts-grid">' + metricDefs.map((_,i) => `<div class="compare-chart-cell"><canvas id="cmpChart${i}"></canvas></div>`).join('') + '</div>';
-
-  metricDefs.forEach((md, mi) => {
-    const chartDatasets = datasets.map((ds, di) => {
-      // Get activities for this period, sorted by date
-      let acts = allActivities.filter(a => a.startDate >= ds._from && a.startDate <= ds._to);
-      if (sportFilter !== 'all') acts = acts.filter(a => a.sport === sportFilter);
-      acts.sort((a, b) => a.startDate - b.startDate);
-      // Build cumulative series — use day offset from period start
-      let cum = 0;
-      const points = [{ x: 0, y: 0 }];
-      for (const a of acts) {
-        cum += md.extract(a);
-        const dayOffset = Math.floor((a.startDate - ds._from) / 86400000);
-        points.push({ x: dayOffset, y: +cum.toFixed(1) });
-      }
-      return {
-        label: ds.label,
-        data: points,
-        borderColor: colors[di],
-        backgroundColor: withAlpha(colors[di], 0.08),
-        borderWidth: 2.5,
-        pointRadius: 0,
-        pointHitRadius: 6,
-        tension: 0.2,
-        fill: true,
-      };
-    });
-    const maxDays = Math.max(...chartDatasets.flatMap(ds => ds.data.map(p => p.x)), 1);
-    const c = new Chart(document.getElementById('cmpChart'+mi).getContext('2d'), {
-      type: 'line',
-      data: { datasets: chartDatasets },
-      options: {
-        responsive: true, maintainAspectRatio: false, animation: false,
-        plugins: {
-          legend: { display: true, align: 'start', labels: { color: c.dim, usePointStyle: true, pointStyle: 'line' } },
-          title: { display: true, text: md.title, align: 'start', color: c.text, font: { size: 15, weight: 600 }, padding: { bottom: 8 } },
-          tooltip: chartTooltip()
-        },
-        scales: {
-          x: chartScaleX({ type: 'linear', min: 0, max: maxDays, ticks: { color: c.muted, maxRotation: 0, callback: v => 'Day ' + v } }),
-          y: chartScaleY({ beginAtZero: true })
-        }
-      }
-    });
-    compareCharts.push(c);
-  });
+  compareCharts.push(chart);
 }
 
 function getPeriodKey(date, g) { const d = new Date(date); if (g === 'year') return d.getFullYear().toString(); if (g === 'month') return localDateKey(d).slice(0, 7); const t = new Date(d); t.setHours(0, 0, 0, 0); t.setDate(t.getDate() + 3 - (t.getDay() + 6) % 7); const w1 = new Date(t.getFullYear(), 0, 4); const wn = 1 + Math.round(((t - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7); return `${t.getFullYear()}-W${String(wn).padStart(2, '0')}`; }
@@ -994,14 +901,79 @@ function renderRaceDateInputs() {
     </div>`).join('') : '<p class="card-text">No race yet. Add one to see it on the charts and plan a race-day target.</p>';
 }
 
-function saveRaceDates() {
-  if (typeof saveRaceDatesData === 'function') saveRaceDatesData(raceDates);
+async function saveRaceDates() {
+  if (typeof saveRaceDatesData !== 'function') return;
+  if (!(await saveRaceDatesData(raceDates))) showToast('Race not saved to your account — check your connection', '⚠️');
 }
 
 async function loadRaceDates() {
   if (typeof loadRaceDatesData !== 'function') return;
   const saved = await loadRaceDatesData();
-  if (saved) { raceDates = saved; renderRaceDateInputs(); renderTodayHead(); }
+  if (saved) { raceDates = saved; renderRaceDateInputs(); renderTodayHead(); if (pmcChart) buildPMCChart(); }
+}
+
+// ══════════════════════════════════════════════
+// Keeping devices in sync
+// ══════════════════════════════════════════════
+// An installed app on iOS can stay suspended for days without reloading. When it comes back to the
+// foreground: reload if a newer version was deployed, otherwise re-read what other devices may have
+// changed (plan, ticks, moved sessions, races, Season › Forecast weeks). Activities come from Strava sync.
+let lastSharedRefresh = Date.now();
+
+function runningAppVersion() {
+  const src = document.querySelector('script[src*="js/app.js"]')?.getAttribute('src') || '';
+  return (src.match(/[?&]v=(\d+)/) || [])[1] || '';
+}
+
+async function reloadIfNewVersion() {
+  try {
+    const html = await (await fetch('/', { cache: 'no-store' })).text();
+    const latest = (html.match(/js\/app\.js\?v=(\d+)/) || [])[1];
+    const busy = document.querySelector('dialog[open]') || document.activeElement?.matches?.('input, textarea, select');
+    if (latest && runningAppVersion() && latest !== runningAppVersion() && !busy) { location.reload(); return true; }
+  } catch (e) { /* offline: keep the running version */ }
+  return false;
+}
+
+async function refreshSharedData(force = false) {
+  if (!currentUser || (!force && Date.now() - lastSharedRefresh < 60 * 1000)) return;
+  lastSharedRefresh = Date.now();
+  if (!force && await reloadIfNewVersion()) return;
+  try {
+    await loadSavedPlan();
+    await loadRaceDates();
+    if (typeof loadPlannerWeeks === 'function') {
+      await loadPlannerWeeks();
+      plannerInited = false; plannerData = [];
+      if (document.getElementById('tab-planner')?.classList.contains('is-active') && document.getElementById('tab-season')?.classList.contains('is-active')) initPlanner();
+    }
+    if (pmcChart) buildPMCChart();
+    if (document.getElementById('planCalendarPanel')?.classList.contains('is-active') && typeof renderCalendar === 'function') renderCalendar();
+    renderSyncInfo();
+    if (force) showToast('Reloaded from your account', '✅');
+  } catch (e) {
+    console.error('Refresh failed:', e);
+    if (force) showToast('Could not reload — check your connection', '⚠️');
+  }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSharedData(); });
+window.addEventListener('focus', () => refreshSharedData());
+
+// Settings › Sync: what this device sees, to compare phone and computer at a glance
+function renderSyncInfo() {
+  const el = document.getElementById('syncInfo');
+  if (!el) return;
+  const when = d => d ? d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+  const plan = trainingPlan ? [trainingPlan.name || trainingPlan.race || 'Plan', trainingPlan.version || trainingPlan.plan_version || ''].filter(Boolean).join(' · ') : 'none';
+  const races = (raceDates || []).filter(r => r.date).map(r => `${r.name || 'Race'} ${parseIsoDate(r.date)?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) || r.date}`).join(', ') || 'none';
+  const rows = [
+    ['Account', currentUser ? (currentUser.email || currentUser.displayName || '') : '—'],
+    ['Plan', plan + (typeof planSavedMeta !== 'undefined' && planSavedMeta ? ` · saved ${when(planSavedMeta.updatedAt)}` : '')],
+    ['Races', races],
+    ['Last refreshed', when(new Date(lastSharedRefresh))],
+    ['App version', runningAppVersion() || '—'],
+  ];
+  el.innerHTML = rows.map(([k, v]) => `<div class="sync-row"><span>${escapeHtml(k)}</span><b>${escapeHtml(v)}</b></div>`).join('');
 }
 
 function updatePlannerForecast() {
@@ -1348,6 +1320,7 @@ function onDrop(e) { e.preventDefault(); const el = document.getElementById('upl
 
 // UI
 function toggleSettings() {
+  renderSyncInfo();
   const dlg = document.getElementById('settingsDialog');
   if (dlg.open) dlg.close(); else dlg.showModal();
   document.getElementById('btnSettings')?.setAttribute('aria-expanded', String(dlg.open));
@@ -1701,9 +1674,19 @@ function renderTrainingPlan() {
       tssText = `<strong>${actual}</strong> / ${escapeHtml(week.tss)} TSS`;
     }
     const phase = week.phase ? String(week.phase)[0] + String(week.phase).slice(1).toLowerCase() : '';
-    wh += `<section class="plan-week${wi === currentIdx ? ' plan-week-current' : ''}" data-plan-week="${wi}" id="plan-week-${wi}">
-      <div class="plan-week-head"><h3 class="plan-week-title">W${escapeHtml(String(week.week).padStart(2, '0'))}${phase ? ` · <span class="plan-week-phase" style="color:${safeColor(week.color, 'var(--text-dim)')}">${escapeHtml(phase)}</span>` : ''}</h3>
-      <span class="plan-week-meta">${tssText}</span></div>
+    const title = `W${escapeHtml(String(week.week).padStart(2, '0'))}${phase ? ` · <span class="plan-week-phase" style="color:${safeColor(week.color, 'var(--text-dim)')}">${escapeHtml(phase)}</span>` : ''}`;
+    // Finished weeks fold into one row (sessions done / planned), so the list starts near this week
+    const past = weekStart && addDays(weekStart, 6) < today;
+    const open = !past || planWeeksOpen.has(wi);
+    let head = `<div class="plan-week-head"><h3 class="plan-week-title">${title}</h3><span class="plan-week-meta">${tssText}</span></div>`;
+    if (past) {
+      const training = (week.sessions || []).filter(s => s.sport !== 'rest');
+      const done = training.filter(s => isSessionTicked(s) || matches.get(s.id)).length;
+      head = `<button class="btn-reset plan-week-head plan-week-toggle" aria-expanded="${open}" aria-controls="plan-week-body-${wi}" onclick="togglePlanWeek(${wi})">
+        <span class="plan-week-title">${title}</span><span class="plan-week-meta">${done}/${training.length} done · ${tssText}<svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></button>`;
+    }
+    wh += `<section class="plan-week${wi === currentIdx ? ' plan-week-current' : ''}${past ? ' plan-week--past' : ''}${open ? '' : ' is-collapsed'}" data-plan-week="${wi}" id="plan-week-${wi}">
+      ${head}<div id="plan-week-body-${wi}"${open ? '' : ' hidden'}>
       ${week.note ? `<p class="plan-week-note">${escapeHtml(week.note)}</p>` : ''}
       <div class="plan-sessions">`;
     for (const s of (week.sessions || [])) {
@@ -1732,7 +1715,7 @@ function renderTrainingPlan() {
           ${details || `${s.description ? `<div class="plan-session-desc${s.description.length > 200 ? ' is-clamped' : ''}">${escapeHtml(s.description)}</div>` : ''}${sessionMetaHtml(s)}`}
         </div></div>`;
     }
-    wh += `</div></section>`;
+    wh += `</div></div></section>`;
   });
   document.getElementById('planWeeks').innerHTML = wh;
   renderUpcomingSessions();
@@ -1740,8 +1723,20 @@ function renderTrainingPlan() {
   if (typeof renderCalendar === 'function' && document.getElementById('planCalendarPanel')?.classList.contains('is-active')) renderCalendar();
 }
 
+// Expand / collapse a finished week in the List view
+function togglePlanWeek(i) {
+  if (planWeeksOpen.has(i)) planWeeksOpen.delete(i); else planWeeksOpen.add(i);
+  const open = planWeeksOpen.has(i), sec = document.getElementById(`plan-week-${i}`);
+  if (!sec) return;
+  sec.classList.toggle('is-collapsed', !open);
+  sec.querySelector('.plan-week-toggle')?.setAttribute('aria-expanded', String(open));
+  const body = document.getElementById(`plan-week-body-${i}`);
+  if (body) body.hidden = !open;
+}
+
 // Week picker: scroll the page to a plan week (never scrollIntoView: it also scrolls the tab bar on iOS)
 function jumpToPlanWeek(i) {
+  if (document.getElementById(`plan-week-${i}`)?.classList.contains('is-collapsed')) togglePlanWeek(i);
   document.querySelectorAll('#planWeekPicker .chip').forEach((c, j) => c.classList.toggle('is-active', j === i));
   const el = document.getElementById(`plan-week-${i}`);
   if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });

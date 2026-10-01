@@ -32,8 +32,8 @@ public/                    # Firebase Hosting root — ONLY this folder is serve
   js/strava.js             # Strava OAuth + activity sync
   js/plan-import.js        # Training plan parsing/validation (normalizePlan) — see schema below
   js/thresholds.js         # Dated threshold history (FTP/LTHR/paces) — thresholdsAt(date)
-  js/metrics.js            # Pure stream analytics: histograms, mean-max curves, decoupling, eFTP, zones
-  js/insights.js           # Season › Insights: estimated FTP, zones, best efforts
+  js/metrics.js            # Pure stream analytics: histograms, mean-max curves (power, speed, HR), decoupling, eFTP, zones; STREAM_STATS_VERSION 2 (needsStreamStats)
+  js/insights.js           # Season › Insights: training status, race readiness, running-load guard, intensity (zones, 80/20, easy-session HR caps), eFTP/eLTHR, aerobic efficiency, new bests, best efforts — pure calc functions + render*
   js/activity-detail.js    # Activity dialog: map (Leaflet), stream charts, laps, notes/RPE/feel
   js/workout-export.js     # Plan steps → .zwo / .fit workout (FIT validated with Garmin's SDK)
   js/race-target.js        # Season › Forecast race-day CTL/TSB solver
@@ -75,6 +75,8 @@ tests/app.test.mjs         # App logic tests (node --test tests/)
 - **Thresholds are dated**: always score with `thresholdsAt(activity.startDate)`, never with the current inputs
 - **Stream stats** store HR/power histograms so zones can be recomputed for any threshold without refetching; the background fetch (`backfillStreams`) respects Strava's 100 req / 15 min limit
 - **Auto-sync** runs on open / focus / every 15 min, only after `activitiesLoaded` (dedupe needs the list)
+- **Device sync**: on returning to the foreground (`refreshSharedData`) the app reloads itself if a newer `?v=` was deployed, else re-reads plan, ticks, moved sessions, races and planner weeks. Settings › Sync shows account, plan saved time, races and app version to compare devices
+- **Compare** (`comparePeriods`): presets with equal-length periods (4 weeks, month to date, year to date, 12 weeks vs a year ago, custom), sport chips, cumulative day-by-day chart; Trend card per week/month
 - **Today's forecast** (`forecastFromSeasonPlan`) follows the weekly TSS of Season › Forecast up to a week past the next race; the flat "average daily TSS" only fills unplanned days
 - **Ramp rate**: CTL change over the last 7 days (>8/week = too fast). **TSB zones**: `tsbZone()` in `app.js`
 - **Plan vs actual**: `matchPlanToActivities()` ticks plan sessions matched to an activity on the same day with a compatible sport; plan week dates get their year from the plan's `race_date` (`planWeekStart()`)

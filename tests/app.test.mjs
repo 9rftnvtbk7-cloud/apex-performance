@@ -396,6 +396,19 @@ test('Markdown is rendered safely: markup only from known syntax, raw HTML shown
   assert.match(html, /<blockquote>fatigue &gt; 7\/10 : 40min Z1<\/blockquote>/);
 });
 
+test('Plan list: finished weeks fold into one row with sessions done, and open on tap', () => {
+  const { run, ctx, el } = makeEnv();
+  run(`zwoFiles = {}; planCompletions = { 'w1-2-tue': true }; allActivities = [];`);
+  ctx.__text = fixture('plan_detailed.json');
+  run(`trainingPlan = normalizePlan(__text).plan; renderTrainingPlan();`); // W01 (7–13 Sep 2026) is in the past
+  const weeks = el('planWeeks').innerHTML;
+  assert.match(weeks, /class="plan-week plan-week--past is-collapsed" data-plan-week="0"/);
+  assert.match(weeks, /aria-expanded="false" aria-controls="plan-week-body-0" onclick="togglePlanWeek\(0\)"[\s\S]*?1\/6 done/);
+  assert.match(weeks, /<div id="plan-week-body-0" hidden>/);
+  run(`togglePlanWeek(0); renderTrainingPlan();`);
+  assert.match(el('planWeeks').innerHTML, /class="plan-week plan-week--past" data-plan-week="0"[\s\S]*?<div id="plan-week-body-0">/);
+});
+
 test('Plan tab: header with version and phase bar, week picker, session rows with details and steps', () => {
   const { run, ctx, el } = makeEnv();
   run(`zwoFiles = {}; planCompletions = {}; allActivities = [];`);
@@ -577,7 +590,9 @@ test('Stream stats: histograms, mean-max, decoupling from Strava streams', () =>
   ctx.__streams = { time: { data: time }, watts: { data: time.map(() => 200) },
     heartrate: { data: time.map(i => (i < n / 2 ? 140 : 150)) }, velocity_smooth: { data: time.map(() => 9) } };
   const st = run(`computeStreamStats(__streams, 'cycling')`);
-  assert.equal(st.v, 1);
+  assert.equal(st.v, 2);
+  assert.equal(st.mmHr['1200'], 150);            // best 20 min heart rate (second half)
+  assert.equal(st.mmHr['1800'], 146.67);
   assert.equal(st.hist.pw['200'], 2400);
   assert.equal(st.hist.hr['140'], 1200);
   assert.equal(st.mmPower['1200'], 200);
@@ -586,7 +601,11 @@ test('Stream stats: histograms, mean-max, decoupling from Strava streams', () =>
   assert.equal(st.decoupling, 6.7);              // (200/140 − 200/150) / (200/140)
   // Pauses longer than 10 s are not counted as effort
   assert.equal(run(`resample1Hz([0, 1, 100], [5, 5, 5]).length`), 3);
-  assert.deepEqual({ ...run(`computeStreamStats({}, 'running')`) }, { v: 1, none: true });
+  assert.deepEqual({ ...run(`computeStreamStats({}, 'running')`) }, { v: 2, none: true });
+  // v1 stats are refetched only for runs with heart rate (they gain mmHr)
+  assert.equal(run(`needsStreamStats({ sport: 'running', streamStats: { v: 1, hist: { hr: {} } } })`), true);
+  assert.equal(run(`needsStreamStats({ sport: 'cycling', streamStats: { v: 1, hist: { hr: {} } } })`), false);
+  assert.equal(run(`needsStreamStats({ sport: 'running', streamStats: { v: 1, none: true } })`), false);
 });
 
 test('Zones use the thresholds valid on each activity date; eFTP from best 20 min', () => {
@@ -818,6 +837,91 @@ test('Today forecast follows Season › Forecast weeks, the rest of this week an
   // No planner weeks: the flat average forecast is kept
   run(`savedPlannerWeeks = []`);
   assert.equal(run('forecastFromSeasonPlan(new Date(2026, 8, 30))'), null);
+});
+
+// ── Season › Insights ──
+test('Insights: training status labels from fitness, ramp and load ratio', () => {
+  const { run } = makeEnv();
+  const status = (ctl, atl, races = '[]') => run(`(() => { const s = { ctlVals: ${JSON.stringify(ctl)}, lastCtl: ${ctl[ctl.length - 1]}, lastAtl: ${atl} };
+    return trainingStatus(s, new Date(2026, 9, 1), ${races}).key; })()`);
+  const line = (from, to, n = 40) => Array.from({ length: n }, (_, i) => +(from + (to - from) * i / (n - 1)).toFixed(2));
+  assert.equal(status(line(30, 40), 45), 'productive');           // +1.8 a week
+  assert.equal(status(line(40, 40.5), 42), 'maintaining');
+  assert.equal(status(line(40, 50), 80), 'over');                  // load 1.6× usual
+  assert.equal(status(line(55, 40), 35), 'detraining');           // −2.7 a week, −11 over 4 weeks
+  assert.equal(status(line(50, 40), 35), 'recovering');           // −1.8 a week
+  assert.equal(status(line(42, 40), 30, `[{ date: '2026-10-15', name: 'Trail' }]`), 'taper');
+  assert.equal(status([10, 11]), 'start');
+});
+
+test('Insights: race demands, race-time estimate, running load guard', () => {
+  const { run } = makeEnv();
+  assert.deepEqual({ ...run(`raceDemands({ name: 'Trail' }, { race: 'Trail de Saint-Nolff (30km / D+600m)' })`) }, { km: 30, dplus: 600 });
+  assert.deepEqual({ ...run(`raceDemands({ name: 'Saint-Nolff Trail 30K' }, null)`) }, { km: 30, dplus: null });
+  // 15 km + 300 m D+ (18 km-effort) in 1h40 → 36 km-effort: 6000 × 2^1.06 ≈ 12 510 s
+  run(`allActivities = [
+    { sport: 'running', startDate: new Date(2026, 8, 20), distance: 15000, elevationGain: 300, duration: 6000, tss: 90 },
+    { sport: 'running', startDate: new Date(2026, 8, 25), distance: 8000, elevationGain: 0, duration: 3600, tss: 50 },
+    { sport: 'walking', startDate: new Date(2026, 8, 26), distance: 9000, elevationGain: 0, duration: 3600 }]`);
+  const est = run(`estimateRaceTime(allActivities, { km: 30, dplus: 600 }, new Date(2026, 9, 1))`);
+  assert.equal(Math.round(est.seconds), 12510);
+  // Guard: 4 weeks of 20 km, then 35 km in the last 7 days → 1.75× → high
+  run(`allActivities = [];
+       for (let w = 1; w <= 4; w++) allActivities.push({ sport: 'running', startDate: new Date(2026, 9, 1 - 7 * w), distance: 20000, elevationGain: 200, duration: 7200 });
+       allActivities.push({ sport: 'running', startDate: new Date(2026, 8, 29), distance: 35000, elevationGain: 200, duration: 12000 });`);
+  const g = run(`runLoadGuard(allActivities, new Date(2026, 9, 1, 20))`);
+  assert.equal(g.level, 'high');
+  assert.equal(g.kmRatio, 1.75);
+  assert.match(g.message, /distance 35\.0 km vs 20\.0 km a week/);
+});
+
+test('Insights: LTHR estimate, HR caps, easy split, efficiency and new bests', () => {
+  const { run } = makeEnv();
+  run(`thresholdHistory = normalizeThresholdHistory([{ from: '2000-01-01', ftp: 200, lthr: 170, pace: '5:00', swimPace: '2:00' }]);
+       allActivities = [
+         { sport: 'running', startDate: new Date(2026, 8, 10), avgHr: 160, duration: 3000, streamStats: { v: 2, mmHr: { 1200: 175, 3600: 168 } } },
+         { sport: 'running', startDate: new Date(2026, 3, 10), avgHr: 185, duration: 3000, streamStats: { v: 2, mmHr: { 1200: 190 } } }];`);
+  assert.deepEqual({ ...run(`estimateLthr(allActivities, new Date(2026, 9, 1))`) }, { value: 172, source: 'streams' }); // 175 × 0.98; April is too old
+  run(`allActivities[0].streamStats = { v: 1 }`);
+  assert.deepEqual({ ...run(`estimateLthr(allActivities, new Date(2026, 9, 1))`) }, { value: 160, source: 'summary' });
+  assert.equal(run(`hrCapOf('≤135 bpm')`), 135);
+  assert.equal(run(`hrCapOf('FC ≤ 150 en montée')`), 150);
+  assert.equal(run(`hrCapOf('Z2')`), null);
+  assert.deepEqual({ ...run(`intensitySplit([3000, 3000, 2000, 1000, 1000])`) }, { low: 60, mid: 20, high: 20 });
+  // Efficiency: easy runs only (avg HR ≤ 90 % of 170 = 153), climbing counted as distance
+  run(`allActivities = [
+    { sport: 'running', startDate: new Date(2026, 8, 1), avgHr: 140, duration: 3600, distance: 9000, elevationGain: 0 },
+    { sport: 'running', startDate: new Date(2026, 8, 25), avgHr: 140, duration: 3600, distance: 9000, elevationGain: 100 },
+    { sport: 'running', startDate: new Date(2026, 8, 26), avgHr: 165, duration: 3600, distance: 12000, elevationGain: 0 }]`);
+  const pts = run(`aerobicPoints(allActivities, 'run', new Date(2026, 9, 1))`);
+  assert.equal(pts.length, 2);
+  assert.equal(+pts[1].ef.toFixed(3), +((19000 / 60) / 140).toFixed(3));
+  assert.equal(Math.round(run(`aerobicTrend(aerobicPoints(allActivities, 'run', new Date(2026, 9, 1)), new Date(2026, 9, 1))`).efChange), 111);
+  // New bests in the last 28 days
+  run(`allActivities = [
+    { id: 'a', sport: 'cycling', startDate: new Date(2025, 5, 1), streamStats: { mmPower: { 1200: 260 } } },
+    { id: 'b', sport: 'cycling', startDate: new Date(2026, 8, 20), streamStats: { mmPower: { 1200: 250, 60: 400 } } },
+    { id: 'c', sport: 'running', startDate: new Date(2026, 8, 21), distance: 21000, elevationGain: 50 },
+    { id: 'd', sport: 'running', startDate: new Date(2026, 1, 1), distance: 15000, elevationGain: 400 }]`);
+  const bests = run(`recentBests(allActivities, new Date(2026, 9, 1))`);
+  assert.deepEqual(JSON.parse(JSON.stringify(bests.map(b => [b.activity.id, b.allTime, b.year]))), [['c', ['longest run'], []], ['b', ['1min power'], ['20min power']]]);
+});
+
+test('Compare: presets give fair periods (same length, same day of month / year) and sport totals', () => {
+  const { run } = makeEnv();
+  const k = (preset, now) => JSON.parse(run(`(() => { const p = comparePeriods('${preset}', ${now}); return JSON.stringify([localDateKey(p.a.from), localDateKey(p.a.to), localDateKey(p.b.from), localDateKey(p.b.to)]); })()`));
+  assert.deepEqual(k('4w', 'new Date(2026, 9, 1, 15)'), ['2026-08-07', '2026-09-03', '2026-09-04', '2026-10-01']);
+  assert.deepEqual(k('month', 'new Date(2026, 2, 31)'), ['2026-02-01', '2026-02-28', '2026-03-01', '2026-03-31']); // Feb has no 31st
+  assert.deepEqual(k('ytd', 'new Date(2026, 9, 1)'), ['2025-01-01', '2025-10-01', '2026-01-01', '2026-10-01']);
+  assert.deepEqual(k('12w', 'new Date(2026, 9, 1)'), ['2025-07-10', '2025-10-01', '2026-07-10', '2026-10-01']);
+  run(`pmcResult = {}; allActivities = [
+    { sport: 'running', startDate: new Date(2026, 8, 30, 18), tss: 50, duration: 3600, distance: 10000, elevationGain: 120, avgHr: 140 },
+    { sport: 'trail_running', startDate: new Date(2026, 9, 1, 7), tss: 30, duration: 1800, distance: 5000, elevationGain: 80, avgHr: 150 },
+    { sport: 'walking', startDate: new Date(2026, 8, 30, 12), tss: 10, duration: 3600, distance: 5000 },
+    { sport: 'cycling', startDate: new Date(2026, 8, 30, 9), tss: 80, duration: 7200, distance: 60000 }]`);
+  const t = run(`compareTotals({ from: new Date(2026, 8, 30), to: new Date(2026, 9, 1) }, 'run')`);
+  assert.deepEqual([t.count, t.tss, t.distance, t.elevation, t.avgHr], [2, 80, 15, 200, 145]); // walks are not runs
+  assert.equal(run(`compareTotals({ from: new Date(2026, 8, 30), to: new Date(2026, 8, 30) }, 'all').count`), 3);
 });
 
 // ── Race-day target ──

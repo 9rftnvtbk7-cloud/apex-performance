@@ -7,8 +7,9 @@
 //                       zones can be recomputed for any threshold without refetching the streams
 //   mmPower / mmSpeed : best average power (W) / speed (m/s) for each duration in MM_DURATIONS
 //   decoupling        : aerobic decoupling % (output per heartbeat, first half vs second half)
+//   mmHr              : best average heart rate for each duration (v2; used to estimate LTHR)
 
-const STREAM_STATS_VERSION = 1;
+const STREAM_STATS_VERSION = 2;
 const MM_DURATIONS = [5, 15, 30, 60, 120, 300, 600, 1200, 1800, 3600];
 const HR_BIN = 2, PW_BIN = 10;
 // Zone upper bounds as a fraction of the threshold (last zone is open-ended)
@@ -89,7 +90,7 @@ function computeStreamStats(streams, sport) {
   const pw = resample1Hz(time, data('watts'));
   const sp = resample1Hz(time, data('velocity_smooth'));
   const stats = { v: STREAM_STATS_VERSION, hist: {} };
-  if (hr.length) stats.hist.hr = histogram(hr, HR_BIN);
+  if (hr.length) { stats.hist.hr = histogram(hr, HR_BIN); stats.mmHr = meanMax(hr, [1200, 1800, 3600]); }
   if (pw.length) { stats.hist.pw = histogram(pw, PW_BIN); stats.mmPower = meanMax(pw); }
   if (sp.length && !isCyc(sport)) stats.mmSpeed = meanMax(sp);
   // Decoupling on power for rides (if a power meter was used), on speed otherwise
@@ -119,6 +120,15 @@ function estimateFtp(activities, now = new Date(), days = 90) {
   const c = bestCurve(recent, 'mmPower');
   const e = Math.max((c[1200] || 0) * 0.95, c[3600] || 0);
   return e > 0 ? Math.round(e) : null;
+}
+
+// Activities whose detailed data must be (re)fetched: never fetched, or fetched before v2 for a run
+// with heart rate (v2 adds mmHr for the LTHR estimate; other sports don't need the extra request)
+function needsStreamStats(a) {
+  const st = a.streamStats;
+  if (!st) return true;
+  if (st.v >= STREAM_STATS_VERSION || st.none) return false;
+  return isRun(a.sport) && !!(st.hist && st.hist.hr);
 }
 
 // Seconds per zone summed over activities, each scored with the thresholds valid on its date

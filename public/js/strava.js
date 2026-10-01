@@ -324,7 +324,7 @@ let streamBackfillPausedUntil = 0;
 async function backfillStreams({ max = 40, delayMs = 800 } = {}) {
   if (streamBackfillRunning || !stravaTokens || !currentUser || Date.now() < streamBackfillPausedUntil) return 0;
   const todo = allActivities
-    .filter(a => a.id && stravaIdOf(a) && !(a.streamStats && a.streamStats.v === STREAM_STATS_VERSION))
+    .filter(a => a.id && stravaIdOf(a) && needsStreamStats(a))
     .sort((a, b) => b.startDate - a.startDate)
     .slice(0, max);
   if (!todo.length) return 0;

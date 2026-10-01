@@ -66,13 +66,7 @@ async function loadUserData() {
     });
 
     // Load planner
-    const plannerDoc = await db.collection('users').doc(uid).collection('planner').doc('weeks').get();
-    if (plannerDoc.exists) {
-      const pd = plannerDoc.data();
-      if (pd.weeks && Array.isArray(pd.weeks)) {
-        savedPlannerWeeks = pd.weeks;
-      }
-    }
+    await loadPlannerWeeks();
 
     // Keep stored TSS in line with the current formulas and thresholds
     const changed = recomputeAllTss();
@@ -268,8 +262,10 @@ async function savePlannerData() {
       weeks,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    savedPlannerWeeks = weeks;
   } catch (err) {
     console.error('Planner save error:', err);
+    showToast('Season plan not saved — check your connection', '⚠️');
   }
 }
 
@@ -287,6 +283,17 @@ async function deleteAllActivities() {
 
 // Track saved planner data for restoring on load
 let savedPlannerWeeks = null;
+// When the saved plan was last written (shown in Settings › Sync to compare devices)
+let planSavedMeta = null;
+
+// Season › Forecast weekly TSS → savedPlannerWeeks
+async function loadPlannerWeeks() {
+  if (!currentUser) return null;
+  const plannerDoc = await db.collection('users').doc(currentUser.uid).collection('planner').doc('weeks').get();
+  const pd = plannerDoc.exists ? plannerDoc.data() : null;
+  if (pd && Array.isArray(pd.weeks)) savedPlannerWeeks = pd.weeks;
+  return savedPlannerWeeks;
+}
 
 
 // ── Training Plan persistence ──
@@ -342,6 +349,7 @@ async function loadTrainingPlan() {
   const doc = await col.doc('current').get();
   if (!doc.exists) return null;
   const d = doc.data();
+  planSavedMeta = { updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate() : null, bytes: d.bytes || 0 };
   if (d.plan) return JSON.parse(d.plan);
   if (d.parts) {
     const snaps = await Promise.all(Array.from({ length: d.parts }, (_, i) => col.doc(`current_part_${i}`).get()));
@@ -418,15 +426,17 @@ async function savePlanOverrides(overrides) {
   } catch (e) { console.error('Error saving moved sessions:', e); return false; }
 }
 
+// Returns true when saved
 async function saveRaceDatesData(raceDates) {
-  if (!currentUser) return;
+  if (!currentUser) return false;
   try {
     await db.collection('users').doc(currentUser.uid)
       .collection('plan').doc('raceDates').set({
         data: JSON.stringify(raceDates),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-  } catch(e) { console.error('Error saving race dates:', e); }
+    return true;
+  } catch(e) { console.error('Error saving race dates:', e); return false; }
 }
 
 async function loadRaceDatesData() {
