@@ -21,7 +21,7 @@ Triathlon fitness tracking web app. Users upload FIT files (or sync via Strava),
 
 ```
 public/                    # Firebase Hosting root — ONLY this folder is served
-  index.html               # App shell — 5 tabs: Today (#tab-overview), Calendar, Plan, Season (Forecast #tab-planner · Compare #tab-compare · Insights #tab-insights), Activities (#tab-log)
+  index.html               # App shell — 4 tabs: Today (#tab-overview), Plan (Week · Month calendar #planCalendarPanel · List #planListPanel), Season (Forecast #tab-planner · Compare #tab-compare · Insights #tab-insights), Activities (#tab-log)
   css/styles.css           # Graphite design system (dark) + Daylight (light) tokens and components
   js/theme.js              # CSS tokens → Chart.js: C() palette, chartTooltip/chartScaleX/chartScaleY, rebuild on theme change
   js/app.js                # Core app logic — charts, comparison, plan, planner
@@ -37,7 +37,7 @@ public/                    # Firebase Hosting root — ONLY this folder is serve
   js/activity-detail.js    # Activity dialog: map (Leaflet), stream charts, laps, notes/RPE/feel
   js/workout-export.js     # Plan steps → .zwo / .fit workout (FIT validated with Garmin's SDK)
   js/race-target.js        # Season › Forecast race-day CTL/TSB solver
-  js/calendar.js           # Calendar tab: compliance colours, move sessions (plan/overrides)
+  js/calendar.js           # Plan tab views (setPlanView): Week/Month calendar, compliance colours, move sessions (plan/overrides)
   js/wellness.js           # Wellness log + readiness rules
   sw.js, manifest.webmanifest, icons/   # Installable app (PWA); sw: own files network-first
 worker/src/index.js        # Cloudflare Worker: Strava token exchange/refresh, verifies Firebase ID tokens
@@ -67,7 +67,7 @@ tests/app.test.mjs         # App logic tests (node --test tests/)
 - Activities from Strava carry `stravaId`, `name`, `polyline`, `elevationGain`, `streamStats` (histograms + curves, not raw streams), and journal fields `notes`, `rpe`, `feel`
 
 ### Key Concepts
-- **TSS (Training Stress Score)**: Calculated per activity. Priority: NP-based > power-based > pace-based > HR-based > duration fallback
+- **TSS (Training Stress Score)**: Calculated per activity. Bike: NP/power > HR; run: HR > pace (pace ignores climbing); swim: CSS pace; strength (`isStrength`): time only, 50/h; else HR > duration fallback. Calendar compliance: ≥ 80 % of planned TSS = done (over is fine), strength sessions compare time with `durationMin`
 - **CTL (Chronic Training Load)**: 42-day exponential moving average of TSS = "fitness"
 - **ATL (Acute Training Load)**: 7-day exponential moving average of TSS = "fatigue"
 - **TSB (Training Stress Balance)**: CTL - ATL = "form"
@@ -75,6 +75,7 @@ tests/app.test.mjs         # App logic tests (node --test tests/)
 - **Thresholds are dated**: always score with `thresholdsAt(activity.startDate)`, never with the current inputs
 - **Stream stats** store HR/power histograms so zones can be recomputed for any threshold without refetching; the background fetch (`backfillStreams`) respects Strava's 100 req / 15 min limit
 - **Auto-sync** runs on open / focus / every 15 min, only after `activitiesLoaded` (dedupe needs the list)
+- **Today's forecast** (`forecastFromSeasonPlan`) follows the weekly TSS of Season › Forecast up to a week past the next race; the flat "average daily TSS" only fills unplanned days
 - **Ramp rate**: CTL change over the last 7 days (>8/week = too fast). **TSB zones**: `tsbZone()` in `app.js`
 - **Plan vs actual**: `matchPlanToActivities()` ticks plan sessions matched to an activity on the same day with a compatible sport; plan week dates get their year from the plan's `race_date` (`planWeekStart()`)
 - **Activities come from Strava** for the owner; `.FIT` upload is secondary (account menu → Upload .FIT files)

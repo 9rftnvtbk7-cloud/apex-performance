@@ -56,8 +56,7 @@ function switchTab(tabId, btn) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('is-active', t.id === 'tab-' + tabId));
   window.scrollTo(0, 0);
   if (tabId === 'season') setSeasonView(seasonView);
-  if (tabId === 'plan') scrollToCurrentWeek();
-  if (tabId === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
+  if (tabId === 'plan' && typeof setPlanView === 'function') setPlanView();
 }
 
 // ── Season: Forecast · Compare · Insights (one tab, segmented) ──
@@ -89,6 +88,10 @@ function computeTSS(act) {
   const d = act.duration;
   // Power-based TSS for cycling only: running power is not comparable to cycling FTP
   if (isCyc(act.sport) && ftp > 0 && (act.np > 0 || act.avgPower > 0)) { const p = act.np || act.avgPower, i = p / ftp; return { tss: Math.round(d * p * i / (ftp * 3600) * 100), intensityFactor: +i.toFixed(2) }; }
+  // Strength / gym sessions: time only (50 TSS per hour), heart rate ignored
+  if (isStrength(act.sport)) return { tss: Math.round(Math.min(d / 3600 * 50, 500)), intensityFactor: null };
+  // Runs: heart rate first. Pace-based TSS ignores climbing and walk breaks, so trail and easy runs scored far too low
+  if (isRun(act.sport) && act.avgHr > 0 && lthr > 0) { const i = act.avgHr / lthr; return { tss: Math.round(Math.min(d / 3600 * i * i * 100, 500)), intensityFactor: +i.toFixed(2) }; }
   if (isRun(act.sport) && act.avgSpeed > 0 && ts > 0) { const i = act.avgSpeed / ts; return { tss: Math.round(Math.min(d / 3600 * i * i * 100, 500)), intensityFactor: +i.toFixed(2) }; }
   // Swim TSS (sTSS): cubic in intensity relative to critical swim speed
   if (act.sport === 'swimming' && act.avgSpeed > 0 && css > 0) { const i = act.avgSpeed / css; return { tss: Math.round(Math.min(d / 3600 * i ** 3 * 100, 500)), intensityFactor: +i.toFixed(2) }; }
@@ -97,6 +100,7 @@ function computeTSS(act) {
 }
 function isCyc(s) { return ['cycling', 'indoor_cycling', 'virtual_ride', 'e_biking'].includes(s); }
 function isRun(s) { return ['running', 'walking', 'hiking', 'trail_running'].includes(s); }
+function isStrength(s) { return ['fitness_equipment', 'training'].includes(s); }
 function paceToSpd(s) { const p = s.split(':'); return 1000 / ((+p[0] || 5) * 60 + (+p[1] || 0)); }
 function swimPaceToSpd(s) { const p = s.split(':'); return 100 / ((+p[0] || 2) * 60 + (+p[1] || 0)); }
 
@@ -322,15 +326,60 @@ function renderSportFitness() {
   }).join('');
 }
 
+// Today's forecast follows Season › Forecast: each planner week's TSS spread evenly over its days.
+// The rest of this week gets what is still planned for it (plan or planner, minus what is done);
+// days without any plan use the average typed in the Forecast chip. Per-sport charts use the average.
+// Horizon: a week past the next race (or the last planned week), unless the user moved the slider.
+function forecastFromSeasonPlan(now) {
+  const byWeek = {};
+  for (const w of seasonPlanWeeks()) byWeek[localDateKey(w.start)] = w.tss;
+  const keys = Object.keys(byWeek).sort();
+  if (!keys.length) return null;
+  const thisMonday = addDays(now, -((now.getDay() + 6) % 7)), sunday = addDays(thisMonday, 6);
+  const planned = plannedTssForWeek(thisMonday);
+  const done = allActivities.reduce((n, a) => n + (a.startDate >= thisMonday && a.startDate < addDays(now, 1) ? (a.tss || 0) : 0), 0);
+  const daysLeft = Math.round((sunday - now) / 86400000);
+  const restOfWeek = planned && daysLeft > 0 ? Math.max(0, planned.tss - done) / daysLeft : null;
+  const lastPlanned = addDays(parseIsoDate(keys[keys.length - 1]), 6);
+  const race = (raceDates || []).map(r => parseIsoDate(r.date)).filter(d => d && d > now && d <= lastPlanned).sort((a, b) => a - b)[0];
+  const end = race ? addDays(race, 7) : lastPlanned;
+  return {
+    days: Math.min(182, Math.max(0, Math.round((end - now) / 86400000))),
+    tssOn(d, avg) {
+      if (d <= sunday) return restOfWeek ?? avg;
+      const t = byWeek[localDateKey(addDays(d, -((d.getDay() + 6) % 7)))];
+      return t > 0 ? t / 7 : avg;
+    },
+  };
+}
+
+// Weekly TSS entered in Season › Forecast (the planner), or what was saved if it has not been opened yet
+function seasonPlanWeeks() {
+  const weeks = plannerData.length ? plannerData.map(p => ({ start: p.weekStart, tss: p.tss }))
+    : (savedPlannerWeeks || []).map(w => ({ start: new Date(new Date(w.weekStart).getTime() + 12 * 3600000), tss: w.tss }));
+  return weeks.filter(w => w.tss > 0 && !isNaN(w.start));
+}
+
 function computeSmallForecast(src = pmcResult) {
-  const days = +document.getElementById('sliderForecastDays').value || 0;
+  const slider = document.getElementById('sliderForecastDays');
   const avg = +document.getElementById('inputForecastTss').value || 0;
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const plan = src === pmcResult ? forecastFromSeasonPlan(now) : null;
+  if (plan && !forecastDaysEdited) slider.value = plan.days;
+  const days = +slider.value || 0;
+  document.getElementById('displayForecastDays').textContent = `${days} days`;
+  const note = document.getElementById('forecastSource');
+  if (note) note.textContent = plan ? 'Follows your weekly TSS from Season › Forecast. The average below fills days without a plan.'
+    : 'Set weekly TSS in Season › Forecast to follow your plan.';
   if (!days || src.lastCtl == null) return { labels: [], ctl: [], atl: [], tsb: [] };
   let c = src.lastCtl, a = src.lastAtl;
-  const now = new Date(); now.setHours(0, 0, 0, 0);
   const fl = [], fc = [], fa = [], ft = [];
   fl.push(localDateKey(now)); fc.push(+c.toFixed(1)); fa.push(+a.toFixed(1)); ft.push(+(c - a).toFixed(1));
-  for (let i = 1; i <= days; i++) { c += (avg - c) / 42; a += (avg - a) / 7; fl.push(localDateKey(addDays(now, i))); fc.push(+c.toFixed(1)); fa.push(+a.toFixed(1)); ft.push(+(c - a).toFixed(1)); }
+  for (let i = 1; i <= days; i++) {
+    const d = addDays(now, i), t = plan ? plan.tssOn(d, avg) : avg;
+    c += (t - c) / 42; a += (t - a) / 7;
+    fl.push(localDateKey(d)); fc.push(+c.toFixed(1)); fa.push(+a.toFixed(1)); ft.push(+(c - a).toFixed(1));
+  }
   return { labels: fl, ctl: fc, atl: fa, tsb: ft };
 }
 
@@ -956,6 +1005,7 @@ async function loadRaceDates() {
 }
 
 function updatePlannerForecast() {
+  if (pmcChart) buildPMCChart(); // Today's forecast follows the planner
   let ctl = pmcResult.lastCtl || 0, atl = pmcResult.lastAtl || 0;
   const labels = ['Today'], ctlV = [+ctl.toFixed(1)], atlV = [+atl.toFixed(1)], tsbV = [+(ctl - atl).toFixed(1)];
   for (const week of plannerData) { const dt = week.tss / 7; for (let d = 0; d < 7; d++) { ctl += (dt - ctl) / 42; atl += (dt - atl) / 7; } labels.push(week.weekStart.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })); ctlV.push(+ctl.toFixed(1)); atlV.push(+atl.toFixed(1)); tsbV.push(+(ctl - atl).toFixed(1)); }
@@ -1562,10 +1612,8 @@ function plannedTssForWeek(monday) {
     const w = trainingPlan.weeks.find(w => { const s = planWeekStart(w, trainingPlan); return s && localDateKey(s) === key; });
     if (w && w.tss > 0) return { tss: +w.tss, source: `plan W${w.week}` };
   }
-  const weeks = plannerData.length ? plannerData.map(p => ({ start: p.weekStart, tss: p.tss }))
-    : (savedPlannerWeeks || []).map(w => ({ start: new Date(new Date(w.weekStart).getTime() + 12 * 3600000), tss: w.tss }));
-  const pw = weeks.find(w => localDateKey(w.start) === key);
-  if (pw && pw.tss > 0) return { tss: +pw.tss, source: 'planner' };
+  const pw = seasonPlanWeeks().find(w => localDateKey(w.start) === key);
+  if (pw) return { tss: +pw.tss, source: 'planner' };
   return null;
 }
 
@@ -1689,7 +1737,7 @@ function renderTrainingPlan() {
   document.getElementById('planWeeks').innerHTML = wh;
   renderUpcomingSessions();
   renderTodayHead();
-  if (typeof renderCalendar === 'function' && document.getElementById('tab-calendar')?.classList.contains('is-active')) renderCalendar();
+  if (typeof renderCalendar === 'function' && document.getElementById('planCalendarPanel')?.classList.contains('is-active')) renderCalendar();
 }
 
 // Week picker: scroll the page to a plan week (never scrollIntoView: it also scrolls the tab bar on iOS)
@@ -1804,7 +1852,8 @@ function sessionMetaHtml(s) { const t = sessionMetaText(s); return t ? `<div cla
 function fmtMinutes(min) { const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h${m ? ' ' + String(m).padStart(2, '0') : ''}` : `${m} min`; }
 
 // Expandable details: Markdown text, steps table, and the full description when it was clamped
-function sessionDetailsHtml(s, { summary = true } = {}) {
+// collapsible: false → the content alone, always visible (session sheet)
+function sessionDetailsHtml(s, { summary = true, collapsible = true } = {}) {
   const parts = [];
   if (s.details || (s.steps && s.steps.length) || s.description || sessionMetaText(s)) {
     if (summary) {
@@ -1819,6 +1868,9 @@ function sessionDetailsHtml(s, { summary = true } = {}) {
     }</tbody></table></div>`);
     if (typeof workoutExportButtonsHtml === 'function') parts.push(workoutExportButtonsHtml(s));
   }
+  // The session sheet already shows the description and targets: no empty "Details" toggle there
+  if (!parts.some(Boolean)) return '';
+  if (!collapsible) return `<div class="session-sheet-details">${parts.join('')}</div>`;
   return `<details class="plan-session-details"><summary>Details</summary>${parts.join('')}</details>`;
 }
 
@@ -1911,6 +1963,7 @@ async function loadSavedPlan() {
     } else if (normalized) {
       trainingPlan = normalized.plan; renderTrainingPlan(); document.getElementById('btnImportZwo').style.display = 'inline-flex';
       if (allActivities.length) computePMC(); // weekly goal can now come from the plan
+      if (pmcChart) buildPMCChart();          // and so can this week's forecast
     }
   }
   if (typeof loadZwoFiles === 'function') {

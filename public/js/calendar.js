@@ -1,25 +1,29 @@
 // ══════════════════════════════════════════════
 // Calendar: planned vs completed, compliance colours, move sessions
 // ══════════════════════════════════════════════
+// The Plan tab shows the same plan three ways: Week and Month (this calendar) and List (renderTrainingPlan).
 // Month or week view (Monday first). Planned sessions come from the training plan (moved sessions
 // use planOverrides), completed ones from activities. Compliance per planned session:
-//   green  : matched activity with 80–120% of planned TSS (or ticked / no planned TSS)
-//   amber  : matched with 50–80% or 120–150%
-//   red    : matched outside 50–150%, or missed (past, not done)
+//   green  : matched activity with ≥ 80% of planned TSS — going over counts as done (or ticked / no planned TSS)
+//   amber  : matched with 50–80%
+//   red    : matched below 50%, or missed (past, not done)
+// Strength sessions compare time with the planned duration instead of TSS.
 //   neutral: today or future
 // Move a session by dragging it to another day, or tap it → "Move to".
 
 let calendarCursor = null;   // any date inside the displayed month/week
 let calendarView = null;     // 'month' | 'week' (default: week on phones)
+let planView = null;         // Plan tab: 'week' | 'month' | 'list'
 let calendarDragId = null;
 
 function complianceOf(session, matched, date, today) {
   if (session.sport === 'rest') return 'rest';
   if (matched) {
-    if (!(session.tss > 0)) return 'green';
-    const r = (matched.tss || 0) / session.tss;
-    if (r >= 0.8 && r <= 1.2) return 'green';
-    if (r >= 0.5 && r <= 1.5) return 'amber';
+    const byTime = sportKey(session.sport) === 'strength' && session.durationMin > 0;
+    if (!byTime && !(session.tss > 0)) return 'green';
+    const r = byTime ? (matched.duration || 0) / 60 / session.durationMin : (matched.tss || 0) / session.tss;
+    if (r >= 0.8) return 'green';
+    if (r >= 0.5) return 'amber';
     return 'red';
   }
   if (isSessionTicked(session)) return 'green';
@@ -58,7 +62,18 @@ function calendarShift(dir) {
   renderCalendar();
 }
 function calendarToday() { calendarCursor = new Date(); renderCalendar(); }
-function setCalendarView(v) { calendarView = v; renderCalendar(); }
+
+// Plan tab: Week / Month calendar or the List of every week
+function setPlanView(v) {
+  if (!calendarView) calendarView = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches ? 'week' : 'month';
+  planView = ['week', 'month', 'list'].includes(v) ? v : (planView || calendarView);
+  if (planView !== 'list') calendarView = planView;
+  document.querySelectorAll('.plan-view-btn').forEach(b => { const on = b.dataset.view === planView; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
+  document.getElementById('planCalendarPanel')?.classList.toggle('is-active', planView !== 'list');
+  document.getElementById('planListPanel')?.classList.toggle('is-active', planView === 'list');
+  if (planView === 'list') { if (typeof scrollToCurrentWeek === 'function') scrollToCurrentWeek(); }
+  else renderCalendar();
+}
 
 const COMPLIANCE = {
   green: { glyph: '✓', word: 'Done' }, amber: { glyph: '◐', word: 'Partly' }, red: { glyph: '✕', word: 'Missed' },
@@ -78,7 +93,7 @@ function calendarWeekData(ws, today, planned, actsByDay) {
   const inProgress = ws <= today && addDays(ws, 6) >= today;
   const base = inProgress ? plannedSoFar : plannedTss;
   const pct = base && ws <= today ? Math.round(actualTss / base * 100) : null;
-  const status = pct == null ? 'planned' : pct >= 80 && pct <= 120 ? 'green' : pct >= 50 && pct <= 150 ? 'amber' : 'red';
+  const status = pct == null ? 'planned' : pct >= 80 ? 'green' : pct >= 50 ? 'amber' : 'red';
   return { plannedTss, actualTss, plannedSoFar, inProgress, pct, status, future: ws > today };
 }
 
@@ -86,7 +101,6 @@ function renderCalendar(now = new Date()) {
   const box = document.getElementById('calendarGrid');
   if (!box) return;
   if (!calendarView) calendarView = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches ? 'week' : 'month';
-  document.querySelectorAll('.cal-view-btn').forEach(b => { const on = b.dataset.view === calendarView; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', String(on)); });
   const today = new Date(now); today.setHours(0, 0, 0, 0);
   const { start, end, title } = calendarRange();
   const planned = plannedByDay(trainingPlan);
@@ -216,14 +230,17 @@ function openSessionDialog(sessionId) {
       </div>
       <button class="icon-btn" onclick="document.getElementById('sessionDialog').close()" aria-label="Close">✕</button>
     </div>
+    <div class="sheet__scroll">
     ${s.description ? `<p class="plan-session-desc">${escapeHtml(s.description)}</p>` : ''}
     ${strip.length ? `<div class="target-strip">${strip.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>` : ''}
     ${main ? `<div class="session-dialog-actions">${main}</div>` : ''}
+    ${sessionDetailsHtml(s, { summary: false, collapsible: false })}
     <div class="session-move">
       <label><span class="field-label">Move to</span><input type="date" class="input" id="sessionMoveDate" value="${date ? localDateKey(date) : ''}"></label>
       <button class="btn btn--secondary" data-session-id="${id}" onclick="moveSession(this.dataset.sessionId, document.getElementById('sessionMoveDate').value); document.getElementById('sessionDialog').close();">Move</button>
       ${planOverrides[s.id] && original ? `<button class="btn btn--secondary" data-session-id="${id}" data-date="${localDateKey(original)}" onclick="moveSession(this.dataset.sessionId, this.dataset.date); document.getElementById('sessionDialog').close();">Back to ${escapeHtml(original.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }))}</button>` : ''}
     </div>
-    ${sessionDetailsHtml(s, { summary: false }).replace('<details class="plan-session-details">', '<details class="plan-session-details" open>')}`;
+    </div>`;
   if (!dlg.open) dlg.showModal();
+  dlg.querySelector('.sheet__scroll').scrollTop = 0;
 }

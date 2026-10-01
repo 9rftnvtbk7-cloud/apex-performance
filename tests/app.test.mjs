@@ -47,6 +47,11 @@ test('TSS: cycling uses power; running power ignored; swim uses CSS', () => {
   assert.deepEqual({ ...swim }, { tss: 100, intensityFactor: 1 });
   // Faster than CSS scales cubically
   assert.equal(run(`computeTSS({ sport: 'swimming', duration: 3600, avgSpeed: 1.1 })`).tss, 133);
+  // Runs use heart rate when there is one (pace ignores climbing); pace only without HR
+  assert.equal(run(`computeTSS({ sport: 'running', duration: 3600, avgSpeed: 2.2, avgHr: 150 })`).tss, 83);
+  assert.equal(run(`computeTSS({ sport: 'running', duration: 3600, avgSpeed: 1000 / 270 })`).tss, 100);
+  // Strength: time only, heart rate ignored
+  assert.deepEqual({ ...run(`computeTSS({ sport: 'fitness_equipment', duration: 1800, avgHr: 160 })`) }, { tss: 25, intensityFactor: null });
 });
 
 test('Strava mapping: sport_type preferred, estimated watts dropped', () => {
@@ -737,8 +742,13 @@ test('Compliance colours from actual vs planned TSS', () => {
   const c = (s, m, when) => run(`complianceOf(${JSON.stringify(s)}, ${JSON.stringify(m)}, ${when}, __today)`);
   const s = { id: 'a', sport: 'bike', tss: 100 };
   assert.equal(c(s, { tss: 95 }, '__past'), 'green');
-  assert.equal(c(s, { tss: 130 }, '__past'), 'amber');
+  assert.equal(c(s, { tss: 180 }, '__past'), 'green');  // going over the plan counts as done
+  assert.equal(c(s, { tss: 60 }, '__past'), 'amber');
   assert.equal(c(s, { tss: 40 }, '__past'), 'red');
+  // Strength: time against the planned duration, whatever the TSS
+  const st = { id: 'st', sport: 'strength', tss: 25, durationMin: 30 };
+  assert.equal(c(st, { tss: 10, duration: 26 * 60 }, '__past'), 'green');
+  assert.equal(c(st, { tss: 10, duration: 18 * 60 }, '__past'), 'amber');
   assert.equal(c(s, null, '__past'), 'red');           // missed
   assert.equal(c(s, null, '__future'), 'planned');
   assert.equal(c({ id: 'r', sport: 'rest', tss: 0 }, null, '__past'), 'rest');
@@ -792,6 +802,22 @@ test('Calendar renders planned, matched and unplanned chips with a weekly total'
   assert.equal(el('calendarTitle').textContent, 'September 2026');
   assert.match(month, /cal-chip cal-chip--green"[^>]*data-session-id="w1-2-tue"[\s\S]*?<span class="cal-chip-glyph" aria-hidden="true">✓<\/span><small>55→54<\/small>/);
   assert.match(month, /<b>64<\/b><span>of 300 TSS<\/span><em>30 % so far<\/em>/);
+});
+
+test('Today forecast follows Season › Forecast weeks, the rest of this week and the next race', () => {
+  const { run } = makeEnv();
+  run(`trainingPlan = null; plannerData = []; raceDates = [{ date: '2026-10-14', name: 'Trail' }];
+       savedPlannerWeeks = [[2026, 8, 28, 300], [2026, 9, 5, 350], [2026, 9, 12, 420]].map(([y, m, d, tss]) => ({ weekStart: new Date(y, m, d).toISOString(), tss }));
+       allActivities = [{ sport: 'running', startDate: new Date(2026, 8, 28, 12), tss: 60 }];
+       var __f = forecastFromSeasonPlan(new Date(2026, 8, 30));`);
+  assert.equal(run('__f.days'), 21);                                   // a week past race day (14 → 21 Oct)
+  assert.equal(run('__f.tssOn(new Date(2026, 9, 1), 40)'), 60);        // (300 planned − 60 done) over Thu–Sun
+  assert.equal(run('__f.tssOn(new Date(2026, 9, 7), 40)'), 50);        // 350 / 7
+  assert.equal(run('__f.tssOn(new Date(2026, 9, 13), 40)'), 60);       // 420 / 7
+  assert.equal(run('__f.tssOn(new Date(2026, 9, 19), 40)'), 40);       // no planned week: the average
+  // No planner weeks: the flat average forecast is kept
+  run(`savedPlannerWeeks = []`);
+  assert.equal(run('forecastFromSeasonPlan(new Date(2026, 8, 30))'), null);
 });
 
 // ── Race-day target ──

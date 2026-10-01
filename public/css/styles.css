@@ -386,8 +386,11 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
   .target-strip b { font-size: 15px; }
 }
 
-/* ══════════════ Calendar ══════════════ */
-.page-head--calendar { align-items: center; }
+/* ══════════════ Plan (Week · Month · List) ══════════════ */
+.page-head--plan { align-items: center; }
+.page-head__actions { display: flex; align-items: center; gap: 10px; }
+.plan-panel { display: none; }
+.plan-panel.is-active { display: block; }
 .cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .cal-nav__title { flex: 1; text-align: center; min-width: 0; }
 #calendarTitle { font-size: 17px; font-weight: 600; }
@@ -459,17 +462,9 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
   .cal-grid--month .cal-chip--red, .cal-grid--month .cal-chip--planned { opacity: .4; }
 }
 @media (min-width: 1024px) {
-  /* Title row: month + arrows + Today on the left, Week/Month on the right */
-  #tab-calendar.is-active { display: grid; grid-template-columns: 1fr auto; column-gap: 16px; }
-  #tab-calendar > * { grid-column: 1 / -1; }
-  #tab-calendar > .cal-nav { grid-column: 1; grid-row: 1; margin: 0 0 14px; }
-  #tab-calendar > .page-head--calendar { grid-column: 2; grid-row: 1; margin: 0 0 14px; padding: 0; align-self: center; }
-  .page-head--calendar .page-title { display: none; }
-  .app-body:has(#tab-calendar.is-active) .app-main { padding-top: 96px; }
   .cal-nav { justify-content: flex-start; }
   .cal-nav__title { flex: none; text-align: left; order: -1; margin-right: 8px; }
-  #calendarTitle { font-size: 34px; line-height: 40px; font-weight: 600; letter-spacing: -0.03em; }
-  .cal-nav__sub { display: none; }
+  #calendarTitle { font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.02em; }
   .cal-rows, .cal-summary { max-width: 760px; }
 }
 
@@ -556,7 +551,14 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .menu__item { display: flex; width: 100%; height: 42px; align-items: center; padding: 0 12px; border-radius: 10px; font-size: 15px; }
 .menu__item:hover { background: var(--bg-selected); }
 
-/* Session dialog */
+/* Session dialog: fixed header, the content scrolls in its own box (iOS Safari did not scroll the
+   dialog itself, so the workout below the fold could not be reached) and the page behind stays still */
+#sessionDialog[open], #sessionDialogBody { display: flex; flex-direction: column; overflow: hidden; }
+#sessionDialogBody { flex: 1 1 auto; min-height: 0; }
+#sessionDialog .sheet__head { flex: none; }
+.sheet__scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+html:has(dialog[open]), html:has(dialog[open]) body { overflow: hidden; }
+.session-sheet-details { margin-top: 18px; border-top: 1px solid var(--border-subtle); padding-top: 4px; }
 .session-move { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin: 16px 0 6px; }
 .session-move label { flex: 1; min-width: 150px; }
 .session-dialog-actions { display: flex; gap: 10px; margin-top: 16px; }
@@ -724,6 +726,9 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 @media (max-width: 1023px) {
   #tab-season .page-head .segmented { display: flex; width: 100%; }
   #tab-season .page-head .segmented__opt { flex: 1; }
+  .page-head--plan .page-head__actions { flex: 1; }
+  .page-head--plan .segmented { flex: 1; display: flex; }
+  .page-head--plan .segmented__opt { flex: 1; }
   .race-target-form { grid-template-columns: 1fr 1fr; }
   .race-target-form label:first-child, .race-target-form .btn { grid-column: 1 / -1; }
   .race-row { flex-wrap: wrap; }

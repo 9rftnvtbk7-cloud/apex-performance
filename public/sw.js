@@ -5,7 +5,7 @@
 //   only used offline. (The ?v= cache-busters still apply.)
 // - Versioned libraries from CDNs: cache first (their URLs change with the version).
 // - Everything else (Firestore, Strava, the Worker, map tiles): not intercepted, never cached here.
-const CACHE = 'apex-v2';
+const CACHE = 'apex-v3';
 const CDN_HOSTS = ['cdnjs.cloudflare.com', 'www.gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', event => {
