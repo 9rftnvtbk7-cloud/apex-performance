@@ -418,7 +418,8 @@ test('Plan tab: header with version and phase bar, week picker, session rows wit
   assert.match(header, /<h2 class="plan-title">Saint-Nolff Trail 30K — 10-week plan<\/h2><span class="plan-version">v2\.1<\/span>/);
   assert.match(header, /Race 15 Nov 2026 · Trail de Saint-Nolff \(30km \/ D\+600m\) · 10 weeks · 70 sessions · FTP 200 W/);
   // Phase bar: BASE (3 weeks) BUILD (4) PEAK (2) TAPER (1)
-  assert.match(header, /<div class="phase-bar__seg[^"]*" style="flex:3">BASE<\/div><div class="phase-bar__seg[^"]*" style="flex:4">BUILD<\/div><div class="phase-bar__seg[^"]*" style="flex:2">PEAK<\/div><div class="phase-bar__seg[^"]*" style="flex:1">TAPER<\/div>/);
+  const segs = [...header.matchAll(/class="btn-reset phase-bar__seg[^"]*" style="flex:(\d+)" data-week="(\d+)"[^>]*><span class="phase-bar__name">([^<]+)<\/span><span class="phase-bar__weeks">([^<]+)<\/span><span class="phase-bar__tip" aria-hidden="true">([^<]+)<\/span>/g)].map(m => m.slice(1).join(' | '));
+  assert.deepEqual(segs, ['3 | 0 | BASE | W01–W03 | BASE · W01–W03', '4 | 3 | BUILD | W04–W07 | BUILD · W04–W07', '2 | 7 | PEAK | W08–W09 | PEAK · W08–W09', '1 | 9 | TAPER | W10 | TAPER · W10']);
   assert.equal((el('planWeekPicker').innerHTML.match(/class="chip/g) || []).length, 10);
   // Rows: caption, title, targets line and steps inside the expandable details, export buttons
   assert.match(weeks, /Tue · Bike[\s\S]*?<div class="plan-session-name">W01 Tue – Vélo Tempo 3×8min<\/div>/);

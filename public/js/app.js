@@ -602,9 +602,12 @@ function comparePeriods(preset, now = new Date()) {
   const today = new Date(now); today.setHours(0, 0, 0, 0);
   const sameDayIn = (y, m, d) => new Date(y, m, Math.min(d, new Date(y, m + 1, 0).getDate()));
   switch (preset) {
+    // Month and year to date: totals compare the same dates; the chart (chartTo) spans the whole month / year
     case 'month': { const a = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      return { a: { from: a, to: sameDayIn(a.getFullYear(), a.getMonth(), today.getDate()) }, b: { from: new Date(today.getFullYear(), today.getMonth(), 1), to: today } }; }
-    case 'ytd': return { a: { from: new Date(today.getFullYear() - 1, 0, 1), to: sameDayIn(today.getFullYear() - 1, today.getMonth(), today.getDate()) }, b: { from: new Date(today.getFullYear(), 0, 1), to: today } };
+      return { a: { from: a, to: sameDayIn(a.getFullYear(), a.getMonth(), today.getDate()), chartTo: new Date(a.getFullYear(), a.getMonth() + 1, 0) },
+        b: { from: new Date(today.getFullYear(), today.getMonth(), 1), to: today, chartTo: new Date(today.getFullYear(), today.getMonth() + 1, 0) } }; }
+    case 'ytd': return { a: { from: new Date(today.getFullYear() - 1, 0, 1), to: sameDayIn(today.getFullYear() - 1, today.getMonth(), today.getDate()), chartTo: new Date(today.getFullYear() - 1, 11, 31) },
+      b: { from: new Date(today.getFullYear(), 0, 1), to: today, chartTo: new Date(today.getFullYear(), 11, 31) } };
     case '12w': { const from = addDays(today, -83);
       return { a: { from: new Date(from.getFullYear() - 1, from.getMonth(), from.getDate()), to: new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()) }, b: { from, to: today } }; }
     case 'custom': {
@@ -685,19 +688,24 @@ function renderPeriodComparison({ a, b }) {
   }).join('');
   // Cumulative day-by-day: where you are compared with the same day of the other period
   const m = COMPARE_METRICS[compareMetricKey] || COMPARE_METRICS.tss;
-  const days = p => Math.round((p.to - p.from) / 86400000) + 1, n = Math.max(days(a), days(b));
+  // The chart may run past the compared dates (whole month / year): the earlier period as a full reference line
+  const end = p => p.chartTo || p.to, days = p => Math.round((end(p) - p.from) / 86400000) + 1, n = Math.max(days(a), days(b));
+  const chartList = (p, T) => p.chartTo ? compareTotals({ from: p.from, to: p.chartTo }, compareSportKey).list : T.list;
   const series = (p, T, stopAtToday) => {
     const byDay = new Array(days(p)).fill(0);
-    for (const x of T.list) { const i = Math.floor((new Date(x.startDate).setHours(0, 0, 0, 0) - p.from) / 86400000); if (i >= 0 && i < byDay.length) byDay[i] += m.of(x); }
+    for (const x of chartList(p, T)) { const i = Math.floor((new Date(x.startDate).setHours(0, 0, 0, 0) - p.from) / 86400000); if (i >= 0 && i < byDay.length) byDay[i] += m.of(x); }
     let cum = 0; const today = new Date(); today.setHours(0, 0, 0, 0);
     return Array.from({ length: n }, (_, i) => i >= byDay.length || (stopAtToday && addDays(p.from, i) > today) ? null : +(cum += byDay[i]).toFixed(1));
   };
   const labels = Array.from({ length: n }, (_, i) => fmtShortDate(addDays(b.from, i)));
+  const seriesB = series(b, B, true), seriesA = series(a, A, false);
+  // A line needs two points: with only one day so far (e.g. the 1st of the month) show it as a dot
+  const dot = arr => arr.filter(v => v != null).length < 2 ? 4 : 0;
   compareChart = new Chart(document.getElementById('compareChart').getContext('2d'), {
     type: 'line',
     data: { labels, datasets: [
-      { label: fmtDateRange(b), data: series(b, B, true), borderColor: c.ctl, backgroundColor: withAlpha(c.ctl, 0.08), fill: true, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 },
-      { label: fmtDateRange(a), data: series(a, A, false), borderColor: withAlpha(c.muted, 0.9), borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4, tension: 0.2 },
+      { label: fmtDateRange(b), data: seriesB, borderColor: c.ctl, backgroundColor: withAlpha(c.ctl, 0.08), fill: true, borderWidth: 2.5, pointRadius: dot(seriesB), pointBackgroundColor: c.ctl, pointHoverRadius: 4, tension: 0.2 },
+      { label: fmtDateRange({ from: a.from, to: end(a) }), data: seriesA, borderColor: withAlpha(c.muted, 0.9), borderDash: [4, 4], borderWidth: 1.5, pointRadius: dot(seriesA), pointBackgroundColor: c.muted, pointHoverRadius: 4, tension: 0.2 },
     ] },
     options: { responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
       plugins: { legend: { display: false }, tooltip: { ...chartTooltip(), callbacks: { title: x => `Day ${x[0].dataIndex + 1}`, label: x => `${x.dataset.label}: ${x.raw == null ? '—' : m.fmt(x.raw)}` } } },
@@ -1635,7 +1643,16 @@ function renderTrainingPlan() {
     ${targets.length ? `<p class="plan-meta">Targets: ${targets.map(escapeHtml).join(' · ')}</p>` : ''}
     ${phases.length > 1 || phases[0]?.name !== '—' ? `<div class="phase-bar">${phases.map(ph => {
       const state = currentIdx >= ph.from && currentIdx <= ph.to ? ' is-current' : currentIdx > ph.to ? ' is-past' : '';
-      return `<div class="phase-bar__seg${state}" style="flex:${ph.to - ph.from + 1}">${escapeHtml(ph.name)}</div>`;
+      // Each block: name, its weeks, the full name as a tooltip (names are cut on narrow blocks); tap → its first week
+      const wk = i => `W${String(weeks[i].week).padStart(2, '0')}`;
+      const range = ph.from === ph.to ? wk(ph.from) : `${wk(ph.from)}–${wk(ph.to)}`;
+      return `<button class="btn-reset phase-bar__seg${state}" style="flex:${ph.to - ph.from + 1}" data-week="${ph.from}" onclick="jumpToPlanWeek(+this.dataset.week)" aria-label="${escapeHtml(ph.name)}, ${range}">`
+        + `<span class="phase-bar__name">${escapeHtml(ph.name)}</span><span class="phase-bar__weeks">${range}</span><span class="phase-bar__tip" aria-hidden="true">${escapeHtml(ph.name)} · ${range}</span></button>`;
+    }).join('')}</div>
+    <div class="phase-list" role="list">${phases.map(ph => {
+      const state = currentIdx >= ph.from && currentIdx <= ph.to ? ' is-current' : currentIdx > ph.to ? ' is-past' : '';
+      const wk = i => `W${String(weeks[i].week).padStart(2, '0')}`;
+      return `<button class="btn-reset phase-list__item${state}" role="listitem" data-week="${ph.from}" onclick="jumpToPlanWeek(+this.dataset.week)"><span>${escapeHtml(ph.name)}</span><small>${ph.from === ph.to ? wk(ph.from) : `${wk(ph.from)}–${wk(ph.to)}`}</small></button>`;
     }).join('')}</div>
     <div class="phase-bar__caption"><span>${escapeHtml(shortDate(firstStart))}</span><span>${where}</span><span>${escapeHtml(raceIso ? shortDate(raceIso) : shortDate(lastStart ? addDays(lastStart, 6) : null))}</span></div>` : ''}
     ${(p.structure_corrections || []).length ? `<div class="plan-corrections">${p.structure_corrections.map(c => '• ' + escapeHtml(c)).join('<br>')}</div>` : ''}

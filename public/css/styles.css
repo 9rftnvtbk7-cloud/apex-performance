@@ -475,9 +475,30 @@ textarea.input { height: auto; min-height: 80px; padding: 10px 12px; resize: ver
 .plan-meta, .plan-subtitle { font-size: 14px; color: var(--text-dim); margin-top: 6px; overflow-wrap: anywhere; }
 .plan-version { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--r-xs); background: var(--bg-raised); font-size: 12px; font-weight: 600; color: var(--text-dim); vertical-align: middle; flex-shrink: 0; }
 .phase-bar { display: flex; gap: 3px; margin-top: 16px; }
-.phase-bar__seg { flex-basis: 0; min-width: max-content; height: 28px; border-radius: 6px; background: var(--bg-raised); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; padding: 0 8px; overflow: hidden; white-space: nowrap; min-width: 0; }
+.phase-bar__seg { position: relative; flex-basis: 0; min-width: 0; min-height: 40px; border-radius: 6px; background: var(--bg-raised); color: var(--text-muted); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 4px 8px; text-align: left; cursor: pointer; }
+.phase-bar__seg:hover { background: var(--bg-selected); }
 .phase-bar__seg.is-past { background: var(--bg-selected); color: var(--text-dim); }
 .phase-bar__seg.is-current { background: var(--accent); color: var(--accent-contrast); }
+.phase-bar__name, .phase-bar__weeks { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.phase-bar__name { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.phase-bar__weeks { font-size: 11px; font-weight: 500; opacity: .8; font-variant-numeric: tabular-nums; }
+/* Full name on hover / keyboard focus */
+.phase-bar__tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 30; padding: 6px 10px; border-radius: var(--r-sm); background: var(--text-main); color: var(--bg-base); font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; box-shadow: var(--shadow-sheet); }
+.phase-bar__seg:first-child .phase-bar__tip { left: 0; transform: none; }
+.phase-bar__seg:last-child .phase-bar__tip { left: auto; right: 0; transform: none; }
+.phase-bar__seg:hover .phase-bar__tip, .phase-bar__seg:focus-visible .phase-bar__tip { opacity: 1; }
+.phase-list { display: none; }
+/* Phones: blocks are too narrow for their names — a thin coloured bar, and every block listed below it */
+@media (max-width: 1023px) {
+  .phase-bar__seg { min-height: 10px; padding: 0; }
+  .phase-bar__name, .phase-bar__weeks, .phase-bar__tip { display: none; }
+  .phase-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; margin-top: 10px; }
+  .phase-list__item { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 8px; border-radius: var(--r-sm); text-align: left; font-size: 13px; color: var(--text-dim); cursor: pointer; }
+  .phase-list__item span { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .phase-list__item small { color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .phase-list__item.is-current { background: var(--bg-raised); color: var(--text-main); }
+  .phase-list__item.is-past { color: var(--text-muted); }
+}
 .phase-bar__caption { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--text-muted); margin-top: 6px; }
 .phase-bar__caption b { color: var(--text-main); font-weight: 500; }
 .plan-header__foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 14px; color: var(--text-dim); }
