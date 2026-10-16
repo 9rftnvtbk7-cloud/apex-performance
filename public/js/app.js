@@ -944,8 +944,12 @@ async function reloadIfNewVersion() {
 }
 
 async function refreshSharedData(force = false) {
-  if (!currentUser || (!force && Date.now() - lastSharedRefresh < 60 * 1000)) return;
+  if (!currentUser) return;
+  // The first load failed (offline at start-up, network not ready): try it again now
+  if (!activitiesLoaded) { loadUserData(); return; }
+  if (!force && Date.now() - lastSharedRefresh < 60 * 1000) return;
   lastSharedRefresh = Date.now();
+  if (!stravaTokens && typeof loadStravaTokens === 'function') loadStravaTokens(); // e.g. connected on another device
   if (!force && await reloadIfNewVersion()) return;
   try {
     await loadSavedPlan();
@@ -966,6 +970,7 @@ async function refreshSharedData(force = false) {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSharedData(); });
 window.addEventListener('focus', () => refreshSharedData());
+window.addEventListener('online', () => { if (currentUser && !activitiesLoaded) loadUserData(); });
 
 // Settings › Sync: what this device sees, to compare phone and computer at a glance
 function renderSyncInfo() {
@@ -1286,15 +1291,8 @@ function refreshDashboard() {
   if (has) { computePMC(); buildPMCChart(); initCompareDefaults(); renderSportFitness(); }
   if (typeof renderInsights === 'function') renderInsights();
   if (typeof renderReadiness === 'function' && activitiesLoaded) renderReadiness();
-  // Plan vs actual depends on activities
+  // Plan vs actual depends on activities (the plan and Strava tokens are loaded by loadUserData)
   if (trainingPlan) renderTrainingPlan();
-  // Plan, ZWO files, race dates and Strava tokens only need loading once per session
-  if (!sessionDataLoaded && currentUser) {
-    sessionDataLoaded = true;
-    loadSavedPlan();
-    if (typeof loadStravaTokens === 'function' && !stravaTokens) loadStravaTokens(); // then auto-syncs
-    else if (typeof maybeAutoSync === 'function') maybeAutoSync();                  // tokens from the OAuth callback
-  }
 }
 
 function recalcAll() {
@@ -1960,37 +1958,32 @@ function downloadAllZwos() {
 // Init auth on page load
 
 async function loadSavedPlan() {
-  if (typeof loadTrainingPlan === 'function') {
-    let saved = null;
-    try { saved = await loadTrainingPlan(); }
-    catch (err) {
-      console.error('Error loading plan:', err);
-      showPlanImportStatus('error', 'Your saved plan could not be loaded — please re-import it', [err.message]);
-    }
-    // Normalise saved plans too, so older ones get ids, dates and recomputed TSS
-    const normalized = saved ? normalizePlan(saved) : null;
-    if (normalized && normalized.errors.length) {
-      console.error('Saved plan is invalid:', normalized.errors);
-      showPlanImportStatus('error', 'Your saved plan could not be loaded — please re-import it', normalized.errors);
-    } else if (normalized) {
-      trainingPlan = normalized.plan; renderTrainingPlan(); document.getElementById('btnImportZwo').style.display = 'inline-flex';
-      if (allActivities.length) computePMC(); // weekly goal can now come from the plan
-      if (pmcChart) buildPMCChart();          // and so can this week's forecast
-    }
-  }
-  if (typeof loadZwoFiles === 'function') {
-    const saved = await loadZwoFiles();
-    if (saved && Object.keys(saved).length) { zwoFiles = saved; document.getElementById('btnDownloadAllZwo').style.display = 'inline-flex'; renderTrainingPlan(); }
-  }
-  if (typeof loadPlanCompletions === 'function') {
-    const saved = await loadPlanCompletions();
-    if (saved) { planCompletions = saved; renderTrainingPlan(); }
-  }
   loadRaceDates();
-  if (typeof loadPlanOverrides === 'function') {
-    planOverrides = await loadPlanOverrides();
-    if (trainingPlan) renderTrainingPlan();
+  // Plan, ZWO files, ticks and moved sessions are independent reads: fetch them together
+  let planError = null;
+  const [saved, zwo, completions, overrides] = await Promise.all([
+    withRetry(() => loadTrainingPlan()).catch(err => { planError = err; return null; }),
+    loadZwoFiles(), loadPlanCompletions(), loadPlanOverrides(),
+  ]);
+  if (zwo && Object.keys(zwo).length) { zwoFiles = zwo; document.getElementById('btnDownloadAllZwo').style.display = 'inline-flex'; }
+  if (completions) planCompletions = completions;
+  planOverrides = overrides || {};
+  if (planError) {
+    console.error('Error loading plan:', planError);
+    showPlanImportStatus('error', 'Your saved plan could not be loaded — check your connection and use Settings › Sync › Reload from my account', [planError.message]);
+    return;
   }
+  // Normalise saved plans too, so older ones get ids, dates and recomputed TSS
+  const normalized = saved ? normalizePlan(saved) : null;
+  if (normalized && normalized.errors.length) {
+    console.error('Saved plan is invalid:', normalized.errors);
+    showPlanImportStatus('error', 'Your saved plan could not be loaded — please re-import it', normalized.errors);
+  } else if (normalized) {
+    trainingPlan = normalized.plan; document.getElementById('btnImportZwo').style.display = 'inline-flex';
+    if (allActivities.length) computePMC(); // weekly goal can now come from the plan
+    if (pmcChart) buildPMCChart();          // and so can this week's forecast
+  }
+  if (trainingPlan) renderTrainingPlan();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

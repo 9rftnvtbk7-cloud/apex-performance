@@ -153,14 +153,17 @@ async function saveStravaTokens() {
 async function loadStravaTokens() {
   if (!currentUser) return;
   try {
-    const doc = await db.collection('users').doc(currentUser.uid).collection('settings').doc('strava').get();
+    const doc = await withRetry(() => db.collection('users').doc(currentUser.uid).collection('settings').doc('strava').get());
     // Don't overwrite fresher tokens from an OAuth callback that finished while we were reading
     if (doc.exists && !stravaTokens) {
       stravaTokens = doc.data();
-      updateStravaUI();
       maybeAutoSync();
     }
-  } catch (e) { console.error('Error loading Strava tokens:', e); }
+    updateStravaUI(); // until now the status reads "Checking Strava…"
+  } catch (e) {
+    console.error('Error loading Strava tokens:', e);
+    setSyncState('error'); // not "not connected": we couldn't tell. Retried on the next focus
+  }
 }
 
 async function ensureValidToken() {

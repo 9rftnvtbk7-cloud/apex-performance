@@ -1057,3 +1057,44 @@ test('Race target: result table keeps partial-week markers inside the date cell'
   for (const r of rows) assert.equal((r.match(/<td[ >]/g) || []).length, 3, r);
   assert.ok(!/<\/td>\s*<small>|<\/small><\/td><\/td>/.test(html));
 });
+
+// Fake Firestore for the start-up path: docs by "collection/id", the activities query is controllable
+function startupDb(env, { docs = {}, activities }) {
+  env.ctx.__docs = docs; env.ctx.__activities = activities;
+  env.run(`
+    var __snap = (d) => ({ exists: !!d, data: () => d });
+    db = { collection: () => ({ doc: () => ({ collection: (c) => ({
+      doc: (id) => ({ get: async () => __snap(__docs[c + '/' + id]), set: async () => {}, update: async () => {} }),
+      orderBy: () => ({ get: () => __activities() }),
+      where: () => ({ get: async () => ({ forEach() {} }) }),
+    }) }) }) };
+    currentUser = { uid: 'u1', getIdToken: async () => 't' };
+    setTimeout = (fn) => { fn(); return 0; }; // retries run immediately
+  `);
+}
+const flush = () => new Promise(r => setImmediate(r));
+
+test('Start-up: plan and Strava load without waiting for the activities query', async () => {
+  const env = makeEnv();
+  startupDb(env, {
+    docs: { 'settings/strava': { access_token: 'a', refresh_token: 'r', expires_at: 9e9 }, 'plan/current': { plan: JSON.stringify({ name: 'P', weeks: [{ sessions: [] }] }) } },
+    activities: () => new Promise(() => {}), // never answers (slow network)
+  });
+  env.run('loadUserData()');
+  for (let i = 0; i < 10; i++) await flush();
+  assert.ok(env.run('!!(stravaTokens && stravaTokens.access_token)'), 'Strava tokens loaded');
+  assert.ok(env.run('!!trainingPlan'), 'plan loaded');
+  assert.equal(env.run('activitiesLoaded'), false);
+});
+
+test('Start-up: a failed first activities read is retried instead of leaving the app empty', async () => {
+  const env = makeEnv();
+  let calls = 0;
+  startupDb(env, {
+    activities: async () => { if (++calls === 1) throw new Error('Failed to get documents because the client is offline.'); return { forEach() {} }; },
+  });
+  await env.run('loadUserData()');
+  assert.equal(calls, 2);
+  assert.equal(env.run('activitiesLoaded'), true);
+  assert.ok(!env.toasts.some(t => /could not load/i.test(t)));
+});

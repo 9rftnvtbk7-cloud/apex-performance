@@ -16,7 +16,7 @@
   <link rel="icon" href="/icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=202610011416">
+  <link rel="stylesheet" href="css/styles.css?v=202610161031">
 
   <!-- Chart.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -80,7 +80,7 @@
       <button class="nav-tab" role="tab" aria-selected="false" onclick="switchTab('log',this)"><svg class="icon" aria-hidden="true"><use href="#i-activities"/></svg><span>Activities</span></button>
     </nav>
     <div class="sidebar__foot">
-      <div class="sidebar__sync"><span class="status-dot" id="sidebarSyncDot"></span><span id="sidebarSyncText">Strava not connected</span></div>
+      <div class="sidebar__sync"><span class="status-dot" id="sidebarSyncDot"></span><span id="sidebarSyncText">Checking Strava…</span></div>
       <button class="sidebar__user" data-account-trigger onclick="toggleAccountMenu()" aria-haspopup="menu" aria-controls="accountMenu">
         <span class="avatar" id="sidebarInitials" aria-hidden="true"></span><span class="sidebar__user-name" id="sidebarUserName"></span><span class="sidebar__more" aria-hidden="true">···</span>
       </button>
@@ -92,7 +92,7 @@
       <div class="app-header__brand"><span class="logo-mark" aria-hidden="true"><svg class="icon"><use href="#i-mark"/></svg></span>Apex</div>
       <div class="app-header__actions">
         <span id="stravaStatus" class="visually-hidden"></span>
-        <button class="btn btn--strava btn--sm" id="btnStravaConnect" onclick="stravaConnect()">Connect with Strava</button>
+        <button class="btn btn--strava btn--sm" id="btnStravaConnect" onclick="stravaConnect()" style="display:none">Connect with Strava</button>
         <button class="sync-pill" id="btnStravaSync" data-state="ok" onclick="syncStravaActivities()" style="display:none" aria-label="Sync with Strava now"><span class="status-dot"></span><span class="sync-pill__text">Synced</span></button>
         <button class="btn btn--secondary btn--sm desktop-only" onclick="toggleSettings()" aria-controls="settingsPanel" aria-expanded="false" id="btnSettings"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="btn-label">Settings</span></button>
         <div class="account-menu-wrap">
@@ -501,21 +501,21 @@
 </dialog>
 
 <!-- App Scripts (order matters) -->
-<script src="js/firebase-config.js?v=202610011416"></script>
-<script src="js/auth.js?v=202610011416"></script>
-<script src="js/database.js?v=202610011416"></script>
-<script src="js/fit-parser.js?v=202610011416"></script>
-<script src="js/strava.js?v=202610011416"></script>
-<script src="js/thresholds.js?v=202610011416"></script>
-<script src="js/metrics.js?v=202610011416"></script>
-<script src="js/theme.js?v=202610011416"></script>
-<script src="js/activity-detail.js?v=202610011416"></script>
-<script src="js/workout-export.js?v=202610011416"></script>
-<script src="js/race-target.js?v=202610011416"></script>
-<script src="js/calendar.js?v=202610011416"></script>
-<script src="js/wellness.js?v=202610011416"></script>
-<script src="js/insights.js?v=202610011416"></script>
-<script src="js/plan-import.js?v=202610011416"></script>
-<script src="js/app.js?v=202610011416"></script>
+<script src="js/firebase-config.js?v=202610161031"></script>
+<script src="js/auth.js?v=202610161031"></script>
+<script src="js/database.js?v=202610161031"></script>
+<script src="js/fit-parser.js?v=202610161031"></script>
+<script src="js/strava.js?v=202610161031"></script>
+<script src="js/thresholds.js?v=202610161031"></script>
+<script src="js/metrics.js?v=202610161031"></script>
+<script src="js/theme.js?v=202610161031"></script>
+<script src="js/activity-detail.js?v=202610161031"></script>
+<script src="js/workout-export.js?v=202610161031"></script>
+<script src="js/race-target.js?v=202610161031"></script>
+<script src="js/calendar.js?v=202610161031"></script>
+<script src="js/wellness.js?v=202610161031"></script>
+<script src="js/insights.js?v=202610161031"></script>
+<script src="js/plan-import.js?v=202610161031"></script>
+<script src="js/app.js?v=202610161031"></script>
 </body>
 </html>

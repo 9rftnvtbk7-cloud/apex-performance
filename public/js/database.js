@@ -2,16 +2,49 @@
 // Database Module (Firestore)
 // ══════════════════════════════════════════════
 
+// Retry a Firestore read: on a cold start (installed app, flaky mobile network) the first
+// read can fail with "client is offline" although a second later it works
+async function withRetry(fn, tries = 3) {
+  for (let i = 1; ; i++) {
+    try { return await fn(); }
+    catch (err) {
+      if (i >= tries) throw err;
+      console.warn(`[DB] Read failed (attempt ${i}/${tries}), retrying:`, err.message);
+      await new Promise(r => setTimeout(r, 1000 * i * i));
+    }
+  }
+}
+
 // ── Load all user data on sign-in ──
-async function loadUserData() {
+// One load at a time (onAuthStateChanged, focus and "online" can all ask for it)
+let userDataLoading = null;
+function loadUserData() {
+  return userDataLoading || (userDataLoading = loadUserDataOnce().finally(() => { userDataLoading = null; }));
+}
+
+async function loadUserDataOnce() {
   if (!currentUser) return;
   const uid = currentUser.uid;
 
   showToast('Loading your data…', '⏳');
 
+  // The plan and the Strava connection don't depend on the activities: start them now, in
+  // parallel, so they don't wait for (or get lost with) the much larger activities query
+  if (!sessionDataLoaded) {
+    sessionDataLoaded = true;
+    loadSavedPlan();
+    if (!stravaTokens) loadStravaTokens(); // auto-syncs once the activities are loaded
+  }
+
   try {
-    // Load settings
-    const settingsDoc = await db.collection('users').doc(uid).collection('settings').doc('athlete').get();
+    const userDoc = db.collection('users').doc(uid);
+    const [settingsDoc, thDoc, snap] = await Promise.all([
+      withRetry(() => userDoc.collection('settings').doc('athlete').get()),
+      withRetry(() => userDoc.collection('settings').doc('thresholds').get()),
+      withRetry(() => userDoc.collection('activities').orderBy('startDate', 'desc').get()),
+      withRetry(() => loadPlannerWeeks()),
+    ]);
+    // Settings
     if (settingsDoc.exists) {
       const s = settingsDoc.data();
       if (s.ftp) document.getElementById('inputFtp').value = s.ftp;
@@ -20,7 +53,6 @@ async function loadUserData() {
       if (s.swimPace) document.getElementById('inputSwimPace').value = s.swimPace;
     }
     // Threshold history; first load migrates the single saved settings to one entry "from the start"
-    const thDoc = await db.collection('users').doc(uid).collection('settings').doc('thresholds').get();
     thresholdHistory = normalizeThresholdHistory(thDoc.exists ? thDoc.data().history : []);
     if (!thresholdHistory.length) {
       thresholdHistory = [{ from: THRESHOLDS_FROM_START, ...readThresholdInputs() }];
@@ -30,10 +62,7 @@ async function loadUserData() {
     document.getElementById('inputThresholdFrom').value = localDateKey(new Date());
     renderThresholdHistory();
 
-    // Load activities
-    const snap = await db.collection('users').doc(uid).collection('activities')
-      .orderBy('startDate', 'desc').get();
-
+    // Activities
     allActivities = [];
     snap.forEach(doc => {
       const d = doc.data();
@@ -65,9 +94,6 @@ async function loadUserData() {
       });
     });
 
-    // Load planner
-    await loadPlannerWeeks();
-
     // Keep stored TSS in line with the current formulas and thresholds
     const changed = recomputeAllTss();
     if (changed.length) {
@@ -80,10 +106,12 @@ async function loadUserData() {
     log(`[DB] Loaded ${allActivities.length} activities`, 'ok');
     showToast(`Loaded ${allActivities.length} activities`, '✅');
     refreshDashboard();
+    if (typeof maybeAutoSync === 'function') maybeAutoSync(); // Strava tokens may have arrived first
 
   } catch (err) {
+    // Retried again when the app comes back online or to the foreground (refreshSharedData)
     console.error('Load error:', err);
-    showToast('Error loading data', '❌');
+    showToast('Could not load your data — check your connection, retrying soon', '⚠️');
   }
 }
 
